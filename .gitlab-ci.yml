@@ -8,7 +8,7 @@ services:
   - mongo:3.4.0
 
 variables:
-  MONGO_URL http://mongo:27017/arachne
+  MONGO_URL: http://mongo:27017/arachne
 
 deploy:
   script:
