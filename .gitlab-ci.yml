@@ -8,23 +8,13 @@ services:
   - mongo:3.4.0
 
 variables:
-  MONGO_URL: http://mongo:27017/arachne
+  MONGO_URL: mongodb://mongo:27017/arachne
 
 stages:
   - test
-  - deploy
 
 check_lint:
   stage: test
   script:
-    - node -v
     - npm install -g eslint
-    - ls
     - eslint .
-
-arachne:
-  stage: deploy
-  script:
-    - node -v
-    - npm install
-    - node brain.js
