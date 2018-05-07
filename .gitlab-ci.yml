@@ -90,7 +90,9 @@ deploy_staging:
     - git config --global user.email "$GITLAB_USER_EMAIL"
     - git config --global user.name "$GITLAB_USER_ID"
   script:
-    - echo "pushed"
+    - echo "Pushing to Dokku..."
+    - git push --force ssh://dokku@dokku.${DOKKU_DOMAIN}/${DOKKU_APP} HEAD:refs/heads/master
+    - echo "Pushed to Dokku."
   environment:
     name: staging
     url: https://${DOKKU_APP}.${DOKKU_DOMAIN}
