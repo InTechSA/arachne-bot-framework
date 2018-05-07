@@ -44,7 +44,7 @@ package-scan:
   before_script:
     - npm install -g npm-check
   script:
-    - npm check --skip-unused --production
+    - npm-check --skip-unused --production
   allow_failure: true
 
 snyk-security-scan:
