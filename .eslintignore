@@ -1,0 +1,5 @@
+/node_modules
+/out
+/apidoc
+/dashboard/public
+/dashboard/views

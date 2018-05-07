@@ -1,0 +1,37 @@
+{
+  "name": "bot-brain",
+  "version": "1.0.0",
+  "description": "Bot main system.",
+  "main": "brain.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node brain.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nakasar/bot-architecture-poc.git"
+  },
+  "author": "Kevin \"Nakasar\" Thizy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nakasar/bot-architecture-poc/issues"
+  },
+  "homepage": "https://github.com/Nakasar/bot-architecture-poc#readme",
+  "dependencies": {
+    "bcrypt": "^1.0.3",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "jsonwebtoken": "^8.2.0",
+    "mongoose": "^5.0.12",
+    "node-schedule": "^1.3.0",
+    "pug": "^2.0.3",
+    "recastai": "^3.7.0",
+    "request": "^2.85.0",
+    "socket.io": "^2.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1"
+  }
+}

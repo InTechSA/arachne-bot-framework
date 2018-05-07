@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  if code && code == 404
+    .text-center
+      img(src="/dashboard/static/imgs/error.svg" width="200px" alt="error" style="margin: auto;")
+      h1 Oups :'(
+      p.lead=(displaymessage || 'Looks like you are going where no one did before, you should really turn back adventurer!')
+  else if code && code == 403
+    .text-center
+      img(src="/dashboard/static/imgs/angry.svg" width="200px" alt="error" style="margin: auto;")
+      h1 Grrrr !
+      p.lead You should not be here ! Be sure you are logged in and have the rights to access this page!
+  else if title && message
+    .text-center
+      img(src="/dashboard/static/imgs/bomb.svg" width="200px" alt="error" style="margin: auto;")
+      h1= title
+      p= message
+  else
+    .text-center
+      img(src="/dashboard/static/imgs/bomb.svg" width="200px" alt="error" style="margin: auto;")
+      h1 Unkown Error
+      p An unkown error occured.

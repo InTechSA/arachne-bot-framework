@@ -1,0 +1,44 @@
+\/\*
+  SKILL : ([\D\d]{0,})
+  AUTHOR : ([\D\d]{0,})
+  DATE : ([\D\d]{0,})
+\*\/
+
+\/\*
+  You should not modify this part unless you know what you're doing\.
+\*\/
+
+\/\/ Defining the skill
+\/\/ Commands the skill can execute\.
+\/\* <SKILL COMMANDS> \*\/
+let commands = (\{[\D\d]{0,}\});
+\/\* <\/SKILL COMMANDS> \*\/
+
+\/\/ intents the skill understands\.
+\/\* <SKILL INTENTS> \*\/
+let intents = (\{[\D\d]{0,}\});
+\/\* <\/SKILL INTENTS> \*\/
+
+\/\/ Conversation handlers of the skill\.
+\/\* <SKILL INTERACTIONS> \*\/
+let interactions = (\{[\D\d]{0,}\});
+\/\* <\/SKILL INTERACTIONS> \*\/
+
+\/\/ dependencies of the skill\.
+\/\* <SKILL DEPENDENCIES> \*\/
+let dependencies = (\[[\D\d]{0,}\]);
+\/\* <\/SKILL DEPENDENCIES> \*\/
+
+\/\/ Exposing the skill definition\.
+exports\.commands = commands;
+exports\.intents = intents;
+exports\.dependencies = dependencies;
+exports\.interactions = interactions;
+
+\/\*
+  Skill logic begins here\.
+  You must implements the functions listed as "execute" and "handle" handler, or your skill will not load\.
+\*\/
+\/\* <SKILL LOGIC> \*\/([\D\d]{0,})\/\* <\/SKILL LOGIC> \*\/
+
+\/\/ You may define other logic function unexposed here\. Try to keep the skill code slim\.

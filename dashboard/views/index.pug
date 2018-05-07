@@ -1,0 +1,56 @@
+extends layout
+
+block content  
+  h1= mainTitle
+  if message
+    p= message
+  
+  .row
+    .col-sm
+      .card#informations
+        .card-header
+          h5.mb-0 Loaded Skills
+        .card-body
+          #skills
+            if skills
+              each skill, skillName in skills
+                - let headId = `skill-heading-${skillName}`
+                - let bodyId = `skill-body-${skillName}`
+                .card.border-light
+                  .card-header(id=headId)
+                    h5.mb-0
+                      button.btn.btn-link(data-toggle="collapse" data-target='#'+bodyId aria-expanded="true" aria-controls=bodyId)= skillName
+                  .collapse(id=bodyId, aria-labelledby=headId, data-parent="#skills")
+                    if skill.commands
+                      ul.list-group.list-group-flush
+                        each command, commandName in skill.commands
+                          li.list-group-item= commandName
+                    if skill.active
+                      button.btn.btn-outline-danger.skill-deactivate(type="action" data-skill=skillName) Deactivate
+                    else
+                      button.btn.btn-outline-success.skill-activate(type="action" data-skill=skillName) Activate
+    .col-sm
+      .card#sandbox
+        .card-header
+          h5.mb-0 Chat
+        .card-body
+          if connector_token
+            form#chat-form
+              .form-group
+                .input-group.mb-3
+                  input#chat.form-control(type='text' placeholder='Say something here...' name='chat' data-token=connector_token)
+                  .input-group-append
+                    button.btn.btn-primary(type='submit', aria-label="Send message")
+                      i.far.fa-comments
+            #bot-response
+              ul.list-group
+                li.list-group-item.text-muted#source
+                li.list-group-item#message(style='white-space: pre-wrap;')
+                  
+          else
+            .alert.alert-warning
+              p In order to use the chat sandbox, you must create a connector named "Dashboard" and allow it from at least your current ip address.
+          
+  script
+    include dashboard.js
+  

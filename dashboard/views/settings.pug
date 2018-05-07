@@ -1,0 +1,31 @@
+extends layout
+
+block content
+  // Modals
+
+  .card.mt-2
+    .card-header My Account
+    .card-body
+      h5.card-title Username
+      form#modify-username()
+        .form-group
+          label(for="new-username") Current password
+          input.form-control#new-username(type="username" placeholder="New username" value=user.user_name)
+        .form-group
+          button.btn.btn-outline-success(type="submit") Save Username
+      h5.card-title Modify password
+      form#modify-password()
+        .form-group
+          label(for="current-password") Current password
+          input.form-control#current-password(type="password" placeholder="Current password")
+        .form-group
+          label(for="new-password") New password
+          input.form-control#new-password(type="password" placeholder="New password" autocomplete="new-password") 
+        .form-group
+          label(for="confirm-password") Confirm password
+          input.form-control#confirm-password(type="password" placeholder="Confirm password" autocomplete="new-password")
+        .form-group
+          button.btn.btn-outline-success(type="submit") Modify Password
+            
+  script
+    include ../public/js/settings.js

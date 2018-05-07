@@ -1,0 +1,203 @@
+extends layout
+
+append scripts
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript" charset="utf-8")
+
+block supercontent
+  // Modals
+  .modals
+    .modal.fade#configure-secret-modal(tabindex="-1" role="dialog" aria-labelledby="configure-secret-modal-label" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#configure-secret-modal-label Configure skill secrets
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            #configure-secret-alert
+            form#configure-secret-form
+              table.table
+                thead
+                  tr
+                    th Secret
+                    th Value
+                    th
+                  tr
+                tbody
+            .btn.btn-primary.float-right#new-secret(aria-label="New secret" title="New secret")
+              i.far.fa-plus-square
+          .modal-footer
+            button.btn.btn-success.save(type="submit" form="configure-secret-form") Save secrets
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
+          
+    .modal.fade#add-intent-modal(tabindex="-1" role="dialog" aria-labelledby="add-intent-modal-label" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#add-intent-modal-label New intent
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            #add-intent-alert
+            form#add-intent-form
+              .form-group
+                label(for="intent-name") Intent name
+                input.form-control#intent-name(type="text" aria-describedby="intent-name-help" required)
+                small.form-text.text-muted#intent-name-help We'll automatically add the skill name before the intent name if not present.
+              .form-group
+                label(for="intent-slug") Intent slug
+                input.form-control#intent-slug(type="text" aria-describedby="intent-slug-help" placeholder="weather" required)
+                small.form-text.text-muted#intent-slug-help This is the intent identification returned by your NLP API.
+              .form-group
+                label(for="intent-entities") Entities expected
+                input.form-control#intent-entities(type="text" aria-describedby="intent-entities-help" placeholder="location, date")
+                small.form-text.text-muted#intent-entities-help List entities name you require to execute this intent.
+              .form-group
+                label(for="intent-handler") Handler function
+                input.form-control#intent-handler(type="text" aria-describedby="intent-handler-help" placeholder="handleWeather" required)
+                small.form-text.text-muted#intent-handler-help Give a unique name to the function which will be called for this intent.
+          .modal-footer
+            button.btn.btn-success.save(type="submit" form="add-intent-form") Add intent
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
+            
+    .modal.fade#add-command-modal(tabindex="-1" role="dialog" aria-labelledby="add-command-modal-label" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#add-command-modal-label New Command
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            #add-command-alert
+            form#add-command-form
+              .form-group
+                label(for="command-name") Command name
+                input.form-control#command-name(type="text" aria-describedby="command-name-help" required)
+                small.form-text.text-muted#command-name-help Does not have to be unique.
+              .form-group
+                label(for="command-word") Command word
+                input.form-control#command-word(type="text" aria-describedby="command-word-help" placeholder="joke" required)
+                small.form-text.text-muted#command-word-help This is the word used to call your command (!joke).
+              .form-group
+                label(for="command-handler") Handler function
+                input.form-control#command-handler(type="text" aria-describedby="command-handler-help" placeholder="sayJoke" required)
+                small.form-text.text-muted#command-handler-help Give a unique name to the function which will be called for this command.
+          .modal-footer
+            button.btn.btn-success.save(type="submit" form="add-command-form") Add command
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
+            
+    .modal.fade#add-interaction-modal(tabindex="-1" role="dialog" aria-labelledby="add-interaction-modal-label" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#add-interaction-modal-label New interaction
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            #add-interaction-alert
+            form#add-interaction-form
+              .form-group
+                label(for="interaction-name") Interaction name
+                input.form-control#interaction-name(type="text" aria-describedby="interaction-name-help" required)
+                small.form-text.text-muted#interaction-name-help We'll automatically add the skill name before the interaction name if not present.
+              .form-group
+                label(for="interaction-handler") Handler function
+                input.form-control#interaction-handler(type="text" aria-describedby="interaction-handler-help" placeholder="handleQuizzResponse" required)
+                small.form-text.text-muted#interaction-handler-help Give a unique name to the function which will be called for this interaction.
+          .modal-footer
+            button.btn.btn-success.save(type="submit" form="add-interaction-form") Add interaction
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
+            
+    .modal.fade#use-skill-modal(tabindex="-1" role="dialog" aria-labelledby="use-skill-modal-label" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#use-skill-modal-label Use Skill
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            #use-skill-alert
+            form#use-skill-form
+              .form-group
+                label(for="use-skill-name") Skill to use
+                select.form-control#use-skill-name(required)
+              .form-group#use-skill-command-group(style="display: none;")
+                label(for="use-skill-command") Command to use
+                select.form-control#use-skill-command(required)
+            p#use-skill-help(style="display: none;") Please copy and paste this string to use the command:
+            pre#use-skill-string(style="display: none;")
+          .modal-footer
+            button.btn.btn-success.save(type="submit" form="use-skill-form") Use skill
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
+
+  main.container-fluid
+    .loader#loader
+      // By Sam Herbert (@sherb), for everyone. More @ http://goo.gl/7AJzbL
+      svg(width='45' height='47' viewbox='0 0 135 140' xmlns='http://www.w3.org/2000/svg' fill='#c9d8d5')
+        rect(y='10' width='15' height='120' rx='6')
+          animate(attributename='height' begin='0.5s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
+          animate(attributename='y' begin='0.5s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
+        rect(x='30' y='10' width='15' height='120' rx='6')
+          animate(attributename='height' begin='0.25s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
+          animate(attributename='y' begin='0.25s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
+        rect(x='60' width='15' height='140' rx='6')
+          animate(attributename='height' begin='0s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
+          animate(attributename='y' begin='0s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
+        rect(x='90' y='10' width='15' height='120' rx='6')
+          animate(attributename='height' begin='0.25s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
+          animate(attributename='y' begin='0.25s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
+        rect(x='120' y='10' width='15' height='120' rx='6')
+          animate(attributename='height' begin='0.5s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
+          animate(attributename='y' begin='0.5s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
+
+    #skill-editor(style="display: none;")
+      if skill_edited
+        h1= skill_edited.name
+      else
+        h1 New Skill: unnammed skill
+      .row
+        .col-md-4#left-panel
+          h4 Script configuration
+          form#skill-generate
+            .form-group.row
+              label.col-sm-4.col-form-label(for="skill-name") Skill name
+              .col-sm-8
+                input.form-control#skill-name(type="text")
+            .form-group.row
+              label.col-sm-4.col-form-label(for="skill-template") Skill type
+              .col-sm-8
+                select.form-control#skill-template
+                  option(selected="selected") From scratch
+                  option API request
+            button.btn.btn-primary(type="submit") Generate template
+          #skill-toolbox(style="display: none;")
+            .list-group.list-group-flush
+              if skill_edited
+                a.list-group-item.list-group-item-action(onClick="configureSecret()") Configure Secret
+              else
+                a.list-group-item.list-group-item-action.disabled.text-muted(title="You must create the skill before editing its secrets.") Configure Secret
+              a.list-group-item
+              a.list-group-item.list-group-item-action(onClick="addIntent()") Add intent
+              a.list-group-item.list-group-item-action(onClick="addCommand()") Add command
+              a.list-group-item.list-group-item-action(onClick="addInteraction()") Add interaction
+              a.list-group-item
+              a.list-group-item.list-group-item-action(onClick="useSkillCommand()") Use another skill              
+        .col-md-6#middle-panel
+          .row.justify-content-between
+            .col
+              h4 Script code
+            .col.text-right
+              a.action.text-success#save-skill(role="button" title="Save Code" aria-label="Save Code" style="font-size: 2em; margin-right: 50px;")
+                i.far.fa-save
+          p.lead#code-alert Use the left pane to generate a new skill.
+          #editor(style="display: none")
+        .col-md-2#right-panel
+          h4 Help
+  
+  if skill_edited
+    #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="true" data-skill-name=skill_edited.name data-skill-code=skill_edited.code)
+  else
+    #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="false")
+  
+  script
+    include ../public/js/new_skill.js
