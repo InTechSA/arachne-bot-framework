@@ -1,0 +1,38 @@
+extends layout
+
+append css
+    link(rel="stylesheet", href="/dashboard/static/skill.css")
+
+block supercontent
+    main.container-fluid
+        if skill
+            #skill-bar
+                h3= skill.name
+            
+            #skill-monitor.p-1
+                .card-columns
+                    .card
+                        .card-header Storage
+                        .card-body
+                            p.card-text
+                                | There are 
+                                strong#storage= skill.storage.length
+                                |  elements of storage for this skill.
+                            a.card-link.text-danger(href="#" onClick="clearStorage(this)" data-skill=skill.name) Clear
+                    .card
+                        .card-header Hooks
+                        .card-body
+                            p.card-text
+                                | There are 
+                                strong#hooks= skill.hooks.length
+                                |  hooks for this skill.
+                            a.card-link.text-danger(href="#" onClick="clearHooks(this)" data-skill=skill.name) Clear
+
+        else
+            .text-center
+            img(src="/dashboard/static/imgs/error.svg" width="200px" alt="error" style="margin: auto;")
+            h1 Oups :'(
+            p.lead Our robot couldn't find any skill here, maybe you're trying to access a deleted skill?
+
+    script
+        include ../public/js/skill.js

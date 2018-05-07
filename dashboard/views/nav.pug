@@ -1,0 +1,19 @@
+nav.navbar.navbar-expand-sm
+  a.navbar-brand(href="/dashboard") 
+    img.d-inline-block.align-top(src="/dashboard/static/imgs/logo.svg" width="30" heigth="30" alt="")
+    | Bot dashboard
+  button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation")
+    span.navbar-toggler-icon
+  .collapse.navbar-collapse#navbarSupportedContent
+    ul.navbar-nav.mr-auto
+      li.nav-item(class=(nav_link === "nav-portal" ? "active" : null))
+        a.nav-link(href="/dashboard") Portail
+          span.sr-only (current)
+      li.nav-item(class=(nav_link === "nav-skills" ? "active" : null))
+        a.nav-link(href="/dashboard/skills") Skills
+      li.nav-item(class=(nav_link === "nav-connectors" ? "active" : null))
+        a.nav-link(href="/dashboard/connectors") Connectors
+    span.navbar-text
+      a(href="/dashboard/settings")
+        i.fas.fa-cogs.settings(style="font-size: 1.5rem;" title="Settings" aria-label="Settings" aria-hidden="true")
+      i.fas.fa-sign-out-alt.disconnect(style="margin-left: 1rem; font-size: 1.5rem;" title="Log out" aria-label="Log out" aria-hidden="true" onClick="logout()")

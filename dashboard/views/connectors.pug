@@ -1,0 +1,72 @@
+extends layout
+
+block content
+  // Modals
+  #new-connector-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='new-connector-modal-label' aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#new-connector-modal-label.modal-title New connector
+          button.close(type='button' data-dismiss='modal' aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          form#new-connector-form
+            .form-group
+              label(for="new-connector-name") Connector name
+              input.form-control#new-connector-name(type="text" placeholder="Connector name")
+            .form-group
+              label(for="new-connector-ip") Connector ip (optional)
+              input.form-control#new-connector-ip(type="text" placeholder="0.0.0.0" aria-describedby="new-connector-ip-help")
+              small#new-connector-ip-help.form-text.text-muted Restrain to a specific ip:port.
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+          button.btn.btn-primary(type='submit' form="new-connector-form") Add
+  
+  .row.justify-content-between
+    .col
+      h1 Connectors
+    .col.align-self-center.text-right
+      a.btn.btn-outline-success#new-connector(role="button" href="#" style="margin-left: 1em;") Add connector
+  
+  .list-group#connectors-list
+    if connectors
+      each connector in connectors
+        .list-group-item.flex-column.align-items-start(id="connector-"+connector._id)
+          .d-flex.w-100.justify-content-between
+            h4.mb-1= connector.name
+            div
+              a.action.mb-1(
+                role="button"
+                title=( connector.active ? "Deactivate connector" : "Activate connector")
+                style="margin-left: 1em;"
+                aria-label=( connector.active ? "Deactivate connector" : "Activate connector")
+                class=( connector.active ? "text-success" : "text-danger")
+                data-connector=connector._id data-active=(`${connector.active ? "on" : "off"}`) onClick="toggleConnector(this)"
+                )
+                if connector.active
+                  i.fas.fa-toggle-on
+                else
+                  i.fas.fa-toggle-off
+              a.action.mb-1.text-danger(role="button" title="Delete connector "+connector.name style="margin-left: 1em;" aria-label="Delete connector "+connector.name data-connector=connector._id onClick="deleteConnector(this)")
+                i.fas.fa-trash
+              a.action.displayer(role="button" title="Display connector." style="margin-left: 1em;" onClick=`toggleConnectorDetail('${connector._id}')`)
+                i.fas.fa-caret-down
+          .collapse(id="detail-"+connector._id)
+            hr
+            h5
+              | Token
+              a.action.mb-1.text-warning(role="button" style="margin-left: 1em;" title="Refresh token" aria-label="Refresh token" data-connector=connector._id onClick="refreshToken(this)")
+                i.fas.fa-sync
+            code.token
+            h5 Restrained to:
+            code
+              span.ip
+              a.action.mb-1.text-primary.edit(role="button" style="margin-left: 1em;" title="Edit ip" aria-label="Edit ip" data-connector=connector._id onClick="editIp(this)")
+                i.fas.fa-pencil-alt
+              a.action.mb-1.text-success.save(role="button" style="margin-left: 1em; display: none" title="Save ip" aria-label="Save ip" data-connector=connector._id onClick="saveIp(this)")
+                i.fas.fa-check
+              a.action.mb-1.text-info.cancel(role="button" style="margin-left: 1em; display: none" title="Cancel" aria-label="Cancel" data-connector=connector._id onClick="cancelIp(this)")
+                i.fas.fa-times
+
+  script
+    include ../public/js/connectors.js

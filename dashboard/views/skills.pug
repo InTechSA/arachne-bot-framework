@@ -1,0 +1,57 @@
+extends layout
+
+block content
+  .row.justify-content-between
+    .col
+      h1 Skills
+    .col.align-self-center.text-right
+      buton.btn.btn-outline-warning#reload-brain(role="button") Reload Brain
+      a.btn.btn-outline-success#new-skill(role="button" href="/dashboard/skills/new" style="margin-left: 1em;") New Skill
+  
+  .list-group
+    if skills
+      each skill, skillName in skills
+        .list-group-item.flex-column.align-items-start(id="skill-"+skillName)
+          .d-flex.w-100.justify-content-between
+            h4.mb-1.capitalized= skillName
+            div
+              a.action.mb-1.text-warning(role="button" title="Reload skill" aria-label="Reload skill" data-skill=skillName onClick="reloadSkill(this)")
+                i.fas.fa-sync
+              a.action.mb-1.text-muted(role="button" href="/dashboard/skills/"+skillName title="Monitor this skill" style="margin-left: 1em;" aria-label="Monitor this skill" data-skill=skillName)
+                i.fas.fa-cog
+              a.action.mb-1.text-info(role="button" href="/dashboard/skills/"+skillName+"/edit" title="Edit this skill" style="margin-left: 1em;" aria-label="Edit this skill" data-skill=skillName)
+                i.fas.fa-edit
+              a.action.mb-1(role="button" title=( skill.active ? "Deactivate skill" : "Activate skill") style="margin-left: 1em;" aria-label=( skill.active ? "Deactivate skill" : "Activate skill") class=( skill.active ? "text-success" : "text-danger") data-skill=skillName data-active=(`${skill.active}`) onClick="skillToggle(this)")
+                if skill.active
+                  i.fas.fa-toggle-on
+                else
+                  i.fas.fa-toggle-off
+              a.action.mb-1.text-danger(role="button" title="Delete skill "+skillName style="margin-left: 1em;" aria-label="Delete skill "+skillName data-skill=skillName onClick="deleteSkill(this)")
+                i.fas.fa-trash
+              a.action.displayer(role="button" title="Display skill." style="margin-left: 1em;" onClick=`toggleSkillDetail('${skillName}');`)
+                i.fas.fa-caret-down
+          .collapse(id="detail-"+skillName)
+            h5 Intents
+            if skill.intents && Object.keys(skill.intents).length > 0
+              each intent, intentName in skill.intents
+                .list-group-flush
+                  .list-group-item-light.flex-column.align-items-start
+                    .d-flex.w-100.justify-content-between
+                      div
+                        span= intentName
+                        em= ` (${intent.slug})`
+            else
+              p.font-weight-light.font-italic There are no intents associated with this skill.
+            h5 Commands
+            if skill.commands && Object.keys(skill.commands).length > 0
+              each command, commandName in skill.commands
+                .list-group-flush
+                  .list-group-item-light.flex-column.align-items-start
+                    .d-flex.w-100.justify-content-between
+                      div
+                        span= commandName
+            else
+              p.font-weight-light.font-italic There are no commands for this skill.
+
+  script
+    include ../public/js/skills.js
