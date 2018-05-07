@@ -1,20 +1,96 @@
 image: node:9.11.1
 
 cache:
+  key: "$CI_COMMIT_REF_NAME"
+  untracked: true
   paths:
     - node_modules/
 
-services:
-  - mongo:3.4.0
-
 variables:
-  MONGO_URL: mongodb://mongo:27017/arachne
+  NODE_ENV: "production"
+  NPM_CONFIG_LEVEL: "warn"
 
 stages:
+  - lint
+  - build
   - test
+  - security
+  - staging
 
 check_lint:
-  stage: test
+  tags:
+    - node
+  stage: lint
   script:
     - npm install -g eslint
     - eslint .
+
+building:
+  tags:
+    - node
+  stage: build
+  before_script:
+    - apk add --no-cache --virtual git
+  script:
+    - npm install
+  allow_failure: false
+
+package-scan:
+  tags:
+    - node
+  stage: test
+  before_script:
+    - npm install -g npm-check
+  script:
+    - npm check --skip-unused --production
+  allow_failure: true
+
+snyk-security-scan:
+  tags:
+    - node
+  stage: security
+  before_script:
+    - npm install -g snyk && snyk auth $SNYK_TOKEN
+  script:
+    - snyk test
+  allow_failure: true
+
+nsp-security-scan:
+  tags:
+    - node
+  stage: security
+  before_script:
+    - npm install -g nsp
+  script:
+    - nsp test
+  allow_failure: true
+
+retire-security-scan:
+  tags:
+    - node
+  stage: security
+  before_script:
+    - npm install -g retire
+  script:
+    - retire
+  allow_failure: true
+
+deploy_staging:
+  tags:
+    - node
+  stage: staging
+  before_script:
+    - apk add --no-cache --virtual git
+    - apk add --no-cache --virtual openssh
+    - echo "$DOKKU_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "dokku.${DOKKU_DOMAIN}" >> ~/.ssh/known_hosts
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_ID"
+  script:
+    - echo "pushed"
+  environment:
+    name: staging
+    url: https://${DOKKU_APP}.${DOKKU_DOMAIN}
+  only:
+    - tags
