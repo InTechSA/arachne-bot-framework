@@ -1,5 +1,5 @@
 # PoC : Bot Architecture
-![BotBrain](/brain/dashboard/public/imgs/logo.png)
+![BotBrain](/dashboard/public/imgs/logo.png)
 > Proof of Concept of a Bot Architecture using microservices and skills.
 
 [Install with NPM](#classical-installation)  
@@ -31,8 +31,9 @@
 ### Docker full install
 > Using the docker-compose file at the root of the project, you can run the brain, a mongo server, a rocketchat server and the adapter with a few commands, then start building skills.
 
-- Clone this repository using `git clone https://github.com/Nakasar/bot-architecture-poc` then checkout a release branch (or keep master). Or download a release from github website.
-- Edit or create a .env file at the root of the project: `cd bot-architecture-poc` then `nano .env`. Let the BOT_TOKEN empty as you can't create one yet.
+- Clone this repository using `git clone https://github.com/Nakasar/bot-architecture-poc` then checkout a release branch (or keep master). Or download a release from github website.  
+- Edit or create a .env file at the root of the project: `cd bot-architecture-poc` then `nano .env`. Let the BOT_TOKEN empty as you can't create one yet.  
+
 ```
 ###
 # ADAPTER
@@ -51,6 +52,7 @@ MONGO_URL=mongodb://mongo:27017/brain
 BRAIN_HOST=0.0.0.0
 BRAIN_PORT=8080
 ```
+
 - Run the containers with `docker-compose up -d`.
 - The bot adapter should crash in loop. You have to connect to [http://localhost:3000](http://localhost:3000) and create a user named `superbot` with password `password`.
 - Setup the dashboard admin account at [http://localhost:3012/dashboard/setup](http://localhost:3012/dashboard/setup)
