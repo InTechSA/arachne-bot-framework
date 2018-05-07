@@ -1,4 +1,4 @@
-image: node:9.11.1
+image: node:alpine
 
 cache:
   key: "$CI_COMMIT_REF_NAME"
