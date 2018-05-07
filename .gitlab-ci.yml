@@ -31,8 +31,10 @@ building:
   stage: build
   before_script:
     - apk add --no-cache --virtual git
+    - apk --no-cache add --virtual builds-deps build-base python # required for alpine based images to build bcrypt. (see https://github.com/kelektiv/node.bcrypt.js/wiki/Installation-Instructions#alpine-linux-based-images)
   script:
     - npm install
+    - npm rebuild bcrypt --build-from-source # rebuild bcrypt for alpine based images. (see https://github.com/kelektiv/node.bcrypt.js/wiki/Installation-Instructions#alpine-linux-based-images)
   allow_failure: false
 
 package-scan:
