@@ -8,7 +8,6 @@
 
 ## IMPORTANT
 ### Known issues
-> Installing with Node 10.x will crash due to bcrypt not having added node v10.x to its build configuration files yet.  
 > Hubot-RocketChat v2.x.x will crash due to incompatibilities yet with hubot 3 (atm).
 
 ## Install
