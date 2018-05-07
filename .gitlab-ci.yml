@@ -1,4 +1,4 @@
-image: node
+image: node:9.11.1
 
 cache:
   paths:
@@ -10,7 +10,19 @@ services:
 variables:
   MONGO_URL: http://mongo:27017/arachne
 
-deploy:
+stages:
+  - test
+  - deploy
+
+check_lint:
+  stage: test
   script:
+    - node -v
+    - eslint .
+
+arachne:
+  stage: deploy
+  script:
+    - node -v
     - npm install
     - node brain.js
