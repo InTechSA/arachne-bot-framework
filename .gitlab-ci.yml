@@ -84,6 +84,7 @@ deploy_staging:
   before_script:
     - apk add --no-cache --virtual git
     - apk add --no-cache --virtual openssh
+    - mkdir -p ~/.ssh
     - echo "$DOKKU_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan -H "dokku.${DOKKU_DOMAIN}" >> ~/.ssh/known_hosts
