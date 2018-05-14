@@ -105,3 +105,16 @@ module.exports.save_secret = function(name, secret = {}) {
         });
     });
 };
+
+/**
+ * Activate or deactivate a skill.
+ * @param {String} name - The name of the skill to toggle.
+ * @param {Boolean} active - True to activate the skill, false to deactivate it.
+ */
+module.exports.toggle = function(name, active = true) {
+    return Skill.findOneAndUpdate({ name }, { active });
+}
+
+module.exports.is_active = function(name) {
+    return Skill.findOne({ name }).then(skill => skill.active);
+}
