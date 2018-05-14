@@ -119,4 +119,8 @@ exports.hasSkill = (skillName) => SkillManager.hasSkill(skillName);
 
 exports.reloadBrain = reloadBrain;
 
-SkillManager.loadSkillsFromFolder();
+SkillManager.loadSkillsFromDatabase()
+  .then(() => SkillManager.loadSkillsFromFolder()).catch(err => {
+    console.log(err);
+    console.log(`\x1b[31mFailed to load skills.\x1b[0m`);
+  });

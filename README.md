@@ -243,6 +243,8 @@ Skill Services are external microservices that may (or may not) by accessible by
 ### Skills
 Skills are small scripts executed by the brain node server. They expose their commands and intents. Skills are automatically loaded by the bot on startup, and may be added at runtime, or removed/disabled.
 
+They are stored locally in the logic/skills folder, and distantly in the brain database.
+
 ### Threads and conversation mode
 Skills can notify the hub that their response is awaiting one from the user (like a confirmation, or a selection). For that, they need to create a _Thread_ stored by the hub, via the overseer they can require. This will create a unique thread id that the skill must return to the adapter. The adapter will then activate the "conversation mode" for the next reply, and send it to the `/converse` endpoint with the thread id they received. The hub will call the skill handler defined for this thread at his creation.
 
