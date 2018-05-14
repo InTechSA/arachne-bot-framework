@@ -170,36 +170,12 @@ exports.SkillManager = class SkillManager {
             delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
           }
 
-          console.log(`\tLoading skill \x1b[33m${skillName}\x1b[0m...`);
-          this.skills.add(skillName, {});
-          this.skills.get(skillName).active = false;
-          skill = require(path.join(this.skillsDirectory, `/${skillName}/skill`));
-          this.skills.add(skillName, skill);
-
-          for (let intentName in skill.intents) {
-            let intent = skill.intents[intentName];
-            intent.active = true;
-            this.intents.add(intent.slug, intent);
-          }
-
-          for (let commandName in skill.commands) {
-            let command = skill.commands[commandName];
-            command.active = true;
-            this.commands.add(command.cmd, command);
-          }
-
-          for (let interactionName in skill.interactions) {
-            let interaction = skill.interactions[interactionName];
-            interaction.active = true;
-            this.interactions.add(interaction.name, interaction);
-          }
-
-          this.skills.get(skillName).active = true;
-          console.log(`\t..."${skillName}" successfully loaded`);
-
-          console.log(`> [INFO] Skill \x1b[33m${skillName}\x1b[0m successfully reloaded.`);
-
-          return resolve();
+          this.loadSkill(skillName).then(() => {
+            return resolve()
+          }).catch((err) => {
+            console.log(err);
+            return reject();
+          });
         } catch(e) {
           console.log(e.stack);
           return reject();
@@ -216,7 +192,7 @@ exports.SkillManager = class SkillManager {
    * @return {Promise} Promise object resolve if success, reject otherwise.
    */
   loadSkill(skillName) {
-    return new Promise((resolve, reject) => {
+    return this.skillController.is_active(skillName).then(status => {
       console.log(`\tLoading skill \x1b[33m${skillName}\x1b[0m...`);
       delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
       if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
@@ -229,26 +205,28 @@ exports.SkillManager = class SkillManager {
 
       for (let intentName in skill.intents) {
         let intent = skill.intents[intentName];
-        intent.active = true;
+        intent.active = status;
         this.intents.add(intent.slug, intent);
       }
 
       for (let commandName in skill.commands) {
         let command = skill.commands[commandName];
-        command.active = true;
+        command.active = status;
         this.commands.add(command.cmd, command);
       }
 
       for (let interactionName in skill.interactions) {
         let interaction = skill.interactions[interactionName];
-        interaction.active = true;
+        interaction.active = status;
         this.interactions.add(interaction.name, interaction);
       }
 
-      this.skills.get(skillName).active = true;
+      this.skills.get(skillName).active = status;
       console.log(`\t..."${skillName}" successfully loaded`);
-
-      return resolve();
+      console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
+    }).catch((err) => {
+      console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
+      console.log(err);
     });
   }
 
@@ -259,48 +237,54 @@ exports.SkillManager = class SkillManager {
    */
   loadSkills(skillsToLoad) {
     console.log(`> [INFO] Loading skills...`);
+    let loaders = [];
     for (let skillName of skillsToLoad) {
-      console.log(`\tLoading skill "${skillName}"...`);
-      delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
-      if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
-        delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
-      }
-      try {
-        this.skills.add(skillName, {});
+      this.skills.add(skillName, {});
+      loaders.push(
+        this.skillController.is_active(skillName).then(status => {
+        console.log(`\tLoading skill "${skillName}"...`);
+        delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
+        if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
+          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
+        }
         this.skills.get(skillName).active = false;
         let skill = require(path.join(this.skillsDirectory, `/${skillName}/skill`));
         this.skills.add(skillName, skill);
 
         for (let intentName in skill.intents) {
           let intent = skill.intents[intentName];
-          intent.active = true;
+          intent.active = status;
           this.intents.add(intent.slug, intent);
         }
 
         for (let commandName in skill.commands) {
           let command = skill.commands[commandName];
-          command.active = true;
+          command.active = status;
           this.commands.add(command.cmd, command);
         }
 
         for (let interactionName in skill.interactions) {
           let interaction = skill.interactions[interactionName];
-          interaction.active = true;
+          interaction.active = status;
           this.interactions.add(interaction.name, interaction);
         }
 
-        this.skills.get(skillName).active = true;
+        this.skills.get(skillName).active = status;
         console.log(`\t..."${skillName}" successfully loaded`);
-      } catch(e) {
+        console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
+      }).catch(err => {
         console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
-        console.log(e);
-      }
+        console.log(err);
+      })
+    );
     }
 
-    console.log("               ");
-    console.log(`> [INFO] Loaded Skills: ${this.skills.list.join(", ")}`);
-    console.log(`> [INFO] Plugged Intents: ${this.intents.list.join(", ")}`);
-    console.log(`> [INFO] Available Commands: ${this.commands.list.join(", ")}`);
+    Promise.all(loaders).then(() => {
+      console.log("               ");
+      console.log(`> [INFO] Loaded Skills: ${this.skills.list.join(", ")}`);
+      console.log(`> [INFO] Plugged Intents: ${this.intents.list.join(", ")}`);
+      console.log(`> [INFO] Available Commands: ${this.commands.list.join(", ")}`);
+    })
   }
 
   /**
@@ -378,22 +362,23 @@ exports.SkillManager = class SkillManager {
    */
   activateSkill(skillName) {
     return new Promise((resolve, reject) => {
-      this.reloadSkill(skillName).then(() => {
-        this.skills.get(skillName).active = true;
-        let skill = this.skills.get(skillName);
-        for (let intentName in skill.intents) {
-          skill.intents[intentName].active = true;
-        }
-        for (let commandName in skill.commands) {
-          skill.commands[commandName].active = true;
-        }
-        for (let interactionName in skill.interactions) {
-          skill.interactions[interactionName].active = true;
-        }
-        return resolve();
-      }).catch((err) => {
-        return reject();
-      });
+      this.skillController.toggle(skillName, true)
+        .then(this.reloadSkill(skillName))
+        .then(() => {
+          this.skills.get(skillName).active = true;
+          let skill = this.skills.get(skillName);
+          for (let intentName in skill.intents) {
+            skill.intents[intentName].active = true;
+          }
+          for (let commandName in skill.commands) {
+            skill.commands[commandName].active = true;
+          }
+          for (let interactionName in skill.interactions) {
+            skill.interactions[interactionName].active = true;
+          }
+          return resolve();
+        })
+        .catch(err => { reject() });
     });
   }
 
@@ -404,7 +389,7 @@ exports.SkillManager = class SkillManager {
    */
   deactivateSkill(skillName) {
     return new Promise((resolve, reject) => {
-      try {
+      this.skillController.toggle(skillName, false).then(() => {
         this.skills.get(skillName).active = false;
         let skill = this.skills.get(skillName);
         for (let intentName in skill.intents) {
@@ -417,10 +402,8 @@ exports.SkillManager = class SkillManager {
           skill.interactions[interactionName].active = false;
         }
         return resolve();
-      } catch(e) {
-        return reject(e);
-      }
-    })
+      }).catch(err => reject(err));
+    });
   }
 
   /**

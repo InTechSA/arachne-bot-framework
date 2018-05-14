@@ -16,6 +16,10 @@ const SkillSchema = new Schema({
       type: Date,
       default: new Date()
   },
+  active: {
+    type: Boolean,
+    default: false
+  },
   code: String,
   secret: {
       type: Map,
