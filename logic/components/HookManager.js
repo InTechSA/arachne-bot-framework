@@ -59,6 +59,10 @@ class HookManager {
           if (socket.length > 0) {
             socket[0].emit('hook', hook._id, {
               message
+            }, (err) => {
+              if(err === 'NO_HOOK'){
+                this.delete_hook(hookId);
+              }
             });
             console.log(`Executed hook ${hookId}.`);
             return resolve();

@@ -1,6 +1,8 @@
 'use strict';
 var Thread = require("../models/threadModel");
 
+
+
 /**
  * Create a new interactive thread.
  *
@@ -15,6 +17,8 @@ module.exports.create_thread = function(thread) {
     new_thread.source = thread.source;
     new_thread.handler = thread.handler;
     new_thread.data = thread.data || [];
+    new_thread.duration = thread.duration && thread.duration > 0 && thread.duration < 60 ? thread.duration : 30; //  Duration in seconds
+    new_thread.timeout_message = thread.timeout_message;
 
     threads[new_thread._id] = new_thread;
 

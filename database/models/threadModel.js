@@ -18,6 +18,14 @@ const ThreadSchema = new Schema({
   handler: {
     type: String,
     required: true
+  },
+  duration: {
+    type: Number,
+    default: 30 // In seconds
+  },
+  timeout_message: {
+    type: String,
+    default: "Conversation has timeout."
   }
 });
 
