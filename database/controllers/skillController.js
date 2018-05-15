@@ -116,5 +116,11 @@ module.exports.toggle = function(name, active = true) {
 }
 
 module.exports.is_active = function(name) {
-    return Skill.findOne({ name }).then(skill => skill.active);
+    return Skill.findOne({ name }).then(skill => {
+        if (skill) {
+            return skill.active;
+        } else {
+            return false; // Skill not found in database, will should not activate it.
+        }
+    });
 }
