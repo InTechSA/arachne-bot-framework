@@ -73,15 +73,6 @@ function quizz({ phrase }) {
         json: "true",
         callback: (err, res, body) => {
             if (!err && body) {
-                overseer.ThreadManager.addThread({
-                  timestamp: new Date(),
-                  source: body.results[0].question,
-                  data: [
-                    ["correct_answer", body.results[0].correct_answer],
-                    ["incorrect_answers", body.results[0].incorrect_answers]
-                  ],
-                  handler: "thread-quizz-handler"
-                }).then((thread) => {
                   let question = "Quizz:\n*" + body.results[0].question + "*";
 
                   let answers = body.results[0].incorrect_answers;
@@ -94,19 +85,20 @@ function quizz({ phrase }) {
                   return resolve({
                       message: {
                           interactive: true,
-                          thread_id: thread._id,
+                          thread: {
+                            source: body.results[0].question,
+                            data: [
+                                ["correct_answer", body.results[0].correct_answer],
+                                ["incorrect_answers", body.results[0].incorrect_answers]
+                            ],
+                            handler: "thread-quizz-handler",
+                            duration: 10,
+                            timeout_message: "Trop tard ! Soit plus rapide la prochaine fois, la bonne réponse était : "+body.results[0].correct_answer,
+                          },
                           title: body.results[0].category,
                           text: question
                       }
                   });
-                }).catch((e) => {
-                  return resolve({
-                      message: {
-                          title: "Cannot send question.",
-                          text: "Error while creating thread."
-                      }
-                  });
-                });
             } else {
                 return resolve({
                     message: {
@@ -123,23 +115,13 @@ function quizz({ phrase }) {
 function answerHandler(thread, { phrase }) {
   return new Promise((resolve, reject) => {
     if (phrase === thread.getData("correct_answer")) {
-      overseer.ThreadManager.closeThread(thread._id).then(() => {
         return resolve({
             message: {
                 title: "Correct o/",
                 text: `${phrase} is the correct answer, congrats!`
             }
         });
-      }).catch((e) => {
-        return resolve({
-            message: {
-                title: "Correct o/",
-                text: `${phrase} is the correct answer, congrats!`
-            }
-        });
-      });
     } else if(["abort", "skip"].includes(phrase)) {
-      overseer.ThreadManager.closeThread(thread._id).then(() => {
         console.log(thread.getData("attemps"));
         return resolve({
             message: {
@@ -147,21 +129,12 @@ function answerHandler(thread, { phrase }) {
                 text: `The answer was *${thread.getData("correct_answer")}*. ${thread.getData("attemps") || 0} attemps.`
             }
         });
-      }).catch((e) => {
-        return resolve({
-            message: {
-              title: "Aborting",
-              text: `The answer was *${thread.getData("correct_answer")}*. ${thread.getData("attemps") || 0} attemps.`
-            }
-        });
-      });
     } else {
       console.log(thread.getData("attemps"));
       thread.setData("attemps", (thread.getData("attemps") || 0) + 1);
       return resolve({
           message: {
               interactive: true,
-              thread_id: thread._id,
               title: "Wrong :(",
               text: `${phrase} is not the expected answer, try again!`
           }
