@@ -1,20 +1,27 @@
 'use strict';
 var Thread = require("../models/threadModel");
 
+
+
 /**
  * Create a new interactive thread.
  *
  * @param {Thread} thread - A Thread representation with at last the TimeStamp and the source message.
  * @returns {Promise<Thread>} A promise to the created Thread.
  */
-module.exports.create_thread = function(thread) {
+module.exports.create_thread = function (thread) {
   return new Promise((resolve, reject) => {
 
     let new_thread = new Thread();
     new_thread.timestamp = thread.timestamp;
     new_thread.source = thread.source;
+    if (!thread.handler) {
+      return reject(new Error("NO handler defined for thread"));
+    }
     new_thread.handler = thread.handler;
     new_thread.data = thread.data || [];
+    new_thread.duration = thread.duration != undefined && thread.duration > 0 && thread.duration < 60 ? thread.duration : 15; //  Duration in seconds
+    new_thread.timeout_message = thread.timeout_message;
 
     threads[new_thread._id] = new_thread;
 
@@ -28,7 +35,7 @@ module.exports.create_thread = function(thread) {
  * @param {string} threadId - The id of the thread to delete.
  * @returns {Promise<Thread>} A promise to the Thread.
  */
-module.exports.get_thread = function(threadId) {
+module.exports.get_thread = function (threadId) {
   return new Promise((resolve, reject) => {
     if (Object.keys(threads).includes(threadId)) {
       return resolve(threads[threadId]);
@@ -44,13 +51,13 @@ module.exports.get_thread = function(threadId) {
  * @param {string} threadId - The id of the thread to delete.
  * @returns {Boolean} A promise that resolves if Thread was deleted or if it didn't exixts, rejects otherwise.
  */
-module.exports.delete_thread = function(threadId) {
+module.exports.delete_thread = function (threadId) {
   return new Promise((resolve, reject) => {
     if (Object.keys(threads).includes(threadId)) {
       try {
         delete threads[threadId];
         return resolve(true);
-      } catch(e) {
+      } catch (e) {
         return reject({ message: "Could not delete thread: " + threadId });
       }
     } else {

@@ -46,9 +46,17 @@ function handleCommand(commandName, phrase = "", data = {}) {
 
     if (SkillManager.commands.has(commandName) && SkillManager.commands.get(commandName).active) {
       let command = SkillManager.commands.get(commandName);
-
       command.execute({ phrase, data }).then((response) => {
-        return resolve({ success: true, message: response.message, response: response });
+        if (response.message.interactive) {
+          ThreadManager.addThread(response.message.thread).then((thread) => {
+            response.message.thread.duration = thread.duration;
+            response.message.thread.id = thread._id;
+
+            return resolve({ success: true, message: response.message, response: response });
+          });
+        } else {
+          return resolve({ success: true, message: response.message, response: response });
+        }
       }).catch((err) => {
         return reject(err);
       });

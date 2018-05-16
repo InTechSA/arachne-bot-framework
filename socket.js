@@ -7,10 +7,10 @@ let hub = require('./logic/hub');
  * This function is called each time a socket successfully connects to the brain.
  * It will load in memomy all event listeners linked to this socket.
  */
-module.exports = function(socket) {
+module.exports = function (socket) {
   console.log(`> [INFO] Connector ${socket.connector.name} (${socket.connector.id}) connected!`);
 
-  socket.on('disconnect', function(){
+  socket.on('disconnect', function () {
     console.log(`> [INFO] Connector ${socket.connector.name} (${socket.connector.id}) disconnected!`);
   });
 
@@ -81,11 +81,11 @@ module.exports = function(socket) {
    */
   socket.on('command', ({ command = "", data = {} }, res) => {
     if (!command) {
-      return res({ status: 400, message: "'No command string to parse in body.'"}, { success: false, message: { text: 'No command string to parse in body.'}, source: command });
+      return res({ status: 400, message: "'No command string to parse in body.'" }, { success: false, message: { text: 'No command string to parse in body.' }, source: command });
     }
 
     let [word, ...params] = command.split(" ");
-    
+
     data.connector = { id: socket.connector.id }; // Automatically add the connector id to the data object.
     hub.handleCommand(word, params.join(" "), data).then((response) => {
       return res(null, { success: response.success, message: response.message, source: command });
@@ -114,11 +114,11 @@ module.exports = function(socket) {
    */
   socket.on('converse', ({ thread_id = "", phrase = "", data = {} }, res) => {
     if (!phrase) {
-      return res({ status: 400 }, { success: false, message: { text: 'No answer in body/query.' }, source: phrase});
+      return res({ status: 400 }, { success: false, message: { text: 'No answer in body/query.' }, source: phrase });
     }
 
     if (!thread_id) {
-      return res({ status: 400 }, { success: false, message: { text: 'No thread_id in body/query.' }});
+      return res({ status: 400 }, { success: false, message: { text: 'No thread_id in body/query.' } });
     }
 
     data.connector = { id: socket.connector.id }; // Automatically add the connector id to the data object.
@@ -147,6 +147,29 @@ module.exports = function(socket) {
     }).catch((err) => {
       console.log(err);
       error("Could not finalize hook.");
+    });
+  });
+
+  /**
+   * 'close-thread-on-timeout' socket event to close a thread on a timeout.
+   * 
+   * params:
+   * -------
+   * Destructured Object:
+   *   {String} thread_id - the id of the thread we want to close 
+   */
+  socket.on('close-thread-on-timeout', (thread_id, callback) => {
+    hub.ThreadManager.getThread(thread_id).then((thread) => {
+      hub.ThreadManager.closeThread(thread_id).then(() => {
+        console.log("> [INFO] Thread " + thread_id + " closed");
+        return callback(thread.timeout_message);
+      }).catch((err) => {
+        console.log(err);
+        return callback(thread.timeout_message);
+      });
+    }).catch((err) => {
+      console.log(err);
+      return callback(null);
     });
   });
 };
