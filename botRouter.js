@@ -127,6 +127,8 @@ module.exports = function(io) {
     });
   });
 
+  // todo: threads/:threadid/timeout
+
   // Hook requesting endpoint.
   /**
    * @api {post} /hooks Hook requesting endpoint.

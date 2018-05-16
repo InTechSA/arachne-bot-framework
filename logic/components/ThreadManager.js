@@ -14,8 +14,8 @@ exports.ThreadManager = class ThreadManager {
    * @param {Array[]} [data] - A key-value pair arrai of data to store with the thread.
    * @return {Promise} Promise object represents the created thread.
    */
-  addThread({ timestamp: timestamp, handler: handler, source: source = "", data: data = [] }) {
-    return this.threadController.create_thread({ timestamp: timestamp, handler: handler, source: source, data: data });
+  addThread({ timestamp: timestamp = new Date(), handler: handler, source: source = "", data: data = [], duration: duration = 30, timeout_message }) {
+    return this.threadController.create_thread({ timestamp, handler, source, data, duration, timeout_message });
   }
 
   /**
@@ -47,9 +47,21 @@ exports.ThreadManager = class ThreadManager {
     return new Promise((resolve, reject) => {
       this.threadController.get_thread(threadId).then((thread) => {
         console.log(`> [INFO] Handling interaction "\x1b[4m${thread.handler}\x1b[0m"`)
-        
+
         if (this.interactions.has(thread.handler) && this.interactions.get(thread.handler).active) {
-          return resolve(this.interactions.get(thread.handler).interact(thread, { phrase, data }));
+          this.interactions.get(thread.handler).interact(thread, { phrase, data }).then((res) => {
+            if (!res.message.interactive) {
+              console.log("> [INFO] Closing the thread because no interactive parameter ");
+              this.closeThread(threadId).then(() => {
+                return resolve(res);
+              }).catch((err) => {
+                console.log("> [ERROR] Could not close thread " + threadId + " error : " + err);
+              });
+            } else {
+              res.message.thread = { id: thread._id, duration: thread.duration };
+              return resolve(res);
+            }
+          });
         } else {
           return reject({ message: "Can not execute this interaction" });
         }
