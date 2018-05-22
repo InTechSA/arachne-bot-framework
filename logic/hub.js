@@ -105,6 +105,8 @@ const hookComponent = require('./components/HookManager');
 let HookManager = new hookComponent.HookManager();
 exports.HookManager = HookManager;
 
+const userComponent = require('./components/UserManager');
+exports.UserManager = new userComponent.UserManager();
 
 // Export main handlers
 exports.handleIntent = handleIntent;

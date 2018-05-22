@@ -4,7 +4,6 @@
   "description": "Bot main system.",
   "main": "brain.js",
   "scripts": {
-    "watch": "nodemon brain.js",
     "start": "node brain.js"
   },
   "repository": {

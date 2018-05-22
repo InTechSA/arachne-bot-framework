@@ -50,22 +50,10 @@ module.exports = function(io) {
   // BOT ADMIN ENDPOINTS
 
   // MIDDLEWARE FOR BOT ADMIN AUTH
-  router.use(function(req, res, next) {
-    let token = req.body.token || req.query.token || req.get("x-access-token") || req.cookies['user_token'];
-
-    if (!token) {
-      return res.status(403).json({ success: false, message: "No token provided in body/query/header/cookies." });
-    }
-
-    // Checking user token.
-    jwt.verify(token, config.secret, (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ success: false, message: "Invalid authentification." });
-      }
-
-      next();
-    });
-  });
+  const authMiddleware = require('./middlewares/auth');
+  router.use(authMiddleware.isAuthed());
+  const hasRole = authMiddleware.hasRole;
+  const hasPerm = authMiddleware.hasPerm;
 
   // Reload brain
   /**
@@ -76,7 +64,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-  router.post('/reload', (req, res) => {
+  router.post('/reload', hasPerm('RELOAD_BRAIN'), (req, res) => {
     hub.reloadBrain().then(() => {
       return res.json({ success: true, message: "Successfully reloaded brain." });
     }).catch((err) => {
@@ -95,7 +83,7 @@ module.exports = function(io) {
    * @apiSuccess {String} message Message from api.
    * @apiSuccess {Skill} skills List of available skills.
    */
-  router.get('/skills', (req, res) => {
+  router.get('/skills', hasPerm('SEE_SKILLS'), (req, res) => {
     hub.getSkills().then((skills) => {
       let skillsToReturn = JSON.parse(JSON.stringify(skills));
 
@@ -131,7 +119,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-  router.put('/skills', (req, res) => {
+  router.put('/skills', hasPerm('CREATE_SKILL'), (req, res) => {
     if (!req.body.skill_name) {
       return res.json({ success: false, message: "Missing 'skill_name' definition in body." });
     }
@@ -170,7 +158,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-   router.delete('/skills/:skill', (req, res) => {
+   router.delete('/skills/:skill', hasPerm('DELETE_SKILL'), (req, res) => {
      hub.deleteSkill(req.params.skill).then(() => {
        return res.json({ success: true, message: "Successfully deleted skill." });
      }).catch((err) => {
@@ -190,7 +178,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-  router.post('/skills/:skill/reload', (req, res) => {
+  router.post('/skills/:skill/reload', hasPerm('RELOAD_SKILL'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.reloadSkill(req.params.skill).then(() => {
         return res.json({ success: true, message: `Skill ${req.params.skill} reloaded.`})
@@ -214,7 +202,7 @@ module.exports = function(io) {
    * @apiSuccess {String} message Message from api.
    * @apiSuccess {String} code Code of the skill.
    */
-  router.get('/skills/:skill/edit', (req, res) => {
+  router.get('/skills/:skill/edit', hasPerm('SEE_SKILL_CODE'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.getSkillCode(req.params.skill).then((code) => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} retrieved.`, code: code })
@@ -238,7 +226,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-  router.put('/skills/:skill/code', (req, res) => {
+  router.put('/skills/:skill/code', hasPerm('EDIT_SKILL_CODE'), (req, res) => {
     if (!req.body.code) {
       return res.json({ success: false, message: "Missing 'code' definition in body." });
     }
@@ -268,7 +256,7 @@ module.exports = function(io) {
    * @apiSuccess {String} [skill_secret[].key] - The key of a secret.
    * @apiSuccess {String} [skill_secret[].value] - The value of a secret.
    */
-   router.get('/skills/:skill/secret', (req, res) => {
+   router.get('/skills/:skill/secret', hasPerm('SEE_SKILL_SECRET'), (req, res) => {
      hub.getSkillSecret(req.params.skill).then((secret) => {
        if (secret) {
          return res.json({ success: true, secret: secret });
@@ -292,7 +280,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-  router.put('/skills/:skill/secret', (req, res) => {
+  router.put('/skills/:skill/secret', hasPerm('EDIT_SKILL_SECRET'), (req, res) => {
     let secret;
     try {
       secret = JSON.parse(req.body.secret);
@@ -326,7 +314,7 @@ module.exports = function(io) {
    * @apiSuccess {String} message Message from api.
    * @apiSuccess {Boolean} active true if the skill is active, false otherwise.
    */
-  router.post('/skills/:skill/:status', (req, res) => {
+  router.post('/skills/:skill/:status', hasPerm('TOGGLE_SKILLS'), (req, res) => {
     // TODO: move activation/deactivation in a function exposed by hub!
     if (hub.hasSkill(req.params.skill)) {
       if (req.params.status === "on") {
@@ -346,7 +334,7 @@ module.exports = function(io) {
     }
   });
 
-  router.delete('/skills/:skill/hooks', (req, res) => {
+  router.delete('/skills/:skill/hooks', hasPerm('DELETE_SKILL_HOOKS'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.HookManager.clearForSkill(req.params.skill).then(() => {
         return res.json({ success: true, message: `Hooks cleared for skill ${req.params.skill}.`});  
@@ -359,7 +347,7 @@ module.exports = function(io) {
     }
   });
 
-  router.delete('/skills/:skill/storage', (req, res) => {
+  router.delete('/skills/:skill/storage', hasPerm('DELETE_SKILL_STORAGE'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.StorageManager.clearForSkill(req.params.skill).then(() => {
         return res.json({ success: true, message: `Storage cleared for skill ${req.params.skill}.`});  
@@ -384,7 +372,7 @@ module.exports = function(io) {
    * @apiSuccess {String} [connectors[].name] - The name of a connector.
    * @apiSuccess {Boolean} [connectors[].active] - The status of a connector.
    */
-  router.get('/connectors', (req, res) => {
+  router.get('/connectors', hasPerm('SEE_ADAPTERS'), (req, res) => {
     hub.ConnectorManager.getConnectors()
       .then((connectors) => res.json({
           success: true,
@@ -406,7 +394,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} connector.active - The status of a connector.
    * @apiSuccess {String} connector.token - The auth token of a connector.
    */
-  router.get('/connectors/:id', (req, res) => {
+  router.get('/connectors/:id', hasPerm('SEE_ADAPTER_TOKEN'), (req, res) => {
     hub.ConnectorManager.getConnector(req.params.id)
       .then((connector) => res.json({ success: true, connector: connector }))
       .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector '+req.params.id }));
@@ -422,7 +410,7 @@ module.exports = function(io) {
    *
    * @apiSuccess {Boolean} success Success of operation.
    */
-  router.delete('/connectors/:id', (req, res) => {
+  router.delete('/connectors/:id', hasPerm('DELETE_ADAPTER'), (req, res) => {
     hub.ConnectorManager.deleteConnector(req.params.id)
       .then(() => res.json({ success: true, message: "Connector " + req.params.id + "successfully removed." }))
       .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector '+req.params.id }));
@@ -444,7 +432,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} connector.active - The status of a connector.
    * @apiSuccess {String} connector.token - The auth token of a connector.
    */
-  router.put('/connectors', (req, res) => {
+  router.put('/connectors', hasPerm('CREATE_ADAPTER'), (req, res) => {
     if (!req.body.name) {
       return res.status(400).json({ success: false, message: "No connector name in body."});
     }
@@ -471,7 +459,7 @@ module.exports = function(io) {
    *
    * @apiSuccess {Boolean} success Success of operation..
    */
-  router.put('/connectors/:id', (req, res) => {
+  router.put('/connectors/:id', hasPerm('EDIT_ADAPTER'), (req, res) => {
     if (!req.body.address || !/^(?:\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/.test(req.body.address)) {
       return res.status(400).json({ success: false, message: "Invalid or missing ip address in body."});
     }
@@ -481,7 +469,7 @@ module.exports = function(io) {
     .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while creating connector' }));
   });
 
-  // Regenerate connector token
+  // Toggle adapter.
   /**
    * @api {post} /connectors/:id/toggle/:status Activate or deactivate the connector.
    * @apiName ToggleConnector
@@ -496,7 +484,7 @@ module.exports = function(io) {
    * @apiSuccess {String} connector.name - The name of a connector.
    * @apiSuccess {Boolean} connector.active - The status of a connector.
    */
-  router.post('/connectors/:id/toggle/:status', (req, res) => {
+  router.post('/connectors/:id/toggle/:status', hasPerm('TOGGLE_ADAPTER'), (req, res) => {
     hub.ConnectorManager.toggleConnector(req.params.id, req.params.status === "on" ? true : false)
       .then((connector) => res.json({ success: true, connector: connector }))
       .catch((err) => {
@@ -520,7 +508,7 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} connector.active - The status of a connector.
    * @apiSuccess {String} connector.token - The new auth token of a connector.
    */
-  router.post('/connectors/:id/token', (req, res) => {
+  router.post('/connectors/:id/token', hasPerm('REFRESH_ADAPTER_TOKEN'), (req, res) => {
     hub.ConnectorManager.regenerateConnectorToken(req.params.id)
       .then((connector) => res.json({ success: true, connector: connector }))
       .catch((err) => res.status(err.code || 500).json({ error: err.code || 500, message: err.message || "Internal server error while refreshing connector token." }));
@@ -535,10 +523,95 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from the api.
    */
-  router.delete('/storage', (req, res) => {
+  router.delete('/storage', hasPerm('CLEAR_STORAGE'), (req, res) => {
     hub.StorageManager.clear()
       .then(() => res.json({ success: true, message: "Storage fully cleared." }))
       .catch((err) => res.status(500).json({ error: 500, message: "Couldn't clear storage." }));
+  });
+
+  // Get users
+  /**
+   * @api {get} /users Get list of users.
+   * @apiName GetUsers
+   * @apiGroup Users
+   * 
+   * @apiSuccess {Boolean} success success of operation.
+   * @apiSuccess {String} message Message from the api.
+   * @apiSuccess {Object} [users] List of users
+   * @apiSuccess {String} [users[].user_name] Username of a user.
+   * @apiSuccess {Array} [users[].roles] Roles of a user.
+   * @apiSuccess {String} [users[].roles[]] A role of a user's roles.
+   * @apiSuccess {Array} [users[].permissions] Permissions of a user.
+   * @apiSuccess {String} [users[].permissions[]] A permission of a user's permissions.
+   */
+  router.get('/users', hasPerm('SEE_USERS'), (req, res, next) => {
+    hub.UserManager.userHasPermissions(req.decoded.user.id, ['SEE_USER_PERM', 'SEE_USER_LAST_CONNECT']).then(permissions => {
+      return hub.UserManager.getAll().then(users => {
+        users = users.map(user => {
+          let display = {
+            id: user._id,
+            user_name: user.user_name,
+            roles: user.roles,
+            registered_date: user.registered_date
+          };
+          if (permissions['SEE_USER_PERM']) {
+            display.permissions = user.permissions;
+          }
+          if (permissions['SEE_USER_LAST_CONNECT']) {
+            display.last_connect = user.last_connect;
+          }
+          return display;
+        });
+        return res.json({ success: true, message: "List of users.", users });
+      });
+    }).catch(next);
+  });
+
+  // Get user
+  router.get('/users/:user_name', (req, res, next) => {
+    hub.UserManager.userHasPermissions(req.decoded.user.id, ['SEE_USERS', 'SEE_USER_PERM', 'SEE_USER_LAST_CONNECT']).then(permissions => {
+      // A user should be able to access his/her own informations.
+      const self = req.decoded.user.user_name === req.params.user_name.toLowerCase();
+      if (!permissions['SEE_USERS'] && !self) {
+        let error = new Error("No SEE_USERS permission.");
+        error.code = 403;
+        return next(error);
+      }
+      return hub.UserManager.getByUsername(req.params.user_name.toLowerCase()).then(user => {
+        if (!user) {
+          return res.status(404).json({ success: true, status: 404, message: "No user found." });
+        }
+        let display = {
+          id: user._id,
+          user_name: user.user_name,
+          roles: user.roles,
+          registered_date: user.registered_date
+        };
+        if (self || permissions['SEE_USER_PERM']) {
+          display.permissions = user.permissions;
+        }
+        if (self || permissions['SEE_USER_LAST_CONNECT']) {
+          display.last_connect = user.last_connect;
+        }
+        return res.json({ success: true, message: "List of users.", display });
+      });
+    }).catch(next);
+  });
+
+  // Create user
+  router.post('/users', hasPerm('CREATE_USER'), (req, res, next) => {
+    const user_name = req.body.user_name;
+    const password = req.body.password;
+    hub.UserManager.create(user_name, password).then(user => {
+      return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, }})
+    }).catch(next);
+  });
+
+  // Delete user
+  router.delete('/users/:user_name', hasPerm('DELETE_USER'), (req, res, next) => {
+    hub.UserManager.delete(req.params.user_name, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then(() => {
+      return res.json({ success: true, message: "User deleted." });
+    }).catch(next);
   });
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -553,7 +626,12 @@ module.exports = function(io) {
 
   // Error handling (logging)
   router.use((err, req, res, next) => {
-    console.log(err.stack)
+    if (err.code == 403) {
+      return res.status(403).json({ success: false, status: 403, message: "Access denied." });
+    } else if (err.code) {
+      return res.status(err.code || 500).json({ success: false, status: err.code || 500, message: err.message || "Internal server error." });
+    }
+    console.log(err)
     res.status(500).json({ success: false, status: 500, message: 'Internal Server Error.' });
   });
 
