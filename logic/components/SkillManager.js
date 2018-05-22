@@ -224,9 +224,11 @@ exports.SkillManager = class SkillManager {
       this.skills.get(skillName).active = status;
       console.log(`\t..."${skillName}" successfully loaded`);
       console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
+      return status;
     }).catch((err) => {
       console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
       console.log(err);
+      throw err;
     });
   }
 
@@ -269,14 +271,14 @@ exports.SkillManager = class SkillManager {
             this.interactions.add(interaction.name, interaction);
           }
 
-          this.skills.get(skillName).active = status;
-          console.log(`\t..."${skillName}" successfully loaded`);
-          console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
-        }).catch(err => {
-          console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
-          console.log(err);
-        })
-      );
+        this.skills.get(skillName).active = status;
+        console.log(`\t..."${skillName}" successfully loaded`);
+        console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
+      }).catch(err => {
+        console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
+        console.log(err);
+      })
+    );
     }
 
     Promise.all(loaders).then(() => {
@@ -398,7 +400,9 @@ exports.SkillManager = class SkillManager {
   activateSkill(skillName) {
     return new Promise((resolve, reject) => {
       this.skillController.toggle(skillName, true)
-        .then(this.reloadSkill(skillName))
+        .then(() => {
+          return this.reloadSkill(skillName)
+        })
         .then(() => {
           this.skills.get(skillName).active = true;
           let skill = this.skills.get(skillName);
@@ -411,9 +415,10 @@ exports.SkillManager = class SkillManager {
           for (let interactionName in skill.interactions) {
             skill.interactions[interactionName].active = true;
           }
+          console.log(`\t\t... \x1b[32mactivated\x1b[0m`);
           return resolve();
         })
-        .catch(err => { reject() });
+        .catch(err => { reject(err) });
     });
   }
 
