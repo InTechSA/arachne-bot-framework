@@ -172,4 +172,27 @@ module.exports = function (socket) {
       return callback(null);
     });
   });
+
+   /**
+   * 'close-hook' socket event to close a hook.
+   * 
+   * params:
+   * -------
+   * Destructured Object:
+   *   {String} hook_id - the id of the hook we want to close
+   */
+  socket.on('close-hook', (hook_id, callback) => {
+    hub.HookManager.get(hook_id).then((hook) => { 
+      hub.HookManager.remove(hook_id).then(() => {
+          console.log("> [INFO] Deleted hook "+hook_id);
+          return callback(hook.messageOnDelete);
+      }).catch((err) => {
+        console.log(err);
+        return callback(err);
+      });
+    }).catch((err) => {
+      console.log(err);
+      return callback(err);
+    });
+  });
 };

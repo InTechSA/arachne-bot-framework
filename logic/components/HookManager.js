@@ -23,10 +23,11 @@ class HookManager {
   /**
    * Create a new hook for a skill.
    * @param {String} skill 
+   * @param {String} messageOnDelete
    * @return {Promise} Promise to the created hook : { _id, skill }
    */
-  create(skill) {
-   return this.hookController.create_hook(skill);
+  create(skill, messageOnDelete = null) {
+   return this.hookController.create_hook(skill, messageOnDelete);
   }
 
   /**
@@ -45,7 +46,8 @@ class HookManager {
    * @param {Object} message - Valid message object to send to the connector.
    * @return {Promise} Promise that resolves if the message was sent, false otherwise.
    */
-  execute(hookId, message) {
+  execute(hookId, message, {deleteHook = false} = {}) {
+    console.log("Delete Hook "+deleteHook);
     return new Promise((resolve, reject) => {
       this.get(hookId).then((hook) => {
         if (!hook) {
@@ -57,14 +59,16 @@ class HookManager {
             return socket.connector.id == hook.connector
           });
           if (socket.length > 0) {
-            socket[0].emit('hook', hook._id, {
+            message.deleteHook = deleteHook;
+            console.log(message);
+            socket[0].emit('hook',hookId, {
               message
             }, (err) => {
               if(err === 'NO_HOOK'){
-                this.delete_hook(hookId);
+                this.remove(hookId);
               }
             });
-            console.log(`Executed hook ${hookId}.`);
+            console.log(`> [INFO] Executed hook ${hookId}.`);
             return resolve();
           } else {
             return reject(this.codes.NO_CONNECTOR_LINKED);
