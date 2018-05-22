@@ -32,8 +32,8 @@ module.exports = function(io) {
   router.get('/setup', (err, res) => {
     users.is_empty().then((isempty) => {
       if (isempty) {
-        users.create_user({ user_name: "Nakasar", password: "Password0", admin: true }).then((obj) => {
-          users.promote_user(obj.user.id, true).then((user) => {
+        users.create_user({ user_name: "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
+          users.promote_user(obj.user.id, "admin").then((user) => {
             return res.json({ success: true, message: "Admin user added.", user: obj.user });
           }).catch((err) => {
             console.log(err);
@@ -107,6 +107,26 @@ module.exports = function(io) {
     });
   });
 
+  // MIDDLEWARE FOR ADMIN
+  function hasRole(role) {
+    return function(req, res, next) {
+      if (!req.decoded)  {
+        return res.redirect('/dashboard/login');
+      }
+      // Admin should override all.
+      if (req.decoded.user.roles.includes("admin")) {
+        return next();
+      } else if (req.decoded.user.roles.includes(role)) {
+        return next();
+      } else {
+        return res.render('error', {
+          code: 403,
+          title: "Access denied"
+        });
+      }
+    };
+  }
+
   ///////////////////////////////////////////////////////////////////////////////
   //                      AUTHED ENDPOINTS
   ///////////////////////////////////////////////////////////////////////////////
@@ -143,6 +163,7 @@ module.exports = function(io) {
       });
     })
   });
+
   //
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -260,6 +281,32 @@ module.exports = function(io) {
       .catch((err) => {
         return next(err);
       });
+  });
+
+  //
+  ///////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Connectors administration
+
+  router.get('/users', hasRole("admin"), (req, res, next) => {
+    return res.render("users", {
+      ttile: 'Manage Users',
+      nav_link: 'nav-users'
+    });
+  });
+
+  //
+  ///////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Connectors administration
+
+  router.get('/configuration', hasRole("admin"), (req, res, next) => {
+    return res.render("config", {
+      ttile: 'Configure brain',
+      nav_link: 'nav-configuration'
+    });
   });
 
   //

@@ -15,19 +15,60 @@ exports.is_empty = function() {
   });
 };
 
-exports.promote_user = function(id, admin) {
+exports.promote_user = function(id, role) {
   return new Promise((resolve, reject) => {
-    User.findByIdAndUpdate(id, { $set: { admin: admin }}, (err, user) => {
+    User.findById(id, (err, user) => {
       if (err) {
         return reject(err);
       } else if (user) {
-        return resolve();
+        if (!user.roles) {
+          user.roles = [];
+        }
+        const indexOfRole = user.roles.indexOf(role);
+        if (indexOfRole != -1) {
+          throw new Error("User already has this role.");
+        }
+        user.roles.push(role);
+        console.log(user.roles);
+        user.save((err) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(user);
+        });
       } else {
         return reject();
       }
     });
   });
 };
+
+exports.demote_user = function(id, role) {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err) {
+        return reject(err);
+      } else if (user) {
+        if (!user.roles) {
+          user.roles = [];
+        }
+        const indexOfRole = user.roles.indexOf(role);
+        if (indexOfRole == -1) {
+          return new Error("User does not has this role.");
+        }
+        user.roles.splice(indexOfRole, 0);
+        user.save((err) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(user);
+        });
+      } else {
+        return reject();
+      }
+    });
+  });
+}
 
 exports.create_user = function(user) {
   return new Promise((resolve, reject) => {
@@ -148,7 +189,7 @@ exports.sign_in = function(user_name, password) {
         bcrypt.compare(password, user.password, (err, res) => {
           if (res) {
             // Password matched, generate token.
-            let token = jwt.sign({ user: { user_name: user.name, id: user._id, admin: user.admin }}, secret.secret, { expiresIn: '1d' });
+            let token = jwt.sign({ user: { user_name: user.name, id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
             return resolve({ message: "User signed in.", token: token });
           } else {
             return reject({ message: "Invalid password." });

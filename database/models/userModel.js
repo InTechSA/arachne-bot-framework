@@ -22,9 +22,9 @@ const UserSchema = new Schema({
     value: String,
     expire_date: Date
   },
-  admin: {
-    type: Boolean,
-    default: false
+  roles: {
+    type: [String],
+    default: []
   }
 });
 
