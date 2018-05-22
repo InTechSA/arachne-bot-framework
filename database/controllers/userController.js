@@ -26,10 +26,9 @@ exports.promote_user = function(id, role) {
         }
         const indexOfRole = user.roles.indexOf(role);
         if (indexOfRole != -1) {
-          throw new Error("User already has this role.");
+          return reject(new Error("User already has this role."));
         }
         user.roles.push(role);
-        console.log(user.roles);
         user.save((err) => {
           if (err) {
             return reject(err);
@@ -54,7 +53,7 @@ exports.demote_user = function(id, role) {
         }
         const indexOfRole = user.roles.indexOf(role);
         if (indexOfRole == -1) {
-          return new Error("User does not has this role.");
+          return reject(new Error("User does not has this role."));
         }
         user.roles.splice(indexOfRole, 0);
         user.save((err) => {
@@ -68,7 +67,75 @@ exports.demote_user = function(id, role) {
       }
     });
   });
-}
+};
+
+exports.grant_permission = function(id, permission) {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err) {
+        return reject(err);
+      } else if (user) {
+        if (!user.permissions) {
+          user.permissions = [];
+        }
+        const indexOfPermission = user.permissions.indexOf(permission);
+        if (indexOfPermission != -1) {
+          return reject(new Error("User already has this permission."));
+        }
+        user.permissions.push(permission);
+        user.save((err) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(user);
+        });
+      } else {
+        return reject();
+      }
+    });
+  });
+};
+
+exports.revoke_permission = function(id, permission) {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err) {
+        return reject(err);
+      } else if (user) {
+        if (!user.permissions) {
+          user.permissions = [];
+        }
+        const indexOfPermission = user.permissions.indexOf(permission);
+        if (indexOfPermission == -1) {
+          return reject(new Error("User does not has this permission."));
+        }
+        user.permissions.splice(indexOfPermission, 0);
+        user.save((err) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(user);
+        });
+      } else {
+        return reject();
+      }
+    });
+  });
+};
+
+exports.has_permission = (id, permission) => {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err) {
+        return reject(err);
+      } else if (!user) {
+        return reject(new Error("No user found."));
+      } else {
+        return resolve(user.permissions.includes(permission));
+      }
+    });
+  });
+};
 
 exports.create_user = function(user) {
   return new Promise((resolve, reject) => {
@@ -98,7 +165,7 @@ exports.create_user = function(user) {
       }
     });
   });
-}
+};
 
 exports.remove_all = function() {
   return new Promise((resolve, reject) => {
@@ -109,11 +176,11 @@ exports.remove_all = function() {
       return resolve()
     })
   });
-}
+};
 
 exports.get_user = function(id) {
   return new Promise((resolve, reject) => {
-    User.findById(id, (err, user) => {
+    User.findById(id, "_id user_name registered_date last_conect roles permissions", (err, user) => {
       if (err) {
         return reject(err)
       } else if (user) {
@@ -121,6 +188,17 @@ exports.get_user = function(id) {
       } else {
         return reject();
       }
+    });
+  });
+};
+
+exports.get_all = function(id) {
+  return Promise.resolve().then(() => {
+    User.find({}, "_id user_name registered_date last_conect roles permissions", (err, users) => {
+      if (err) {
+        throw err;
+      }
+      return users;
     });
   });
 }
@@ -177,7 +255,7 @@ exports.update_username = function(userId, userName) {
       }
     })
   });
-}
+};
 
 exports.sign_in = function(user_name, password) {
   return new Promise((resolve, reject) => {
@@ -200,4 +278,4 @@ exports.sign_in = function(user_name, password) {
       }
     });
   })
-}
+};

@@ -25,6 +25,10 @@ const UserSchema = new Schema({
   roles: {
     type: [String],
     default: []
+  },
+  permissions: {
+    type: [String],
+    default: []
   }
 });
 

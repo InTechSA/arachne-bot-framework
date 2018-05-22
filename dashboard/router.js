@@ -2,8 +2,6 @@
 const express = require('express');
 const hub = require('../logic/hub');
 const path = require('path');
-const jwt = require('jsonwebtoken');
-const config = require('../secret');
 const users = require('../database/controllers/userController');
 
 module.exports = function(io) {
@@ -89,43 +87,12 @@ module.exports = function(io) {
   //
   ///////////////////////////////////////////////////////////////////////////////
 
+  const authMiddleware = require('../middlewares/auth');
+
   // MIDDLEWARE FOR DASHBOARD AUTH
-  router.use(function(req, res, next) {
-    let token = req.body.token || req.query.token || req.get("x-access-token") || req.cookies['user_token'];
-
-    if (!token) {
-      return res.redirect('/dashboard/login');
-    }
-
-    // Checking user token.
-    jwt.verify(token, config.secret, (err, decoded) => {
-      if (err) {
-        return res.redirect('/dashboard/login');
-      }
-      req.decoded = decoded;
-      next();
-    });
-  });
-
-  // MIDDLEWARE FOR ADMIN
-  function hasRole(role) {
-    return function(req, res, next) {
-      if (!req.decoded)  {
-        return res.redirect('/dashboard/login');
-      }
-      // Admin should override all.
-      if (req.decoded.user.roles.includes("admin")) {
-        return next();
-      } else if (req.decoded.user.roles.includes(role)) {
-        return next();
-      } else {
-        return res.render('error', {
-          code: 403,
-          title: "Access denied"
-        });
-      }
-    };
-  }
+  router.use(authMiddleware.isAuthed());
+  const hasRole = authMiddleware.hasRole;
+  const hasPerm = authMiddleware.hasPerm;
 
   ///////////////////////////////////////////////////////////////////////////////
   //                      AUTHED ENDPOINTS
@@ -287,22 +254,25 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
-  // Connectors administration
+  // Manage Users
 
-  router.get('/users', hasRole("admin"), (req, res, next) => {
-    return res.render("users", {
-      ttile: 'Manage Users',
-      nav_link: 'nav-users'
-    });
+  router.get('/users', hasPerm("SEE-USERS"), (req, res, next) => {
+    hub.UserManager.getAll().then(users => {
+      return res.render("users", {
+        title: 'Manage Users',
+        nav_link: 'nav-users',
+        users
+      });
+    }).catch(next);
   });
 
   //
   ///////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
-  // Connectors administration
+  // Cofnigure Brain
 
-  router.get('/configuration', hasRole("admin"), (req, res, next) => {
+  router.get('/configuration', hasRole("SEE-CONFIGURATION"), (req, res, next) => {
     return res.render("config", {
       ttile: 'Configure brain',
       nav_link: 'nav-configuration'
@@ -387,6 +357,16 @@ module.exports = function(io) {
 
   // Dashboard error handling (logging)
   router.use((err, req, res, next) => {
+    if (err.code == 403) {
+      if (err.no_token) {
+        return res.redirect('/dashboard/login');
+      } else {
+        return res.render('error', {
+          title: "Access denied",
+          code: 403
+        });
+      }
+    }
     console.log(err);
     res.status(500).render('error', { code: 500, message: "500 Error: Internal Server Error." })
   });

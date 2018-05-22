@@ -50,22 +50,10 @@ module.exports = function(io) {
   // BOT ADMIN ENDPOINTS
 
   // MIDDLEWARE FOR BOT ADMIN AUTH
-  router.use(function(req, res, next) {
-    let token = req.body.token || req.query.token || req.get("x-access-token") || req.cookies['user_token'];
-
-    if (!token) {
-      return res.status(403).json({ success: false, message: "No token provided in body/query/header/cookies." });
-    }
-
-    // Checking user token.
-    jwt.verify(token, config.secret, (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ success: false, message: "Invalid authentification." });
-      }
-
-      next();
-    });
-  });
+  const authMiddleware = require('./middlewares/auth');
+  router.use(authMiddleware.isAuthed());
+  const hasRole = authMiddleware.hasRole;
+  const hasPerm = authMiddleware.hasPerm;
 
   // Reload brain
   /**
@@ -553,7 +541,10 @@ module.exports = function(io) {
 
   // Error handling (logging)
   router.use((err, req, res, next) => {
-    console.log(err.stack)
+    if (err.code == 403) {
+      return res.status(403).json({ success: false, status: 403, message: "Access denied." });
+    }
+    console.log(err)
     res.status(500).json({ success: false, status: 500, message: 'Internal Server Error.' });
   });
 
