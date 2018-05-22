@@ -30,20 +30,29 @@ function displayModalAlert(modal, { title = "Error", message = "Could not attemp
 $("#new-user-form").submit((event) => {
     event.preventDefault();
     // validate form
-    const username = $("#new-user-form #new-user-name").val();
+    const user_name = $("#new-user-form #new-user-name").val();
     const usernameRegex = /^[a-zA-Z\u00C0-\u017F0-9.\-' ]{3,50}$/;
-    if (!usernameRegex.test(username)) {
+    if (!usernameRegex.test(user_name)) {
         return displayModalAlert("#new-user-modal", {
             title: "Invalid username",
             message: "Username should not be between 3 and 50 characters, and should not contains special chars."
         });
     }
 
+    const password = $("#new-user-form #new-user-password").val();
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[\u00C0-\u017FA-Za-z\d$@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return displayModalAlert("#new-user-modal", {
+            title: "Invalid password",
+            message: "Password should contain at least 8 chars, a capital letter, a special character and a digit."
+        });
+    }
+
     $.ajax({
         method: "POST",
         baseUrl: base_url,
-        url: "/users/",
-        data: { user_name: username },
+        url: "/users",
+        data: { user_name, password },
         dataType: "json",
         success: function(json) {
           console.log(json);
@@ -51,7 +60,7 @@ $("#new-user-form").submit((event) => {
             $("#new-user-modal").modal('hide');
             notifyUser({
               title: "User created",
-              message: `Created user ${username}`,
+              message: `Created user ${user_name}`,
               type: "success",
               delay: 5
             });

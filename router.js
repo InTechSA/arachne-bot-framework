@@ -597,6 +597,13 @@ module.exports = function(io) {
   });
 
   // Create user
+  router.post('/users', hasPerm('CREATE_USER'), (req, res, next) => {
+    const user_name = req.body.user_name;
+    const password = req.body.password;
+    hub.UserManager.create(user_name, password).then(user => {
+      return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, }})
+    }).catch(next);
+  });
 
   // Delete user
 
@@ -614,6 +621,9 @@ module.exports = function(io) {
   router.use((err, req, res, next) => {
     if (err.code == 403) {
       return res.status(403).json({ success: false, status: 403, message: "Access denied." });
+    } else if (err.code) {
+      console.log(err)
+      return res.status(err.code || 500).json({ success: false, status: err.code || 500, message: err.message || "Internal server error." });
     }
     console.log(err)
     res.status(500).json({ success: false, status: 500, message: 'Internal Server Error.' });

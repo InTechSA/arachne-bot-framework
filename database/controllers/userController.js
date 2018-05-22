@@ -159,22 +159,24 @@ exports.create_user = function(user) {
     // check for user unicity
     User.findOne({ user_name: user.user_name.toLowerCase() }, (err, userFound) => {
       if (err) {
-        return reject();
+        return reject(err);
       } else if (userFound) {
-        return reject({ message: "Username already used."})
+        let error = new Error("Username already used.");
+        error.code = 400;
+        return reject(error);
       } else {
         // New user can be added.
 
         // Hash password
         bcrypt.hash(user.password, 8, (err, hash) => {
           if (err) {
-            return reject();
+            return reject(err);
           }
 
           let new_user = new User({ user_name: user.user_name.toLowerCase(), password: hash });
           new_user.save((err) => {
             if (err) {
-              return reject();
+              return reject(err);
             }
             return resolve({ user: { id: new_user._id }});
           })

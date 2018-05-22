@@ -15,6 +15,10 @@ block content
                         .form-group
                             label(for="new-user-name") Username
                             input.form-control#new-user-name(type="text" placeholder="User.Name" required)
+                        .form-group
+                            label(for="new-user-password") Password
+                            input.form-control#new-user-password(type="text" aria-describedby="password-help" placeholder="password")
+                            small#password-help.form-text.text-muted Leave blank to randomize secure password.
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-primary(type='submit' form="new-user-form") Add

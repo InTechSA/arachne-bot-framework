@@ -5,6 +5,13 @@ exports.UserManager = class UserManager {
         this.userController = userController || require("./../../database/controllers/userController");
     }
 
+    create(username, password) {
+        if (!password) {
+            return this.userController.create_user({ user_name: username, password: Math.random().toString(36).slice(-9) });
+        }
+        return this.userController.create_user({ user_name: username, password });
+    }
+
     getAll() {
         return this.userController.get_all();
     }
