@@ -529,6 +529,77 @@ module.exports = function(io) {
       .catch((err) => res.status(500).json({ error: 500, message: "Couldn't clear storage." }));
   });
 
+  // Get users
+  /**
+   * @api {get} /users Get list of users.
+   * @apiName GetUsers
+   * @apiGroup Users
+   * 
+   * @apiSuccess {Boolean} success success of operation.
+   * @apiSuccess {String} message Message from the api.
+   * @apiSuccess {Object} [users] List of users
+   * @apiSuccess {String} [users[].user_name] Username of a user.
+   * @apiSuccess {Array} [users[].roles] Roles of a user.
+   * @apiSuccess {String} [users[].roles[]] A role of a user's roles.
+   * @apiSuccess {Array} [users[].permissions] Permissions of a user.
+   * @apiSuccess {String} [users[].permissions[]] A permission of a user's permissions.
+   */
+  router.get('/users', hasPerm('SEE_USERS'), (req, res, next) => {
+    hub.UserManager.userHasPermissions(req.decoded.user.id, ['SEE_USER_PERM', 'SEE_USER_LAST_CONNECT']).then(permissions => {
+      return hub.UserManager.getAll().then(users => {
+        users = users.map(user => {
+          let display = {
+            id: user._id,
+            user_name: user.user_name,
+            roles: user.roles,
+            registered_date: user.registered_date
+          };
+          if (permissions['SEE_USER_PERM']) {
+            display.permissions = user.permissions;
+          }
+          if (permissions['SEE_USER_LAST_CONNECT']) {
+            display.last_connect = user.last_connect;
+          }
+          return display;
+        });
+        return res.json({ success: true, message: "List of users.", users });
+      });
+    }).catch(next);
+  });
+
+  // Get user
+  router.get('/users/:user_name', (req, res, next) => {
+    hub.UserManager.userHasPermissions(req.decoded.user.id, ['SEE_USERS', 'SEE_USER_PERM', 'SEE_USER_LAST_CONNECT']).then(permissions => {
+      if (!permissions['SEE_USERS']) {
+        let error = new Error("No SEE_USERS permission.");
+        error.code = 403;
+        return next(error);
+      }
+      return hub.UserManager.getByUsername(req.params.user_name).then(user => {
+        if (!user) {
+          return res.status(404).json({ success: true, status: 404, message: "No user found." });
+        }
+        let display = {
+          id: user._id,
+          user_name: user.user_name,
+          roles: user.roles,
+          registered_date: user.registered_date
+        };
+        if (permissions['SEE_USER_PERM']) {
+          display.permissions = user.permissions;
+        }
+        if (permissions['SEE_USER_LAST_CONNECT']) {
+          display.last_connect = user.last_connect;
+        }
+        return res.json({ success: true, message: "List of users.", display });
+      });
+    }).catch(next);
+  });
+
+  // Create user
+
+  // Delete user
+
   ///////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////

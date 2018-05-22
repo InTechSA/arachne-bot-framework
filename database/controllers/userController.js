@@ -131,16 +131,33 @@ exports.has_permission = (id, permission) => {
       } else if (!user) {
         return reject(new Error("No user found."));
       } else {
-        return resolve(user.permissions.includes(permission));
+        return resolve(user.roles.includes("admin") || user.permissions.includes(permission));
       }
     });
   });
 };
 
+exports.has_permissions = (id, permissions) => {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err) {
+        return reject(err);
+      } else if (!user) {
+        return reject(new Error("No user found."));
+      } else {
+        let permissionsObject = {};
+        const userIsAdmin = user.roles.includes("admin");
+        permissions.forEach(perm => permissionsObject[perm] = userIsAdmin || user.permissions.includes(perm));
+        return resolve(permissionsObject);
+      }
+    });
+  });
+}
+
 exports.create_user = function(user) {
   return new Promise((resolve, reject) => {
     // check for user unicity
-    User.findOne({ user_name: user.user_name }, (err, userFound) => {
+    User.findOne({ user_name: user.user_name.toLowerCase() }, (err, userFound) => {
       if (err) {
         return reject();
       } else if (userFound) {
@@ -154,7 +171,7 @@ exports.create_user = function(user) {
             return reject();
           }
 
-          let new_user = new User({ user_name: user.user_name, password: hash });
+          let new_user = new User({ user_name: user.user_name.toLowerCase(), password: hash });
           new_user.save((err) => {
             if (err) {
               return reject();
@@ -192,8 +209,13 @@ exports.get_user = function(id) {
   });
 };
 
+exports.get_by_username = (user_name) => {
+  console.log(user_name.toLowerCase())
+  return User.findOne({ user_name: user_name.toLowerCase() });
+}
+
 exports.get_all = function(id) {
-  return User.find({}, "_id user_name registered_date last_conect roles permissions");
+  return User.find({}, "_id user_name registered_date last_connect roles permissions");
 }
 
 exports.update_password = function(userId, currentPassword, newPassword) {
@@ -233,13 +255,13 @@ exports.update_password = function(userId, currentPassword, newPassword) {
 exports.update_username = function(userId, userName) {
   return new Promise((resolve, reject) => {
     // Check for user unicity.
-    User.findOne({ user_name: userName }, (err, userFound) => {
+    User.findOne({ user_name: userName.toLowerCase() }, (err, userFound) => {
       if (err) {
         return reject(err);
       } else if (userFound) {
         return reject({ error: "username-exists", message: "Username already in use." });
       } else {
-        User.findByIdAndUpdate(userId, { $set: { user_name: userName }}, (err, user) => {
+        User.findByIdAndUpdate(userId, { $set: { user_name: userName.toLowerCase() }}, (err, user) => {
           if (err) {
             return reject(err);
           }
@@ -252,7 +274,7 @@ exports.update_username = function(userId, userName) {
 
 exports.sign_in = function(user_name, password) {
   return new Promise((resolve, reject) => {
-    User.findOne({ user_name: user_name }, function(err, user) {
+    User.findOne({ user_name: user_name.toLowerCase() }, function(err, user) {
       if (err) {
         console.log(err.stack);
         return reject();
@@ -260,7 +282,7 @@ exports.sign_in = function(user_name, password) {
         bcrypt.compare(password, user.password, (err, res) => {
           if (res) {
             // Password matched, generate token.
-            let token = jwt.sign({ user: { user_name: user.name, id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+            let token = jwt.sign({ user: { user_name: user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
             return resolve({ message: "User signed in.", token: token });
           } else {
             return reject({ message: "Invalid password." });

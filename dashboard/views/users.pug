@@ -1,6 +1,24 @@
 extends layout
 
 block content
+    // Modals
+    #new-user-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='new-user-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#new-user-modal-label.modal-title New user
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    .modal-alert
+                    form#new-user-form
+                        .form-group
+                            label(for="new-user-name") Username
+                            input.form-control#new-user-name(type="text" placeholder="User.Name" required)
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+                    button.btn.btn-primary(type='submit' form="new-user-form") Add
+
     h1 Users
     p These users have access to the brain. You may configure their permissions and roles here.
 

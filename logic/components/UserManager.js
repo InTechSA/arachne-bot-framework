@@ -9,12 +9,20 @@ exports.UserManager = class UserManager {
         return this.userController.get_all();
     }
 
+    getByUsername(user_name) {
+        return this.userController.get_by_username(user_name);
+    }
+
     verifyToken(token) {
         return this.userController.verify_token(token);
     }
 
     userHasPermission(userId, permission) {
         return this.userController.has_permission(userId, permission);
+    }
+
+    userHasPermissions(userId, permissions) {
+        return this.userController.has_permissions(userId, permissions);
     }
 
     createRole(roleName) {
