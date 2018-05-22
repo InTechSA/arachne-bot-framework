@@ -1,4 +1,71 @@
 extends layout
 
 block content
+    h1 Users
+    p These users have access to the brain. You may configure their permissions and roles here.
 
+    p 
+        | By default, new users will be granted the role : 
+        strong=default_role || "guest"
+        |  (
+        a(href="#" onClick="modifyBaseRole()") Modify
+        | ).
+        br
+        | Their permissions are:
+
+    .row
+        .col.align-self-end.text-right
+            button.text-right.btn.btn-outline-success(onClick="addUser()") New User
+    .row
+        .col
+            table.table#user-list
+                thead.thead-light.action(onClick="collapseUserList()")
+                    tr
+                        th(scope='col') Username
+                        th(scope='col') Roles
+                        th(scope='col')
+                            .row
+                                .col Actions 
+                                .col.text-right
+                                    i.ml-2.icon-show.far.fa-caret-square-down
+                                    i.ml-2.icon-show.far.fa-caret-square-up.d-none
+                tbody.collapse#user-list-collapse
+                    if users
+                        each user in users
+                            tr
+                                th(scope='row')=user.user_name
+                                td=user.roles.join(", ")
+                                td
+                                    i.text-primary.action.ml-1.fas.fa-eye(title="Manage user" onClick="manageUser(this)" data-user=user.user_name)
+                                    i.text-danger.action.ml-1.fas.fa-trash-alt(title="Delete user" onClick="deleteUser(this)" data-user=user.user_name)
+    
+    h1 Roles
+    p Roles bear permission groups. You can assign multiple roles to users.
+
+    .row
+        .col.align-self-end.text-right
+            button.text-right.btn.btn-outline-success(onClick="addRole()") New Role
+    .row
+        .col
+            table.table#role-list
+                thead.thead-light.action(onClick="collapseRoleList()")
+                    tr
+                        th(scope='col') Role
+                        th(scope='col')
+                            .row
+                                .col Actions 
+                                .col.text-right
+                                    i.ml-2.icon-show.far.fa-caret-square-down
+                                    i.ml-2.icon-show.far.fa-caret-square-up.d-none
+                tbody.collapse#role-list-collapse
+                    if roles
+                        each role in roles
+                            tr
+                                th(scope='row')=role.name
+                                td
+                                    i.text-success.action.ml-.fas.fa-users(title="See members" onClick="seeRoleUsers(this)" data-role=role.name)
+                                    i.text-primary.action.ml-1.fas.fa-eye(title="Manage role" onClick="manageRole(this)" data-role=role.name)
+                                    i.text-danger.action.ml-1.fas.fa-trash-alt(title="Delete role" onClick="deleteRole(this)" data-role=role.name)
+        
+    script
+        include ../public/js/users.js

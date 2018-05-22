@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-const config = require('../secret');
-const Users = require('../database/controllers/userController');
+const Hub = require('../logic/hub');
 
 // MIDDLEWARE FOR ADMIN
 module.exports.hasRole = (role) => {
@@ -36,7 +35,7 @@ module.exports.hasRole = (role) => {
       if (req.decoded.user.roles.includes("admin")) {
         return next();
       } else {
-        Users.has_permission(req.decoded.user.id, permission).then((hasPerm) => {
+        Hub.UserManager.hasPermission(req.decoded.user.id, permission).then((hasPerm) => {
           if (hasPerm) {
             return next();
           }
@@ -58,17 +57,15 @@ module.exports.hasRole = (role) => {
           error.no_token = true;
           return next(error);
         }
-    
-        // Checking user token.
-        jwt.verify(token, config.secret, (err, decoded) => {
-          if (err) {
-            const error = new Error("Not logged in. Invalid token.");
-            error.code = 403;
-            error.no_token = true;
-            return next(error);
-          }
+
+        Hub.UserManager.verifyToken(token).then(decoded => {
           req.decoded = decoded;
           next();
+        }).catch((err) => {
+          const error = new Error("Not logged in. Invalid token.");
+          error.code = 403;
+          error.no_token = true;
+          return next(error);
         });
       };
   }

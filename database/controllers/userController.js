@@ -193,14 +193,7 @@ exports.get_user = function(id) {
 };
 
 exports.get_all = function(id) {
-  return Promise.resolve().then(() => {
-    User.find({}, "_id user_name registered_date last_conect roles permissions", (err, users) => {
-      if (err) {
-        throw err;
-      }
-      return users;
-    });
-  });
+  return User.find({}, "_id user_name registered_date last_conect roles permissions");
 }
 
 exports.update_password = function(userId, currentPassword, newPassword) {
@@ -279,3 +272,15 @@ exports.sign_in = function(user_name, password) {
     });
   })
 };
+
+exports.verify_token = (token) => {
+  return new Promise((resolve, reject) => {
+    // Checking user token.
+    jwt.verify(token, secret.secret, (err, decoded) => {
+      if (err) {
+        return reject(err); 
+      }
+      return resolve(decoded);
+    });
+  });
+}

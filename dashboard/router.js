@@ -257,11 +257,15 @@ module.exports = function(io) {
   // Manage Users
 
   router.get('/users', hasPerm("SEE-USERS"), (req, res, next) => {
+    const roles = [{ name: "admin" }, { name: "guest" }];
+    const default_role = "guest";
     hub.UserManager.getAll().then(users => {
       return res.render("users", {
         title: 'Manage Users',
         nav_link: 'nav-users',
-        users
+        default_role,
+        users,
+        roles
       });
     }).catch(next);
   });
