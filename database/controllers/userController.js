@@ -323,7 +323,7 @@ exports.sign_in = function(user_name, password) {
         bcrypt.compare(password, user.password, (err, res) => {
           if (res) {
             // Password matched, generate token.
-            let token = jwt.sign({ user: { user_name: user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+            let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
             return resolve({ message: "User signed in.", token: token });
           } else {
             return reject({ message: "Invalid password." });

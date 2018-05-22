@@ -30,7 +30,7 @@ module.exports = function(io) {
   router.get('/setup', (err, res) => {
     users.is_empty().then((isempty) => {
       if (isempty) {
-        users.create_user({ user_name: "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
+        users.create_user({ user_name: process.env.ADMIN_USER || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
           users.promote_user(obj.id, "admin").then((user) => {
             return res.json({ success: true, message: "Admin user added.", user: user });
           }).catch((err) => {
@@ -101,7 +101,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Dashboard index
 
-  router.get('/', (req, res, next) => {
+  router.get('/', hasPerm('ACCESS_DASHBOARD'), (req, res, next) => {
     hub.ConnectorManager.getConnectorByName("Dashboard").then((connector) => {
       hub.getSkills().then((skills) => {
         res.render('index', {
@@ -137,7 +137,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Dashboard Skills administration
 
-  router.get('/skills', (req, res) => {
+  router.get('/skills', hasPerm('SEE_SKILLS'), (req, res) => {
     hub.getSkills().then((skills) => {
       res.render('skills', {
         title: 'Skills - Bot',
@@ -155,7 +155,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Dashboard Skills administration
 
-  router.get('/skills/new', (req, res) => {
+  router.get('/skills/new', hasPerm('CREATE_SKILL'), (req, res) => {
     res.render('skill_edit', {
       title: 'Add Skill - Bot',
       nav_link: 'nav-skills'
@@ -168,7 +168,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Skill Monitoring
 
-  router.get('/skills/:skill', (req, res, next) => {
+  router.get('/skills/:skill', hasPerm('MONITOR_SKILL'), (req, res, next) => {
     hub.getSkill(req.params.skill).then((skillFound) => {
       if (skillFound) {
         let skill = Object.assign({}, skillFound);
@@ -204,7 +204,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Dashboard Skills administration
 
-  router.get('/skills/:skill/edit', (req, res) => {
+  router.get('/skills/:skill/edit', hasPerm('EDIT_SKILL'), (req, res) => {
     hub.getSkill(req.params.skill).then((skill) => {
       if (skill) {
         hub.getSkillCode(req.params.skill).then((code) => {
@@ -236,7 +236,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Connectors administration
 
-  router.get('/connectors', (req, res, next) => {
+  router.get('/connectors', hasPerm('SEE_ADAPTERS'), (req, res, next) => {
     hub.ConnectorManager.getConnectors()
       .then((connectors) => {
         res.render('connectors', {
@@ -256,7 +256,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Manage Users
 
-  router.get('/users', hasPerm("SEE-USERS"), (req, res, next) => {
+  router.get('/users', hasPerm("SEE_USERS"), (req, res, next) => {
     const roles = [{ name: "admin" }, { name: "guest" }];
     const default_role = "guest";
     hub.UserManager.getAll().then(users => {
@@ -276,7 +276,7 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
   // Cofnigure Brain
 
-  router.get('/configuration', hasRole("SEE-CONFIGURATION"), (req, res, next) => {
+  router.get('/configuration', hasRole("SEE_CONFIGURATION"), (req, res, next) => {
     return res.render("config", {
       ttile: 'Configure brain',
       nav_link: 'nav-configuration'
