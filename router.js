@@ -606,6 +606,11 @@ module.exports = function(io) {
   });
 
   // Delete user
+  router.delete('/users/:user_name', hasPerm('DELETE_USER'), (req, res, next) => {
+    hub.UserManager.delete(req.params.user_name, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then(() => {
+      return res.json({ success: true, message: "User deleted." });
+    }).catch(next);
+  });
 
   ///////////////////////////////////////////////////////////////////////////////
 

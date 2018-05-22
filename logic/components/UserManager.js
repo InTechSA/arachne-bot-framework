@@ -12,6 +12,10 @@ exports.UserManager = class UserManager {
         return this.userController.create_user({ user_name: username, password });
     }
 
+    delete(user_name, fromAdmin = false) {
+        return this.userController.delete_user(user_name, fromAdmin);
+    }
+
     getAll() {
         return this.userController.get_all();
     }

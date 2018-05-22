@@ -178,13 +178,52 @@ exports.create_user = function(user) {
             if (err) {
               return reject(err);
             }
-            return resolve({ user: { id: new_user._id }});
+            return resolve({ id: new_user._id, roles: new_user.roles });
           })
         });
       }
     });
   });
 };
+
+exports.delete_user = (user_name, fromAdmin = false) => {
+  return new Promise((resolve, reject) => {
+    User.findOne({ user_name: user_name.toLowerCase() }).then(user => {
+      if (!user) {
+        let error = new Error("User not found.");
+        error.code = 404;
+        return reject(error);
+      }
+      
+      // If user is not admin, delete it.
+      if (!user.roles.includes('admin')) {
+        return resolve(User.deleteOne({ user_name: user_name.toLowerCase() }));
+      }
+  
+      // Otherwise, things get tricky.
+      // 1. Only admin should be able to delete admins.
+      if (!fromAdmin) {
+        let error = new Error("Only admins may remove other admins.");
+        error.code = 403;
+        return reject(error);
+      }
+  
+      // Can't delete the last admin user.
+      User.count({ roles: "admin" }, (err, count) => {
+        if (err) {
+          return reject(err);
+        }
+        if (count <= 1) {
+          let error = new Error("Can't delete last admin user.");
+          error.code = 400;
+          return reject(error);
+        }
+  
+        return resolve(User.deleteOne({ user_name: user_name.toLowerCase }));
+      });
+    });
+  });
+}
 
 exports.remove_all = function() {
   return new Promise((resolve, reject) => {

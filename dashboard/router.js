@@ -31,8 +31,8 @@ module.exports = function(io) {
     users.is_empty().then((isempty) => {
       if (isempty) {
         users.create_user({ user_name: "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
-          users.promote_user(obj.user.id, "admin").then((user) => {
-            return res.json({ success: true, message: "Admin user added.", user: obj.user });
+          users.promote_user(obj.id, "admin").then((user) => {
+            return res.json({ success: true, message: "Admin user added.", user: user });
           }).catch((err) => {
             console.log(err);
             return res.status(500).json({ success: false, message: "Could not setup admin user." });
