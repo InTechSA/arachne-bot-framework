@@ -55,17 +55,18 @@ function itinaryHandler({phrase}) {
     console.log("Itinary");
     // Split the request to have the origin of the itinary and the destination
         var req = phrase.split("->");
+        var des,ori,messages;
         if(req[1]){
-            var des = req[1];
-            var ori = req[0];
+            des = req[1];
+            ori = req[0];
         } else{
-            var des = req[0];
+            des = req[0];
             // If the oriign is not specified, it will be Intech
-            var ori = "Intech%20S.A.,Luxembourg";
+            ori = "Intech%20S.A.,Luxembourg";
         }
         if(des == "help"){
           // If the destionation is help, then print the help
-            var messages = "> Help of the itinary command : \n";
+            messages = "> Help of the itinary command : \n";
             messages += "> To do an itinary starting from Intech and going to a destination type : !itinary your_destination\n";
             messages += "> To do an itinary starting from a and going to b, type !itinary a -> b\n";
             messages += "> CAREFUL, if the destination is not in France, add the country of the destination at the end of it after a comma\n";
@@ -86,7 +87,7 @@ function itinaryHandler({phrase}) {
                     const response = JSON.parse(body);
                     if(response.status!=="OK"){
                       // No itinary found
-                      var messages = "Il n'existe pas d'itinéraire entre les deux lieux renseignés :(";
+                      messages = "Il n'existe pas d'itinéraire entre les deux lieux renseignés :(";
                     }
                     else{
                       // Itinary found, we print it
@@ -94,7 +95,7 @@ function itinaryHandler({phrase}) {
                         const route = response.routes[0];
                         const start_address = route.legs[0].start_address;
                         const end_address = route.legs[0].end_address;
-                        var messages = "* Voila votre itinéraire : *\n";
+                        messages = "* Voila votre itinéraire : *\n";
                         messages += "> Départ : "+start_address+"\n";
                         messages += "> Arrivée : "+end_address+"\n";
                         messages += "> Temps estimé minimum : "+route.legs[0].duration.text+"\n";

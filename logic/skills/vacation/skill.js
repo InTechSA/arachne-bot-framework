@@ -281,6 +281,7 @@ function vacationResponseHandler(thread, { phrase }) {
         var step = thread.getData("step");
         console.log("Step : " + step);
         // Will execute different blocks depending on the value of step
+        var options;
         switch (step) {
           case 0:
             // Step 0, ask for dates to initiate the request
@@ -303,7 +304,7 @@ function vacationResponseHandler(thread, { phrase }) {
               // Else will contact the vacation micro to verif the Dates ( if they are valid, if the user have suffisient days of vacations etc)
               urlRequest = url_vac_micro + "/verifDates/?start=" + dates[0] + "&end=" + dates[1] + "&user=" + userName;
               // Build the request
-              var options = {
+              options = {
                 url: encodeURI(urlRequest),
                 headers: {
                   'Authorization': 'Bearer ' + tokenAD,
@@ -384,7 +385,7 @@ function vacationResponseHandler(thread, { phrase }) {
             urlRequest = url_vac_micro + "/verifManager/" + trigrams_manager.join(',');
             console.log(urlRequest);
             // BUild the request
-            var options = {
+            options = {
               url: encodeURI(urlRequest),
               headers: {
                 'Authorization': 'Bearer ' + tokenAD,
@@ -446,7 +447,7 @@ function vacationResponseHandler(thread, { phrase }) {
                 "&userName=" + thread.getData("userName");
               console.log(urlRequest);
               // Build the request
-              var options = {
+              options = {
                 url: encodeURI(urlRequest),
                 headers: {
                   'Authorization': 'Bearer ' + tokenAD,
@@ -524,7 +525,6 @@ function vacationResponseHandler(thread, { phrase }) {
                 private: true
               }
             });
-            break;
         }
       }).catch((error) => {
         console.log("Catch error in command get-ad-token " + error);

@@ -125,7 +125,7 @@ function eventsHandler({ phrase, data }) {
   --------
     entities (Object)
 */
-function nlpEvents({ entities: {}, data }) {
+function nlpEvents({ entities = {}, data }) {
   return new Promise((resolve, reject) => {
     /*
       >>> YOUR CODE HERE <<<
