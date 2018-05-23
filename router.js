@@ -75,6 +75,12 @@ module.exports = function(io) {
         }
     });
   });
+  
+  router.get('/apidoc', (req, res, next) => {
+    return res.render('../../public/apidoc.pug', {
+      api_url: "http://localhost:8080/apidoc.yml"
+    });
+  });
 
   //
   ///////////////////////////////////////////////////////////////////////////////
