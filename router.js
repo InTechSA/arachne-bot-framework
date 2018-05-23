@@ -247,14 +247,14 @@ module.exports = function(io) {
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
    */
-   router.delete('/skills/:skill', hasPerm('DELETE_SKILL'), (req, res) => {
-     hub.deleteSkill(req.params.skill).then(() => {
-       return res.json({ success: true, message: "Successfully deleted skill." });
-     }).catch((err) => {
-       console.log(err.stack);
-       return res.json({ success: false, message: "An unkown error occured while deleting skill." });
-     });
-   });
+  router.delete('/skills/:skill', hasPerm('DELETE_SKILL'), (req, res) => {
+    hub.deleteSkill(req.params.skill).then(() => {
+      return res.json({ success: true, message: "Successfully deleted skill." });
+    }).catch((err) => {
+      console.log(err.stack);
+      return res.json({ success: false, message: "An unkown error occured while deleting skill." });
+    });
+  });
 
   // Reload skills.
   /**
@@ -345,15 +345,15 @@ module.exports = function(io) {
    * @apiSuccess {String} [skill_secret[].key] - The key of a secret.
    * @apiSuccess {String} [skill_secret[].value] - The value of a secret.
    */
-   router.get('/skills/:skill/secret', hasPerm('SEE_SKILL_SECRET'), (req, res) => {
-     hub.getSkillSecret(req.params.skill).then((secret) => {
-       if (secret) {
-         return res.json({ success: true, secret: secret });
-       } else {
-         return res.status(404).json({ code: 404, message: "No skill named " + req.params.skill });
-       }
-     });
-   });
+  router.get('/skills/:skill/secret', hasPerm('SEE_SKILL_SECRET'), (req, res) => {
+    hub.getSkillSecret(req.params.skill).then((secret) => {
+      if (secret) {
+        return res.json({ success: true, secret: secret });
+      } else {
+        return res.status(404).json({ code: 404, message: "No skill named " + req.params.skill });
+      }
+    });
+  });
 
   // Update skill secrets
   /**

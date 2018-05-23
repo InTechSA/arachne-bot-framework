@@ -60,7 +60,7 @@ module.exports.checkConnectorToken = function(token) {
 
 module.exports.getConnectors = function() {
   return new Promise((resolve, reject) => {
-    Connector.find({}, "id name active", (err, connectors) => {
+    Connector.find({}, "id name active ip", (err, connectors) => {
       if (err) {
         return reject(err);
       }
