@@ -16,76 +16,12 @@ module.exports = function(io) {
   //                      UNSECURED ENDPOINTS
   ///////////////////////////////////////////////////////////////////////////////
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // Setup for admin account. Will be ignored if there is at least one user in the database.
-
-  /**
-   * @api {get} /dashboard/setup Setup admin account.
-   * @apiName SetupAdmin
-   * @apiGroup Setup
-   *
-   * @apiSuccess {Boolean} success Success of operation.
-   * @apiSuccess {String} message Message from api.
-   */
-  router.get('/setup', (err, res) => {
-    users.is_empty().then((isempty) => {
-      if (isempty) {
-        users.create_user({ user_name: process.env.ADMIN_USER || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
-          users.promote_user(obj.id, "admin").then((user) => {
-            return res.json({ success: true, message: "Admin user added.", user: user });
-          }).catch((err) => {
-            console.log(err);
-            return res.status(500).json({ success: false, message: "Could not setup admin user." });
-          });
-        }).catch((err) => {
-          console.log(err);
-          return res.status(500).json({ success: false, message: "Could not setup admin user." });
-        });
-      } else {
-        return res.status(403).json({ success: false, message: "The user database is not empty." });
-      }
-    }).catch((err) => {
-      console.log(err);
-      return res.status(500).json({ success: false, message: "Could not setup admin user." });
-    });
-  });
-
-  //
-  ///////////////////////////////////////////////////////////////////////////////
-
   router.use('/static', express.static(path.join(__dirname, './public')));
 
   // Login Page
   router.get('/login', (req, res) => {
     return res.render('login');
   });
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // Login endpoint
-
-  /**
-   * @api {post} /dashboard/login Login to dashboard
-   * @apiName DashboardLogin
-   * @apiGroup Dashboard
-   *
-   * @apiSuccess {Boolean} success Success of operation.
-   * @apiSuccess {String} message Message from api.
-   * @apiSuccess {String} token User token for this session.
-   */
-  router.post('/login', (req, res) => {
-    users.sign_in(req.body.user_name, req.body.password).then((obj) => {
-      return res.json({ success: true, message: obj.message, token: obj.token });
-    }).catch((err) => {
-      if (err.message) {
-        return res.json({ success: false, message: err.message });
-      }
-      console.log(err.stack);
-      return res.json({ success: false, message: "Unkown error." });
-    });
-  });
-
-  //
-  ///////////////////////////////////////////////////////////////////////////////
 
   const authMiddleware = require('../middlewares/auth');
 

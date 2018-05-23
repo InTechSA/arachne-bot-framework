@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Nakasar/bot-architecture-poc#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "bcrypt": "^2.0.1",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",

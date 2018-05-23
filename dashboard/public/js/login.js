@@ -10,7 +10,7 @@ $("#signin-form").submit((event) => {
     $.ajax({
       method: "POST",
       baseUrl: base_url,
-      url: "/dashboard/login",
+      url: "/login",
       data: { user_name: userName, password: password },
       dataType: "json",
       success: function(json) {

@@ -3,6 +3,7 @@ var User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const secret = require("../../secret");
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 exports.is_empty = function() {
   return new Promise((resolve, reject) => {
@@ -313,27 +314,68 @@ exports.update_username = function(userId, userName) {
   });
 };
 
-exports.sign_in = function(user_name, password) {
+exports.sign_in = function(username, password) {
   return new Promise((resolve, reject) => {
-    User.findOne({ user_name: user_name.toLowerCase() }, function(err, user) {
-      if (err) {
-        console.log(err.stack);
-        return reject();
-      } else if (user) {
-        bcrypt.compare(password, user.password, (err, res) => {
-          if (res) {
-            // Password matched, generate token.
+    if (process.env.USE_AUTH_SERVICE) {
+      // Use external service if required.
+      let data = {};
+      data[process.env.AUTH_SERVICE_USERNAME_FIELD.trim()] = username;
+      data[process.env.AUTH_SERVICE_PASSWORD_FIELD.trim()] = password;
+
+
+      axios({
+        method: process.env.AUTH_SERVICE_METHOD.trim(),
+        url: process.env.AUTH_SERVICE_ROUTE.trim(),
+        data
+      }).then(response => {
+        // Auth is a success. Find local user.
+        User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
+          if (err) {
+            console.log(err.stack);
+            return reject();
+          } else if (user) {
             let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
             return resolve({ message: "User signed in.", token: token });
           } else {
-            return reject({ message: "Invalid password." });
+            // No user found, yet auth is a success. TODO: Create the user with basic role.
+            return reject({ message: "Auth service approved the connexion, but this user is not authorized to access the service." });
           }
         });
-      } else {
-        return reject({ message: "No user with this user_name."});
-      }
-    });
-  })
+      }).catch(err => {
+        let error;
+        if (err.response && err.response.data) {
+          error = new Error(err.response.data.message || "Unkown error with Auth Service.");
+          error.code = err.response.data.code;
+          error.errors = err.response.data.errors;
+        } else {
+          error = new Error("Could not contact auth service.");
+          error.code = 500;
+        }
+        
+        return reject(error);
+      });
+    } else {
+      // Otherwise, check against local database.
+      User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
+        if (err) {
+          console.log(err.stack);
+          return reject();
+        } else if (user) {
+          bcrypt.compare(password, user.password, (err, res) => {
+            if (res) {
+              // Password matched, generate token.
+              let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+              return resolve({ message: "User signed in.", token: token });
+            } else {
+              return reject({ message: "Invalid password." });
+            }
+          });
+        } else {
+          return reject({ message: "No user with this user_name."});
+        }
+      });
+    }
+  });
 };
 
 exports.verify_token = (token) => {
