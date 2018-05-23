@@ -39,7 +39,7 @@ module.exports = function(io) {
    * @apiSuccess {String} token User token for this session.
    */
   router.post('/login', (req, res) => {
-    users.sign_in(req.body.user_name, req.body.password).then((obj) => {
+    users.sign_in(req.body.user_name.trim(), req.body.password.trim()).then((obj) => {
       return res.json({ success: true, message: obj.message, token: obj.token });
     }).catch((err) => {
       if (err.message) {
@@ -67,9 +67,9 @@ module.exports = function(io) {
   router.get('/setup', (err, res) => {
     users.is_empty().then((isempty) => {
       if (isempty) {
-        users.create_user({ user_name: process.env.ADMIN_USER || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
+        users.create_user({ user_name: process.env.ADMIN_USER.trim() || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
           users.promote_user(obj.id, "admin").then((user) => {
-            return res.json({ success: true, message: "Admin user added.", user: user });
+            return res.json({ success: true, message: "Admin user added.", user: { id: user._id, roles: user.roles, user_name: user.user_name } });
           }).catch((err) => {
             console.log(err);
             return res.status(500).json({ success: false, message: "Could not setup admin user." });
