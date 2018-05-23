@@ -127,7 +127,32 @@ module.exports = function(io) {
     });
   });
 
-  // todo: threads/:threadid/timeout
+  // Thread timeout closing endpoint
+  /**
+   * @api {post} /threads/:threadid/timeout Closing thread on timeout endpoint
+   * @apiName Threads
+   * @apiGroup Bot
+   *
+   * @apiParam {String} threadid the id of the thread we want to close
+   *
+   * @apiSuccess {Boolean} success Success of operation.
+   * @apiSuccess {String} message Message from api.
+   */
+  router.post('/threads/:threadid/timeout', checkConnectorToken, (req, res) => {
+    var thread_id = req.params.threadid;
+    hub.ThreadManager.getThread(thread_id).then((thread) => {
+      hub.ThreadManager.closeThread(thread_id).then(() => {
+        console.log("> [INFO] Thread " + thread_id + " closed");
+        return res.json({success: true, message: {text: thread.timeout_message}});
+      }).catch((err) => {
+        console.log(err);
+        return res.json({success: false, message: {text: "Error closing the thread : "+err}});
+      });
+    }).catch((err) => {
+      console.log(err);
+      return res.json({success: false, message: {text: "Error getting the thread : "+err}});
+    });
+  });
 
   // Hook requesting endpoint.
   /**
@@ -154,6 +179,34 @@ module.exports = function(io) {
     });
   });
 
+/**
+   * @api {post} /threads/:threadid/timeout Closing thread on timeout endpoint
+   * @apiName Threads
+   * @apiGroup Bot
+   *
+   * @apiParam {String} threadid the id of the thread we want to close
+   *
+   * @apiSuccess {Boolean} success Success of operation.
+   * @apiSuccess {String} message Message from api.
+   */
+  router.post('/hooks/:hookId/close', checkConnectorToken, (req, res) => {
+      var hookId = req.params.hookId;
+      hub.HookManager.get(hookId).then((hook) => { 
+        hub.HookManager.remove(hookId).then(() => {
+            console.log("> [INFO] Deleted hook "+hookId);
+            if(hook.messageOnDelete){
+              return res.json({success: true, message: {text: hook.messageOnDelete}});
+            }
+        }).catch((err) => {
+          console.log(err);
+          return res.json({success: true, message: {text: "Error removing the hook "+err}});
+        });
+      }).catch((err) => {
+        console.log(err);
+        return res.json({success: true, message: {text: "Error getting the hook "+err}});
+      });
+  });
+  
   /*
     Attach socket manager to ConnectorManager
     The connector manager will be able to kill sockets of revoked connectors. 

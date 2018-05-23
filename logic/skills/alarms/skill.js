@@ -132,33 +132,21 @@ function alarmHandler({ phrase, data }) {
         }
       })
     }
-  
-    overseer.ThreadManager.addThread({
-        timestamp: new Date(),
-        source: phrase,
-        data: [
-            ["time", time],
-            ["text", text]
-        ],
-        handler: "confirmation"
-    }).then((thread) => {
-       return resolve({
-           message: {
-               interactive: true,
-               thread_id: thread._id,
-               title: "Set a alarm.",
-               text: `Will set an alarm for today, ${time.toLocaleTimeString()}, is that correct ? (o/N)`
-           }
-       });
-    }).catch((e) => {
-      console.log(e);
-      return resolve({
-          message: {
-              title: "Cannot create alarm.",
-              text: "Error while creating thread."
-          }
-      });
-    });
+   return resolve({
+       message: {
+           interactive: true,
+           thread: {
+                source: phrase,
+                data: [
+                    ["time", time],
+                    ["text", text]
+                ],
+                handler: "confirmation"
+           },
+           title: "Set a alarm.",
+           text: `Will set an alarm for today, ${time.toLocaleTimeString()}, is that correct ? (o/N)`
+       }
+   });
   });
 }
 /**
@@ -210,25 +198,13 @@ function handleConfirmation(thread, { phrase, data }) {
 
         overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => console.log(err));
       }).catch((err) => console.log(err));
-      overseer.ThreadManager.closeThread(thread._id).then(() => {
-          return resolve({
-              message: {
-                  title: "Alarm ",
-                  text: response,
-                  request_hook: true,
-                  hook_id: hook._id
-              }
-          });
-      }).catch((e) => {
-          console.log(e);
-          return resolve({
-              message: {
-                  title: "Alarm",
-                  text: response,
-                  request_hook: true,
-                  hook_id: hook._id
-              }
-          });
+      return resolve({
+          message: {
+              title: "Alarm ",
+              text: response,
+              request_hook: true,
+              hook_id: hook._id
+          }
       });
     }).catch((err) => {
       console.log(err);

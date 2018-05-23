@@ -9,8 +9,8 @@ module.exports.StorageManager = {
   storeItem: (skill, key, value) => hub.StorageManager.storeItem(skill, key, value)
 };
 module.exports.HookManager = {
-  create: (skill) => hub.HookManager.create(skill),
+  create: (skill, messageOnDelete) => hub.HookManager.create(skill, messageOnDelete),
   remove: (hookId) => hub.HookManager.remove(hookId),
-  execute: (hookId, message) => hub.HookManager.execute(hookId, message),
+  execute: (hookId, message, options) => hub.HookManager.execute(hookId, message, options),
   codes: hub.HookManager.codes
 }

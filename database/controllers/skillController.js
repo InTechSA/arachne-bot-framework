@@ -1,6 +1,7 @@
 'use strict';
 var Skill = require("../models/skillModel");
-
+const storageController = require('./storageController');
+const hookController = require('./hookController');
 /**
  * Create a new skill.
  *
@@ -50,7 +51,11 @@ module.exports.get = function() {
  * @returns {Promise<>} A promise to the deletion success.
  */
 module.exports.delete = function(name) {
-    return Skill.findOneAndRemove({ name });
+    storageController.clear_storage_for_skill(name)
+        .then(hookController.purge_for_skill(name))
+        .then(() => {
+            return Skill.findOneAndRemove({ name });
+        });
 };
 
 /**

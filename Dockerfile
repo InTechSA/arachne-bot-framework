@@ -23,7 +23,13 @@ COPY . .
 
 ENV PORT='80'
 ENV HOST='0.0.0.0'
-ENV MONGO_URL=''
+ENV MONGO_URL='mongodb://localhost:27017/arachne'
+ENV USE_AUTH_SERVICE='true'
+ENV AUTH_SERVICE_ROUTE='https://si-ad-test.intech-lab.com/authentication'
+ENV AUTH_SERVICE_METHOD='POST'
+ENV AUTH_SERVICE_USERNAME_FIELD='username'
+ENV AUTH_SERVICE_PASSWORD_FIELD='password'
+ENV ADMIN_USER='kevin.thizy'
 
 EXPOSE 80
 

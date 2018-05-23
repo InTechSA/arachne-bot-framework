@@ -8,6 +8,9 @@ const HookSchema = new Schema({
   },
   skill: {
     type: String
+  },
+  messageOnDelete: {
+    type: String
   }
 });
 

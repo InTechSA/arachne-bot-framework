@@ -20,7 +20,7 @@
 - Run the brain with `npm start`, or with environment variables : `SET MONGO_URL="mongodb://localhost/botbrain" && SET PORT=8080 && node brain.js` _(Baware ! you must escape specific character, like `&`, in environment variables values !)_
 - _Optional : run microservices at will using `npm install` and `npm start`._
 
-> You can access the administration dashboard at [localhost:8080/dashboard](localhost:8080/dashboard). Setup admin user with [localhost:8080/dashboard/setup](localhost:8080/dashboard/setup), username is _Nakasar_ and password is _Password0_.
+> You can access the administration dashboard at [localhost:8080/dashboard](localhost:8080/dashboard). Setup admin user with [localhost:8080/setup](localhost:8080/dashboard/setup), username is _Nakasar_ and password is _Password0_.
 
 > Nota Bene: In order to use the nlp skill, you must add a `secret.js` file in the `brain/logic/skills/nlp` folder exporting a `recastai_token` with your recast ai token. (Or you may recode a new nlp skill exposing an `analyse` command). You also may set the `recastai_token` secret within the dashboard after running the brain.
 
@@ -54,7 +54,7 @@ BRAIN_PORT=8080
 
 - Run the containers with `docker-compose up -d`.
 - The bot adapter should crash in loop. You have to connect to [http://localhost:3000](http://localhost:3000) and create a user named `superbot` with password `password`.
-- Setup the dashboard admin account at [http://localhost:3012/dashboard/setup](http://localhost:3012/dashboard/setup)
+- Setup the dashboard admin account at [http://localhost:3012/setup](http://localhost:3012/dashboard/setup)
 - Login to the dashboard as admin: [http://localhost:3012/dashboard/login](http://localhost:3012/dashboard/login). Username is `Nakasar` and password is `Password0`.
 - Go to the connectors pannel [http://localhost:3012/dashboard/connectors](http://localhost:3012/dashboard/connectors) and create a new connector. Copy its token.
 - Edit the BOT_TOKEN variable in the .env file with the token you just copied.
