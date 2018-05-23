@@ -23,6 +23,8 @@ app.set('title', 'Bot Brain Interface');
 app.set('views', './dashboard/views');
 app.set('view engine', 'pug');
 
+app.use(require('cors')());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

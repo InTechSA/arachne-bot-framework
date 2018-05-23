@@ -1,0 +1,869 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Arachne
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+paths:
+  /apidoc.yml:
+    get:
+      summary: Get the OpenAPI definition as .yml.
+      operationId: apiDoc
+      tags:
+        - admin
+      security: []
+      responses:
+        '200':
+          description: The apidoc.yml OpenAPI definition file.
+          content:
+            application/yml:
+              schema:
+                type: string
+                format: binary
+  
+  /setup:
+    get:
+      summary: Setup admin user.
+      operationId: setup
+      tags:
+        - admin
+      security: []
+      responses:
+        '200':
+          description: Admin account set.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      user_name:
+                        type: string
+                      roles:
+                        type: array
+                        items:
+                          type: string
+
+  /login:
+    post:
+      summary: Authentificate the user and returns a json web token.
+      operationId: auth
+      tags:
+        - auth
+      security: []
+      requestBody:
+        description: Login credentials.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                password:
+                  type: string
+              required:
+                - user_name
+                - password
+      responses:
+        200:
+          description: Login information.
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: message
+                  token:
+                    type: string
+                    example: "eya4az6d4.Azdad8azd.Azdazdf851"
+
+  /users:
+    get:
+      summary: Get list of users.
+      operationId: getUsers
+      tags:
+        - users
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArrayOfUsers'
+    post:
+      summary: Create a user.
+      operationId: createUser
+      description: Requires CREATE_USER permission.
+      tags:
+        - users
+      requestBody:
+        description: User to create. Password may be null if external auth service is used.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                password:
+                  type: string
+              required:
+                - user_name
+      responses:
+        '200':
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{username}:
+    get:
+      summary: Get info about a user by username.
+      operationId: getUser
+      description: Requires SEE_USER to see the user, and SEE_USER_PERM / SEE_USER_LAST_CONNECT to get permissions and last_connect date. A user shall always access its own informations.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      summary: Delete a user by username.
+      operationId: deleteUser
+      description: Requires DELETE_USER permission. Only admins may remove other admins.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /users/{username}/roles:
+    get:
+      tags:
+        - users
+
+  /me:
+    get:
+      tags:
+        - me
+  /me/permissions:
+    get:
+      tags:
+        - me
+
+  /reload:
+    post:
+      summary: Reload the brain.
+      description: Requires RELOAD_BRAIN permission.
+      operationId: reloadBrain
+      tags:
+        - brainAdmin
+      responses:
+        '200':
+          description: Brain reloaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /skills:
+    get:
+      summary: Get skills of brain.
+      description: Requires SEE_SKILLS permission (and SEE_SKILLS_ANY to see private skills).
+      operationId: reloadBrain
+      tags:
+        - skills
+      responses:
+        '200':
+          description: List of accessible skills.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfSkills'
+    put:
+      summary: Create a new skill.
+      description: Requires CREATE_SKILL permission. Skill code will be validated against template.
+      operationId: createSkill
+      tags:
+        - skills
+      requestBody:
+        description: Skill to save.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                skill_name:
+                  type: string
+                skill_code:
+                  type: string
+                skill_secret:
+                  type: string
+              required:
+                - skill_name
+                - skill_code
+      responses:
+        '200':
+          description: Skill created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}:
+    summary: Represents a skill.
+    description: Skills have a unique name.
+    delete:
+      summary: Delete a skill
+      operationId: deleteSkill
+      description: Requires DELETE_SKILL permision (cf DELETE_SKILL_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill deleted.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/reload:
+    post:
+      summary: reload a skill.
+      operationId: reloadSkill
+      description: Requires RELOAD_SKILL (cf RELOAD_SKILL_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill reloaded.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/edit:
+    get:
+      summary: Get skill code.
+      operationId: getSkillCode
+      description: Requires SEE_SKILL_CODE (cf SEE_SKILL_CODE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill reloaded.
+          content:
+            application/json:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                code:
+                  type: string
+  /skills/{name}/code:
+    put:
+      summary: Update skill code.
+      operationId: updateSkillCode
+      description: Requires EDIT_SKILL_CODE (cf EDIT_SKILL_CODE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Code of skill to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+      responses:
+        '200':
+          description: Skill code updated.
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+  /skills/{name}/secret:
+    get:
+      summary: Get skill secret.
+      operationId: getSkillSecret
+      description: Requires SEE_SKILL_SECRET (cf SEE_SKILL_SECRET_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill secret.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  secret:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
+                example: [[key1, value1], [key2, value2]]
+    put:
+      summary: Edit skill secret.
+      operationId: updateSkillSecret
+      description: required EDIT_SKILL_SECRET (cf EDIT_SKILL_SECRET_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Secret to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: string
+              example: [[key1, value1], [key2, value2]]
+      responses:
+        '200':
+          description: Skill secret updated.
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+  /skills/{name}/{status}:
+    post:
+      summary: Toggle a skill.
+      operationId: toggleSkill
+      description: Requires TOGGLE_SKILL (cf TOGGLE_SKILL_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          description: Set the skill on or off.
+          required: true
+          schema:
+            type: string
+            enum: [on, off]
+      responses:
+        '200':
+          description: Skill toggled on or off.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Skill alarms activated.
+                  active:
+                    type: boolean
+  /skills/{name}/hooks:
+    delete:
+      summary: Clear hooks for skill.
+      operationId: clearHooksForSkill
+      description: Requires DELETE_SKILL_HOOKS (cf DELETE_SKILL_HOOKS_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hooks cleared for skill.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/storage:
+    delete:
+      summary: Clear storage for skill.
+      operationId: clearStorageForSkill
+      description: Requires DELETE_SKILL_STORAGE (cf DELETE_SKILL_STORAGE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Storage cleared for skill.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+
+  /connectors:
+    get:
+      summary: Get list of connectors.
+      operationId: getConnectors
+      description: Requires SEE_ADAPTERS (cf SEE_ADAPTERS_ANY).
+      tags:
+        - connectors
+      responses:
+        '200':
+          description: List of adapters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfConnectors'
+    put:
+      summary: Create a new connector.
+      operationId: createConnectors
+      description: Requires CREATE_ADAPTER.
+      tags:
+        - connectors
+      requestBody:
+        description: Connector to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: RocketChat-Adapter
+                address:
+                  type: string
+                  example: "127.0.0.1"
+              required:
+                - name
+      responses:
+        '200':
+          description: Adapter created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Connector successfully created."
+                  connector:
+                    type: object
+                    $ref: '#/components/schemas/ConnectorDetails'
+  /connectors/{id}:
+    get:
+      summary: Get adapter details.
+      operationId: getConnector
+      description: Requires SEE_ADAPTER_TOKEN (cf SEE_ADAPTER_TOKEN_ANY).
+      tags:
+        - connectors
+      parameters:
+        - name: name
+          in: path
+          description: Adapter unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of adapter.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Details of connector."
+                  connector:
+                    $ref: '#components/schemas/ConnectorDetails'
+    delete:
+      summary: Delete adapter.
+      operationId: deleteConnector
+      description: Requires DELETE_ADAPTER (cf DELETE_ADAPTER_ANY).
+      tags:
+        - connectors
+      parameters:
+        - name: name
+          in: path
+          description: Adapter unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill code updated.
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    put:
+      summary: Update adapter.
+      operationId: updateConnector
+      description: Requires EDIT_ADAPTER (cf EDIT_ADAPTER_ANY).
+      tags:
+        - connectors
+      parameters:
+        - name: name
+          in: path
+          description: Adapter unique name.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Connector to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                  example: "127.0.0.1"
+              required:
+                - address
+      responses:
+        '200':
+          description: Adapter updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Connector saved."
+                  connector:
+                    $ref: '#components/schemas/Connector'
+  /connectors/{id}/toggle/{status}:
+    post:
+      summary: Toggle an adapter.
+      operationId: toggleConnector
+      description: Requires TOGGLE_ADAPTER (cf TOGGLE_ADAPTER_ANY).
+      tags:
+        - connectors
+      parameters:
+        - name: name
+          in: path
+          description: Adapter unique name.
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          description: Set the adapter on or off.
+          required: true
+          schema:
+            type: string
+            enum: [on, off]
+      responses:
+        '200':
+          description: Adapter toggled on or off.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Adapter toggled.
+                  connector:
+                    $ref: '#/components/schemas/Connector'
+  /connectors/{id}/token:
+    post:
+      summary: Refresh adapter token..
+      operationId: getConnector
+      description: Requires REFRESH_ADAPTER_TOKEN (cf REFRESH_ADAPTER_TOKEN_ANY).
+      tags:
+        - connectors
+      parameters:
+        - name: name
+          in: path
+          description: Adapter unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of adapter.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Token of adapter refreshed."
+                  connector:
+                    $ref: '#components/schemas/ConnectorDetails'
+  
+  /storage:
+    delete:
+      summary: Clear the brain storage.
+      operationId: clearStorage
+      description: Requires CLEAR_STORAGE permission.
+      tags:
+        - storage
+      responses:
+        '200':
+          description: Storage cleared.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+          examples:
+            - "Action is a success."
+            - "Action failed because..."
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        user_name:
+          type: string
+          example: "the.great.master"
+        registered_date:
+          type: string
+          example: "2018-05-23T12:42:48.822Z"
+        last_connect:
+          type: string
+          example: "2018-05-23T12:42:48.822Z"
+        roles:
+          type: array
+          items:
+            type: string
+          example: [admin]
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [SEE_SKILLS, CREATE_USER]
+      required:
+        - id
+    ArrayOfUsers:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    Skill:
+      type: object
+      properties:
+        commands:
+          type: object
+          properties:
+            commandName:
+              type: object
+              properties:
+                cmd:
+                  type: string
+                active:
+                  type: boolean
+                execute:
+                  type: string
+        intents:
+          type: object
+          properties:
+            intentName:
+              type: object
+              properties:
+                slug:
+                  type: string
+                expected_entities:
+                  type: array
+                  items:
+                    type: string
+                active:
+                  type: boolean
+                handle:
+                  type: string
+        interactions:
+          type: object
+          properties:
+            interactionName:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+                interact:
+                  type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+    ArrayOfSkills:
+      type: object
+      properties:
+        skillname:
+          $ref: '#components/schemas/Skill'
+    Connector:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5b03c914b42d0319c87880de
+        name:
+          type: string
+          example: RocketChat-Connector
+        active:
+          type: boolean
+        ip:
+          type: string
+          example: "127.0.0.1"
+      required:
+        - _id
+        - name
+    ConnectorDetails:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5b03c914b42d0319c87880de
+        name:
+          type: string
+          example: RocketChat-Connector
+        active:
+          type: boolean
+        ip:
+          type: string
+          example: "127.0.0.1"
+        token:
+          type: string
+          example: 27e7d4f1355e81638d2ae225caa860c99d424
+      required:
+        - _id
+    ArrayOfConnectors:
+      type: array
+      items:
+        $ref: '#components/schemas/Connector'
+
+security:
+  - bearerAuth: []
