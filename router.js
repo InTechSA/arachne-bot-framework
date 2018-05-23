@@ -54,6 +54,32 @@ module.exports = function(io) {
   ///////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
+  // API DOC
+
+  /**
+   * @api {post} /apidoc.yml Get OpenApi definition.
+   * @apiName ApiDef
+   * @apiGroup Admin
+   * @apiSuccess {File} apidoc.yml OpenAPI definition
+   */
+  router.get('/apidoc.yml', (req, res, next) => {
+    res.sendFile("apidoc.yml", {
+        root: __dirname + "/public/",
+        headers: {
+            'x-timestamp': Date.now(),
+            'x-sent': true
+        }
+    }, (err) => {
+        if (err) {
+            return next(err);
+        }
+    });
+  });
+
+  //
+  ///////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////
   // Setup for admin account. Will be ignored if there is at least one user in the database.
 
   /**
@@ -675,6 +701,21 @@ module.exports = function(io) {
     hub.UserManager.delete(req.params.user_name, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then(() => {
       return res.json({ success: true, message: "User deleted." });
     }).catch(next);
+  });
+
+  // Get user roles
+  router.get('/users/:user_name/roles', (req, res, next) => {
+    return res.sendStatus(500);
+  });
+
+  // Get some informations about the bearer of the token.
+  router.get('/me', (req, res, next) => {
+    return res.sendStatus(500);
+  });
+
+  // Get permissions of the bearer of the token.
+  router.get('/me/permissions', (req, res, next) => {
+    return res.sendStatus(500);
   });
 
   ///////////////////////////////////////////////////////////////////////////////

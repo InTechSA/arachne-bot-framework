@@ -1,0 +1,440 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Arachne
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+paths:
+  /apidoc.yml:
+    get:
+      summary: Get the OpenAPI definition as .yml.
+      operationId: apiDoc
+      tags:
+        - admin
+      security: []
+      responses:
+        '200':
+          description: The apidoc.yml OpenAPI definition file.
+          content:
+            application/yml:
+              schema:
+                type: string
+                format: binary
+  
+  /setup:
+    get:
+      summary: Setup admin user.
+      operationId: setup
+      tags:
+        - admin
+      security: []
+      responses:
+        '200':
+          description: Admin account set.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      user_name:
+                        type: string
+                      roles:
+                        type: array
+                        items:
+                          type: string
+
+  /login:
+    post:
+      summary: Authentificate the user and returns a json web token.
+      operationId: auth
+      tags:
+        - auth
+      security: []
+      requestBody:
+        description: Login credentials.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                password:
+                  type: string
+              required:
+                - user_name
+                - password
+      responses:
+        200:
+          description: Login information.
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: message
+                  token:
+                    type: string
+                    example: "eya4az6d4.Azdad8azd.Azdazdf851"
+
+  /users:
+    get:
+      summary: Get list of users.
+      operationId: getUsers
+      tags:
+        - users
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArrayOfUsers'
+
+  /reload:
+    post:
+      summary: Reload the brain.
+      description: Requires RELOAD_BRAIN permission.
+      operationId: reloadBrain
+      tags:
+        - brainAdmin
+      responses:
+        '200':
+          description: Brain reloaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /skills:
+    get:
+      summary: Get skills of brain.
+      description: Requires SEE_SKILLS permission (and SEE_SKILLS_ANY to see private skills).
+      operationId: reloadBrain
+      tags:
+        - skills
+      responses:
+        '200':
+          description: List of accessible skills.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfSkills'
+    put:
+      summary: Create a new skill.
+      description: Requires CREATE_SKILL permission. Skill code will be validated against template.
+      operationId: createSkill
+      tags:
+        - skills
+      requestBody:
+        description: Skill to save.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                skill_name:
+                  type: string
+                skill_code:
+                  type: string
+                skill_secret:
+                  type: string
+              required:
+                - skill_name
+                - skill_code
+      responses:
+        '200':
+          description: Skill created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}:
+    summary: Represents a skill.
+    description: Skills have a unique name.
+    delete:
+      summary: Delete a skill
+      operationId: deleteSkill
+      description: Requires DELETE_SKILL permision (cf DELETE_SKILL_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill deleted.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/reload:
+    post:
+      summary: reload a skill.
+      operationId: reloadSkill
+      description: Requires RELOAD_SKILL (cf RELOAD_SKILL_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill reloaded.
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/edit:
+    get:
+      summary: Get skill code.
+      operationId: getSkillCode
+      description: Requires SEE_SKILL_CODE (cf SEE_SKILL_CODE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill reloaded.
+          content:
+            application/json:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                code:
+                  type: string
+  /skills/{name}/code:
+    put:
+      summary: Update skill code.
+      operationId: updateSkillCode
+      description: Requires EDIT_SKILL_CODE (cf EDIT_SKILL_CODE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Code of skill to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+      responses:
+        '200':
+          description: Skill code updated.
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+  /skills/{name}/secret:
+    get:
+      summary: Get skill secret.
+      operationId: getSkillSecret
+      description: Requires SEE_SKILL_SECRET (cf SEE_SKILL_SECRET_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Skill secret.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  secret:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
+                example: [[key1, value1], [key2, value2]]
+    put:
+      summary: Edit skill secret.
+      operationId: updateSkillSecret
+      description: required EDIT_SKILL_SECRET (cf EDIT_SKILL_SECRET_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Secret to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: string
+              example: [[key1, value1], [key2, value2]]
+      responses:
+        '200':
+          description: Skill secret updated.
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        user_name:
+          type: string
+        registered_date:
+          type: date
+        last_connect:
+          type: date
+        roles:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+    ArrayOfUsers:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    Skill:
+      type: object
+      properties:
+        commands:
+          type: object
+          properties:
+            commandName:
+              type: object
+              properties:
+                cmd:
+                  type: string
+                active:
+                  type: boolean
+                execute:
+                  type: string
+        intents:
+          type: object
+          properties:
+            intentName:
+              type: object
+              properties:
+                slug:
+                  type: string
+                expected_entities:
+                  type: array
+                  items:
+                    type: string
+                active:
+                  type: boolean
+                handle:
+                  type: string
+        interactions:
+          type: object
+          properties:
+            interactionName:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+                interact:
+                  type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+    ArrayOfSkills:
+      type: object
+      properties:
+        skillname:
+          $ref: '#components/schemas/Skill'
+
+security:
+  - bearerAuth: []
