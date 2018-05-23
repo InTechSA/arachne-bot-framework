@@ -5,7 +5,7 @@ info:
   license:
     name: MIT
 servers:
-  - url: http://localhost:8080
+  - url: https://arachne-bot.intech-lab.com
 paths:
   /apidoc.yml:
     get:
