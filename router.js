@@ -78,7 +78,7 @@ module.exports = function(io) {
   
   router.get('/apidoc', (req, res, next) => {
     return res.render('../../public/apidoc.pug', {
-      api_url: `${process.env.SCHEME || 'http'}://${process.env.HOST || 'localhost'}:${process.env.PORT || 8080}/apidoc.yml`
+      api_url: `${process.env.API_DOC_URL}${process.env.PORT != 80 ? `:${process.env.PORT}` : "" }/apidoc.yml`
     });
   });
 
