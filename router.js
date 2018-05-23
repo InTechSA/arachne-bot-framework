@@ -2,8 +2,7 @@
 const express = require('express');
 const botRouter = require('./botRouter');
 let hub = require('./logic/hub');
-const jwt = require('jsonwebtoken');
-const config = require('./secret');
+const users = require('./database/controllers/userController');
 
 // Main router for the brain. Will load te dashboard router and the bot router.
 module.exports = function(io) {
@@ -25,6 +24,70 @@ module.exports = function(io) {
     res.json({ success: true, message: 'Entry of Bot Brain Interface API. /dashboard for admin interface, /nlp for a natural language conversation post, /command for a command post.' });
   });
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Login endpoint
+
+  /**
+   * @api {post} /login Login to dashboard
+   * @apiName Login
+   * @apiGroup Login
+   *
+   * @apiSuccess {Boolean} success Success of operation.
+   * @apiSuccess {String} message Message from api.
+   * @apiSuccess {String} token User token for this session.
+   */
+  router.post('/login', (req, res) => {
+    users.sign_in(req.body.user_name.trim(), req.body.password.trim()).then((obj) => {
+      return res.json({ success: true, message: obj.message, token: obj.token });
+    }).catch((err) => {
+      if (err.message) {
+        return res.status(err.code || 400).json({ success: false, message: err.message });
+      }
+      console.log(err.stack);
+      return res.status(500).json({ success: false, message: "Unkown error." });
+    });
+  });
+
+  //
+  ///////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Setup for admin account. Will be ignored if there is at least one user in the database.
+
+  /**
+   * @api {get} /setup Setup admin account.
+   * @apiName SetupAdmin
+   * @apiGroup Setup
+   *
+   * @apiSuccess {Boolean} success Success of operation.
+   * @apiSuccess {String} message Message from api.
+   */
+  router.get('/setup', (err, res) => {
+    users.is_empty().then((isempty) => {
+      if (isempty) {
+        users.create_user({ user_name: process.env.ADMIN_USER.trim() || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
+          users.promote_user(obj.id, "admin").then((user) => {
+            return res.json({ success: true, message: "Admin user added.", user: { id: user._id, roles: user.roles, user_name: user.user_name } });
+          }).catch((err) => {
+            console.log(err);
+            return res.status(500).json({ success: false, message: "Could not setup admin user." });
+          });
+        }).catch((err) => {
+          console.log(err);
+          return res.status(500).json({ success: false, message: "Could not setup admin user." });
+        });
+      } else {
+        return res.status(403).json({ success: false, message: "The user database is not empty." });
+      }
+    }).catch((err) => {
+      console.log(err);
+      return res.status(500).json({ success: false, message: "Could not setup admin user." });
+    });
+  });
+
+  //
   ///////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
