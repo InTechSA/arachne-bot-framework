@@ -24,10 +24,22 @@ $("#signin-form").submit((event) => {
             Cookies.set('user_token', json.token); //TODO: Add ";secure";
           }
           window.location.replace("/dashboard");
+        } else {
+          notifyUser({
+            title: "Auth failed",
+            message: json.message || "An error occured.",
+            type: "warning",
+            delay: 2
+          });
         }
       },
       error: function(err) {
-        console.log(err);
+        notifyUser({
+          title: "Auth failed",
+          message: err.responseJSON.message || "An error occured.",
+          type: "warning",
+          delay: 2
+        });
       }
     })
   }

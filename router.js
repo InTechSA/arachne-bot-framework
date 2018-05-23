@@ -43,10 +43,10 @@ module.exports = function(io) {
       return res.json({ success: true, message: obj.message, token: obj.token });
     }).catch((err) => {
       if (err.message) {
-        return res.json({ success: false, message: err.message });
+        return res.status(err.code || 400).json({ success: false, message: err.message });
       }
       console.log(err.stack);
-      return res.json({ success: false, message: "Unkown error." });
+      return res.status(500).json({ success: false, message: "Unkown error." });
     });
   });
 

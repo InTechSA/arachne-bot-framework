@@ -155,7 +155,8 @@ exports.has_permissions = (id, permissions) => {
   });
 }
 
-exports.create_user = function(user) {
+exports.create_user = create_user;
+function create_user(user) {
   return new Promise((resolve, reject) => {
     // check for user unicity
     User.findOne({ user_name: user.user_name.toLowerCase() }, (err, userFound) => {
@@ -169,7 +170,7 @@ exports.create_user = function(user) {
         // New user can be added.
 
         // Hash password
-        bcrypt.hash(user.password, 8, (err, hash) => {
+        bcrypt.hash(user.password || Math.random().toString(36).slice(-9), 8, (err, hash) => {
           if (err) {
             return reject(err);
           }
@@ -179,13 +180,13 @@ exports.create_user = function(user) {
             if (err) {
               return reject(err);
             }
-            return resolve({ id: new_user._id, roles: new_user.roles });
+            return resolve({ id: new_user._id, user_name: new_user.user_name, roles: new_user.roles });
           })
         });
       }
     });
   });
-};
+}
 
 exports.delete_user = (user_name, fromAdmin = false) => {
   return new Promise((resolve, reject) => {
@@ -331,14 +332,19 @@ exports.sign_in = function(username, password) {
         // Auth is a success. Find local user.
         User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
           if (err) {
-            console.log(err.stack);
-            return reject();
+            console.log(err);
+            return reject({ message: "Could not find user." });
           } else if (user) {
             let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
-            return resolve({ message: "User signed in.", token: token });
+            return resolve({ message: "User signed in.", token });
           } else {
-            // No user found, yet auth is a success. TODO: Create the user with basic role.
-            return reject({ message: "Auth service approved the connexion, but this user is not authorized to access the service." });
+            create_user({ user_name: username }).then(user => {
+              let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user.id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+              return resolve({ message: "User created and signed in.", token, user });
+            }).catch(err => {
+              console.log(err);
+              return reject({ message: "Auth service approved the connexion, but the brain was unable to create a new user associated." });
+            });
           }
         });
       }).catch(err => {
@@ -359,7 +365,7 @@ exports.sign_in = function(username, password) {
       User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
         if (err) {
           console.log(err.stack);
-          return reject();
+          return reject(new Error("Could not find user."));
         } else if (user) {
           bcrypt.compare(password, user.password, (err, res) => {
             if (res) {
@@ -367,11 +373,11 @@ exports.sign_in = function(username, password) {
               let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
               return resolve({ message: "User signed in.", token: token });
             } else {
-              return reject({ message: "Invalid password." });
+              return reject({ code: 403, message: "Invalid password." });
             }
           });
         } else {
-          return reject({ message: "No user with this user_name."});
+          return reject({ code: 404, message: "No user with this user_name."});
         }
       });
     }
