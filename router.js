@@ -21,7 +21,7 @@ module.exports = function(io) {
 
   // Bot Brain main endpoint
   router.get('/', (req, res) => {
-    res.json({ success: true, message: 'Entry of Bot Brain Interface API. /dashboard for admin interface, /nlp for a natural language conversation post, /command for a command post.' });
+    res.json({ success: true, message: 'Entry of Bot Brain Interface API. /dashboard for admin interface, /nlp for a natural language conversation post, /command for a command post. Acces api doc UI at /apidoc and OpenApi definition at /apidoc.yml' });
   });
 
   ///////////////////////////////////////////////////////////////////////////////
