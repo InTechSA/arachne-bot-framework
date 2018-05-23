@@ -44,7 +44,7 @@ module.exports.hasPerm = (permission) => {
 
 module.exports.isAuthed = () => {
     return function(req, res, next) {
-      let token = req.body.token || req.query.token || req.get("x-access-token") || req.cookies['user_token'];
+      let token = req.body.token || req.query.token || req.get("x-access-token") || (req.get("Authorization") ? req.get("Authorization").split(" ")[1] : null) || req.cookies['user_token'];
   
       if (!token) {
         const error = new Error("Not logged in. Missin token in body, query, x-access-token in header or user_token in cookies.");

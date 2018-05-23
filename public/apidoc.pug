@@ -1,0 +1,26 @@
+doctype html
+head
+  meta(charset='UTF-8')
+  title ServiceDesk Service Swagger
+  link(rel='stylesheet' type='text/css' href='https://unpkg.com/swagger-ui-dist@3.12.1/swagger-ui.css')
+#swagger-ui
+script(src='https://unpkg.com/swagger-ui-dist@3.12.1/swagger-ui-standalone-preset.js')
+script(src='https://unpkg.com/swagger-ui-dist@3.12.1/swagger-ui-bundle.js')
+script.
+  window.onload = function() {
+  // Build a system
+  const ui = SwaggerUIBundle({
+  url: "#{api_url}",
+  dom_id: '#swagger-ui',
+  deepLinking: true,
+  presets: [
+  SwaggerUIBundle.presets.apis,
+  SwaggerUIStandalonePreset
+  ],
+  plugins: [
+  SwaggerUIBundle.plugins.DownloadUrl
+  ],
+  layout: "StandaloneLayout",
+  })
+  window.ui = ui
+  }
