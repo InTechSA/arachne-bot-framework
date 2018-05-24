@@ -58,7 +58,7 @@ $("#new-user-form").submit((event) => {
           console.log(json);
           if (json.success) {
             $("#new-user-modal").modal('hide');
-            $("#user-list").append(`<tr data-user='${user_name}'><th scope='row'>${user_name}</th><td>${json.user.roles.join(", ")}</td><td><i class='text-primary action ml-1 fas fa-eye' title="Manage user" onClick="manageUser(this)" data-user='${user_name}'></i><i class='text-danger action ml-1 fas fa-trash-alt' title="Delete user" onClick="deleteUser(this)" data-user='${user_name}'></i>`.trim())
+            $("#user-list").append(`<tr data-user='${user_name}'><th scope='row'>${user_name}</th><td>${json.user.roles.join(", ")}</td><td><i class='text-primary action ml-1 fas fa-eye' title="See permissions of user" onClick="seeUserPerms(this)" data-user='${user_name}'></i><i class='text-warning action ml-1 fas fa-crown' title="Manage user roles" onClick="manageUserRoles(this)" data-user='${user_name}'></i><i class='text-secondary action ml-1 fas fa-cog' title="Manage user" onClick="manageUser(this)" data-user='${user_name}'></i><i class='text-danger action ml-1 fas fa-trash-alt' title="Delete user" onClick="deleteUser(this)" data-user='${user_name}'></i>`.trim())
             notifyUser({
               title: "User created",
               message: `Created user ${user_name}`,
@@ -123,6 +123,90 @@ function deleteUser(button) {
     });
     $("#delete-modal").modal('show');
 }
+
+
+/////////////////////////////////////
+// MANAGE USER ROLES
+
+function manageUserRoles(button) {
+    const user = $(button).data('user');
+    $('#user-roles-modal .user').text(user);
+    // Get roles of user
+    $.ajax({
+        method: "GET",
+        baseUrl: base_url,
+        url: `/users/${user}/roles`,
+        success: (json) => {
+            $('#user-roles-modal .role-list').empty();
+            json.roles.forEach(role => {
+                $('#user-roles-modal .role-list').append(makeUserRoleHtml(user, role));
+            });
+            $('#user-roles-modal').modal('show');
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not get roles.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+}
+
+function assignRole() {
+    const user = $($('#user-roles-modal .user')[0]).text();
+    const role = $('#user-roles-modal .selected-role').val();
+    // Get roles of user
+    $.ajax({
+        method: "PUT",
+        baseUrl: base_url,
+        url: `/users/${user}/roles/${role}`,
+        success: (json) => {
+            $('#user-roles-modal .role-list').empty();
+            json.roles.forEach(role => {
+                $('#user-roles-modal .role-list').append(makeUserRoleHtml(user, role));
+            });
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not not add role.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+}
+
+function removeUserRole(user, role) {
+    $.ajax({
+        method: "DELETE",
+        baseUrl: base_url,
+        url: `/users/${user}/roles/${role}`,
+        success: (json) => {
+            $('#user-roles-modal .role-list').empty();
+            json.roles.forEach(role => {
+                $('#user-roles-modal .role-list').append(makeUserRoleHtml(user, role));
+            });
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not not remove role.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+}
+
+function makeUserRoleHtml(user, role) {
+    return `<li class="list-group-item d-flex justify-content-between align-items-center">${role} <i class="fas fa-minus text-danger action" title="Remove role" onClick="removeUserRole('${user}', '${role}')"></i></li>`;
+}
+
+//
+/////////////////////////////////////
 
 function manageUser(button) {
     notifyUser({
