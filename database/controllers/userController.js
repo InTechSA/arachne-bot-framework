@@ -1,5 +1,6 @@
 'use strict';
-var User = require("../models/userModel");
+const User = require("../models/userModel");
+const Role = require("../models/roleModel");
 const bcrypt = require("bcrypt");
 const secret = require("../../secret");
 const jwt = require('jsonwebtoken');
@@ -17,31 +18,35 @@ exports.is_empty = function() {
 };
 
 exports.promote_user = function(id, role) {
-  return new Promise((resolve, reject) => {
-    User.findById(id, (err, user) => {
-      if (err) {
-        return reject(err);
-      } else if (user) {
-        if (!user.roles) {
-          user.roles = [];
-        }
-        const indexOfRole = user.roles.indexOf(role);
-        if (indexOfRole != -1) {
-          let error = new Error("User already has this role.");
-          error.code = 400;
-          return reject(error);
-        }
-        user.roles.push(role);
-        user.save((err) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(user);
-        });
-      } else {
-        return reject();
+  return User.findById(id).then(user => {
+    if (!user) {
+      let error = new Error("User not found.");
+      error.code = 404;
+      throw error;
+    }
+    return user;
+  }).then(user => {
+    // Check if role does exists.
+    return Role.count({ name: role }).then(count => {
+      if (count != 1) {
+        let error = new Error("No such role.");
+        error.code = 404;
+        throw error;
       }
-    });
+      return user;
+    })
+  }).then(user => {
+    if (!user.roles) {
+      user.roles = [];
+    }
+    const indexOfRole = user.roles.indexOf(role);
+    if (indexOfRole != -1) {
+      let error = new Error("User already has this role.");
+      error.code = 400;
+      throw error;
+    }
+    user.roles.push(role);
+    return user.save();
   });
 };
 

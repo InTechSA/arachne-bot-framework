@@ -108,6 +108,9 @@ exports.HookManager = HookManager;
 const userComponent = require('./components/UserManager');
 exports.UserManager = new userComponent.UserManager();
 
+const permissionComponent = require('./components/PermissionManager');
+exports.PermissionManager = new permissionComponent.PermissionManager();
+
 // Export main handlers
 exports.handleIntent = handleIntent;
 exports.handleCommand = handleCommand;

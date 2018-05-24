@@ -423,6 +423,158 @@ paths:
                       type: string
                     example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
 
+  /roles:
+    get:
+      summary: Get list of roles
+      operationId: getRoles
+      description: Requires SEE_ROLES
+      tags:
+        - permissions
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "List of roles."
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: [admin, guest]
+    put:
+      summary: Create role
+      operationId: createRole
+      description: Requires MANAGE_ROLES
+      tags:
+        - permissions
+      requestBody:
+        description: Role to create. Permissions may be empty.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: guest
+                    permissions:
+                      type: string
+                      example: [SEE_SKILLS, SEE_USERS]
+                  required:
+                    - name
+              required: role
+      responses:
+        '200':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role created."
+                  role:
+                    type: object
+                    properties:
+                      name: 
+                        type: string
+                        example: guest
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example: [SEE_USERS, SEE_SKILLS]
+  /roles/{rolename}:
+    get:
+      summary: Get details of role
+      operationId: getRole
+      description: Requires SEE_ROLES
+      tags:
+        - permissions
+      parameters:
+        - name: rolename
+          in: path
+          description: Role name
+          required: true
+          schema:
+            type: string
+            example: guest
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role details."
+                  roles:
+                    type: object
+                    properties:
+                      name: 
+                        type: string
+                        example: guest
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example: [SEE_USERS, SEE_SKILLS]
+    delete:
+      summary: Delete role.
+      operationId: deleteRole
+      description: Requires MANAGE_ROLES
+      tags:
+        - permissions
+      parameters:
+        - name: rolename
+          in: path
+          description: Role name
+          required: true
+          schema:
+            type: string
+            example: guest
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /roles/{rolename}/permissions:
+    get:
+      summary: Get permissions of role.
+      tags:
+        - permissions
+    post:
+      summary: Replace permissions of role.
+      tags:
+        - permissions
+    put:
+      summary: Grant permissions to role.
+      tags:
+        - permissions
+    delete:
+      summary: Revoke permissions of role.
+      tags:
+        - permissions
+
   /me:
     get:
       tags:
