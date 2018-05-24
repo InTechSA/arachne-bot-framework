@@ -36,6 +36,30 @@ block content
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') No! Abort!
                     button.btn.btn-danger.confirm(type='button') Yes! Delete!
+    
+    #user-roles-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='user-roles-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#user-roles-modal-label.modal-title
+                        | Manage Roles of 
+                        strong.user this user
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    .modal-alert
+                    p
+                        strong.user this user
+                        |  has the following roles:
+                    ul.list-group.role-list
+                    .row.mt-1
+                        .col.text-right
+                            select.selected-role.mr-2
+                                option admin
+                                option guest
+                            i.fas.fa-plus.text-success.text-right.action(title="Assign a role" onClick="assignRole()")
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Close
 
     h1 Users
     p These users have access to the brain. You may configure their permissions and roles here.
@@ -72,7 +96,9 @@ block content
                                 th(scope='row')=user.user_name
                                 td=user.roles.join(", ")
                                 td
-                                    i.text-primary.action.ml-1.fas.fa-eye(title="Manage user" onClick="manageUser(this)" data-user=user.user_name)
+                                    i.text-primary.action.ml-1.fas.fa-eye(title="See permissions" onClick="seeUserPerms(this)" data-user=user.user_name)
+                                    i.text-warning.action.ml-1.fas.fa-crown(title="Manage roles" onClick="manageUserRoles(this)" data-user=user.user_name)
+                                    i.text-secondary.action.ml-1.fas.fa-cog(title="Manage user" onClick="manageUser(this)" data-user=user.user_name)
                                     i.text-danger.action.ml-1.fas.fa-trash-alt(title="Delete user" onClick="deleteUser(this)" data-user=user.user_name)
     
     h1 Roles

@@ -77,9 +77,7 @@ module.exports = function(io) {
   });
   
   router.get('/apidoc', (req, res, next) => {
-    return res.render('../../public/apidoc.pug', {
-      api_url: `${process.env.API_DOC_URL}${process.env.PORT != 80 ? `:${process.env.PORT}` : "" }/apidoc.yml`
-    });
+    return res.render('../../public/apidoc.pug');
   });
 
   //
@@ -99,13 +97,12 @@ module.exports = function(io) {
   router.get('/setup', (err, res) => {
     users.is_empty().then((isempty) => {
       if (isempty) {
-        users.create_user({ user_name: process.env.ADMIN_USER.trim() || "Nakasar", password: "Password0", roles: ["admin"] }).then((obj) => {
-          users.promote_user(obj.id, "admin").then((user) => {
-            return res.json({ success: true, message: "Admin user added.", user: { id: user._id, roles: user.roles, user_name: user.user_name } });
-          }).catch((err) => {
-            console.log(err);
-            return res.status(500).json({ success: false, message: "Could not setup admin user." });
-          });
+        hub.PermissionManager.createRole("admin", []).then(() => {
+          return users.create_user({ user_name: process.env.ADMIN_USER.trim() || "Nakasar", password: "Password0", roles: ["admin"] });
+        }).then(user => {
+          return users.promote_user(user.id, "admin");
+        }).then(admin => {
+          return res.json({ success: true, message: "Admin user added.", user: { id: admin._id, roles: admin.roles, user_name: admin.user_name } });
         }).catch((err) => {
           console.log(err);
           return res.status(500).json({ success: false, message: "Could not setup admin user." });
@@ -663,6 +660,8 @@ module.exports = function(io) {
   });
 
   // Get user
+  // Requires SEE_USERS, but a user should access its own info even without this permission.
+  // So hasPerm('SEE_USERS') is not set as middleware here.
   router.get('/users/:user_name', (req, res, next) => {
     hub.UserManager.userHasPermissions(req.decoded.user.id, ['SEE_USERS', 'SEE_USER_PERM', 'SEE_USER_LAST_CONNECT']).then(permissions => {
       // A user should be able to access his/her own informations.
@@ -710,9 +709,141 @@ module.exports = function(io) {
   });
 
   // Get user roles
-  router.get('/users/:user_name/roles', (req, res, next) => {
-    return res.sendStatus(500);
+  router.get('/users/:user_name/roles', hasPerm('SEE_USER_ROLE'), (req, res, next) => {
+    hub.UserManager.userRolesByName(req.params.user_name).then(roles => {
+      return res.json({
+        success: true,
+        message: "User roles.",
+        roles
+      });
+    }).catch(next);
   });
+
+  // Assign a role to a user
+  router.put('/users/:user_name/roles/:role', hasPerm('ASSIGN_ROLE'), (req, res, next) => {
+    hub.UserManager.assignRole(req.params.user_name, req.params.role).then((user) => {
+      return res.json({
+        success: true,
+        message: "Role assigned to user.",
+        roles: user.roles
+      });
+    }).catch(next);
+  });
+  
+  // Remove a role from a user
+  router.delete('/users/:user_name/roles/:role', hasPerm('REMOVE_ROLE'), (req, res, next) => {
+    hub.UserManager.removeRole(req.params.user_name, req.params.role).then((user) => {
+      return res.json({
+        success: true,
+        message: "Role removed from user.",
+        roles: user.roles
+      });
+    }).catch(next);
+  });
+
+  // Get permissions of user.
+  router.get('/users/:user_name/permissions', hasPerm('SEE_USER_PERM'), (req, res, next) => {
+    hub.UserManager.userPermissionsByName(req.params.user_name).then(permissions => {
+      return res.json({
+        success: true,
+        message: "User permissions.",
+        permissions
+      })
+    }).catch(next);
+  });
+
+  // Grant permissions to user.
+  router.put('/users/:user_name/permissions', hasPerm('GRANT_PERM'), (req, res, next) => {
+    if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing permissions array in body."
+      });
+    }
+    hub.UserManager.grantPermissionsByName(req.params.user_name, req.body.permissions).then(permissions => {
+      return res.json({
+        success: true,
+        message: "Permissions granted to user.",
+        permissions
+      });
+    }).catch(next);
+  });
+
+  // Revoke permissions of user.
+  router.delete('/users/:user_name/permissions', hasPerm('REVOKE_PERM'), (req, res, next) => {
+    if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing permissions array in body."
+      });
+    }
+    hub.UserManager.revokePermissionsByName(req.params.user_name, req.body.permissions).then(permissions => {
+      return res.json({
+        success: true,
+        message: "Permissions revoked from user.",
+        permissions
+      });
+    }).catch(next);
+  });
+
+
+  //////////////////
+  // MANAGE ROLES
+
+  // Get all role names
+  router.get('/roles', hasPerm('SEE_ROLES'), (req, res, next) => {
+    hub.PermissionManager.getRoles().then(roles => {
+      return res.json({
+        success: true,
+        message: "List of roles.",
+        roles: roles.map(role => role.name)
+      });
+    }).catch(next);
+  });
+
+  // Create a role
+  router.put('/roles', hasPerm('MANAGE_ROLES'), (req, res, next) => {
+    if (!req.body.role) {
+      return res.status(403).json({ success: false, message: "Missing role : { name, permissions = [] } in body." });
+    }
+    if (!req.body.role.name) {
+      return res.status(403).json({ success: false, message: "Missing role : { name, permissions = [] } in body." });
+    }
+    if (req.body.role.permissions && !Array.isArray(req.body.role.permissions)) {
+      return res.status(403).json({ success: false, message: "Permission must be an array of strings." });
+    }
+    hub.PermissionManager.createRole(req.body.role.name, req.body.role.permissions).then(role => {
+      return res.json({
+        success: true,
+        message: "Role created.",
+        roles: { name: role.name, permissions: role.permissions }
+      });
+    }).catch(next);
+  });
+
+  // Get details about a role
+  router.get('/roles/:role', hasPerm('SEE_ROLES'), (req, res, next) => {
+    hub.PermissionManager.getRole(req.params.role).then(role => {
+      return res.json({
+        success: true,
+        message: "List of roles.",
+        role: { name: role.name, permissions: role.permisions }
+      });
+    }).catch(next);
+  });
+
+  // Delete a role
+  router.delete('/roles/:role', hasPerm('MANAGE_ROLE'), (req, res, next) => {
+    hub.PermissionManager.deleteRole(req.params.role).then(() => {
+      return res.json({
+        success: true,
+        message: "Role deleted."
+      });
+    }).catch(next);
+  });
+
+  //
+  //////////////////
 
   // Get some informations about the bearer of the token.
   router.get('/me', (req, res, next) => {

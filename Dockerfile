@@ -23,7 +23,6 @@ COPY . .
 
 ENV PORT='80'
 ENV HOST='0.0.0.0'
-ENV API_DOC_URL='https://arachne-bot.intech-lab.com'
 ENV MONGO_URL='mongodb://localhost:27017/arachne'
 ENV USE_AUTH_SERVICE='true'
 ENV AUTH_SERVICE_ROUTE='https://si-ad-test.intech-lab.com/authentication'

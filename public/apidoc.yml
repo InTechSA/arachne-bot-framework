@@ -5,7 +5,7 @@ info:
   license:
     name: MIT
 servers:
-  - url: https://arachne-bot.intech-lab.com
+  - url: /
 paths:
   /apidoc.yml:
     get:
@@ -184,8 +184,396 @@ paths:
                 $ref: '#/components/schemas/ApiResponse'
   /users/{username}/roles:
     get:
+      summary: Get roles of a user.
+      operationId: getUserRoles
+      description: Requires SEE_USER_ROLE. A user should use /me/role to acces its own roles.
       tags:
         - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+      responses:
+        '200':
+          description: List of user roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "List of user roles."
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: [connector_manager, guest]
+  /users/{username}/roles/{role}:
+    put:
+      summary: Assign a role to the user.
+      operationId: assignRole
+      description: Requires ASSIGN_ROLE. Only admin may assign admin roles.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+        - name: role
+          in: path
+          description: A role name
+          required: true
+          schema:
+            type: string
+            example: admin
+      responses:
+        '200':
+          description: Role added, return list of user roles.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role added."
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: [connector_manager, guest]
+    delete:
+      summary: Remove a role from the user.
+      operationIf: removeUserRole
+      description: Requires REMOVE_ROLE. Only admin may remove admin roles.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+        - name: role
+          in: path
+          description: A role name
+          required: true
+          schema:
+            type: string
+            example: admin
+      responses:
+        '200':
+          description: Role removed, return list of user roles.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role removed."
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: [connector_manager, guest]
+  /users/{username}/permissions:
+    get:
+      summary: Get permissions of a user.
+      operationId: getUserPermissions
+      description: Requires SEE_USER_PERM. User should use /me/permissions to acces their own permissions.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+      responses:
+        '200':
+          description: List of user's permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: User's permissions list.
+                  permissions:
+                    type: array
+                    item:
+                      type: string
+                    example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
+    put:
+      summary: Add permissions to a user.
+      operationId: grantPermissions
+      description: Requires GRANT_PERM.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+      requestBody:
+        description: Permissions to grant.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                  example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
+                required:
+                  - permissions
+      responses:
+        '200':
+          description: Permissions added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Permissions granted to user. Returns user permission list.
+                  permissions:
+                    type: array
+                    item:
+                      type: string
+                    example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
+
+    delete:
+      summary: Revoke permissions of a user.
+      operationId: revokePermissions
+      description: Requires REVOKE_PERM.
+      tags:
+        - users
+      parameters:
+        - name: username
+          in: path
+          description: User unique name.
+          required: true
+          schema:
+            type: string
+            example: the.great.master
+      requestBody:
+        description: Permissions to revoke.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                  example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
+                required:
+                  - permissions
+      responses:
+        '200':
+          description: Permissions added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Permissions revoked. Returns user permission list.
+                  permissions:
+                    type: array
+                    item:
+                      type: string
+                    example: [SEE_USERS, SEE_USER_PERM, GRANT_PERM, REVOKE_PERM]
+
+  /roles:
+    get:
+      summary: Get list of roles
+      operationId: getRoles
+      description: Requires SEE_ROLES
+      tags:
+        - permissions
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "List of roles."
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: [admin, guest]
+    put:
+      summary: Create role
+      operationId: createRole
+      description: Requires MANAGE_ROLES
+      tags:
+        - permissions
+      requestBody:
+        description: Role to create. Permissions may be empty.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: guest
+                    permissions:
+                      type: string
+                      example: [SEE_SKILLS, SEE_USERS]
+                  required:
+                    - name
+              required: role
+      responses:
+        '200':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role created."
+                  role:
+                    type: object
+                    properties:
+                      name: 
+                        type: string
+                        example: guest
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example: [SEE_USERS, SEE_SKILLS]
+  /roles/{rolename}:
+    get:
+      summary: Get details of role
+      operationId: getRole
+      description: Requires SEE_ROLES
+      tags:
+        - permissions
+      parameters:
+        - name: rolename
+          in: path
+          description: Role name
+          required: true
+          schema:
+            type: string
+            example: guest
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role details."
+                  roles:
+                    type: object
+                    properties:
+                      name: 
+                        type: string
+                        example: guest
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example: [SEE_USERS, SEE_SKILLS]
+    delete:
+      summary: Delete role.
+      operationId: deleteRole
+      description: Requires MANAGE_ROLES
+      tags:
+        - permissions
+      parameters:
+        - name: rolename
+          in: path
+          description: Role name
+          required: true
+          schema:
+            type: string
+            example: guest
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /roles/{rolename}/permissions:
+    get:
+      summary: Get permissions of role.
+      tags:
+        - permissions
+    post:
+      summary: Replace permissions of role.
+      tags:
+        - permissions
+    put:
+      summary: Grant permissions to role.
+      tags:
+        - permissions
+    delete:
+      summary: Revoke permissions of role.
+      tags:
+        - permissions
 
   /me:
     get:
