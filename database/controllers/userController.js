@@ -46,31 +46,38 @@ exports.promote_user = function(id, role) {
 };
 
 exports.demote_user = function(id, role) {
-  return new Promise((resolve, reject) => {
-    User.findById(id, (err, user) => {
-      if (err) {
-        return reject(err);
-      } else if (user) {
-        if (!user.roles) {
-          user.roles = [];
+  return User.findById(id).then(user => {
+    if (!user) {
+      let error = new Error('User not found');
+      error.code = 404;
+      throw error;
+    }
+    return user;
+  }).then(user => {
+    if (role == "admin") {
+      return User.count({ roles: 'admin' }).then(count => {
+        console.log(count);
+        if (count == 1) {
+          let error = new Error('Cannot delete last admin user.');
+          error.code = 400;
+          throw error;
         }
-        const indexOfRole = user.roles.indexOf(role);
-        if (indexOfRole == -1) {
-          let error = new Error("User does not has this role.");
-          error.code = 404;
-          return reject(error);
-        }
-        user.roles.splice(indexOfRole, 1);
-        user.save((err) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(user);
-        });
-      } else {
-        return reject();
-      }
-    });
+        return user;
+      })
+    }
+    return user;
+  }).then(user => {
+    if (!user.roles) {
+      user.roles = [];
+    }
+    const indexOfRole = user.roles.indexOf(role);
+    if (indexOfRole == -1) {
+      let error = new Error("User does not has this role.");
+      error.code = 404;
+      throw error;
+    }
+    user.roles.splice(indexOfRole, 1);
+    return user.save();
   });
 };
 
