@@ -141,7 +141,31 @@ function manageUserRoles(button) {
             json.roles.forEach(role => {
                 $('#user-roles-modal .role-list').append(makeUserRoleHtml(user, role));
             });
-            $('#user-roles-modal').modal('show');
+
+            // Get available roles
+            $.ajax({
+                method: "GET",
+                baseUrl: base_url,
+                url: `/roles`,
+                success: (json) => {
+                    $('#user-roles-modal .selected-role').empty();
+                    json.roles.forEach(role => {
+                        $('#user-roles-modal .selected-role').append($('<option>', {
+                            value: role,
+                            text: role
+                        }));
+                    });
+                    $('#user-roles-modal').modal('show');
+                },
+                error: (error) => {
+                    notifyUser({
+                        title: "Could not get roles.",
+                        message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                        type: "error",
+                        delay: 2
+                    });
+                }
+            });
         },
         error: (error) => {
             notifyUser({
