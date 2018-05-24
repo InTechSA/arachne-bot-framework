@@ -27,7 +27,9 @@ exports.promote_user = function(id, role) {
         }
         const indexOfRole = user.roles.indexOf(role);
         if (indexOfRole != -1) {
-          return reject(new Error("User already has this role."));
+          let error = new Error("User already has this role.");
+          error.code = 400;
+          return reject(error);
         }
         user.roles.push(role);
         user.save((err) => {
@@ -54,9 +56,11 @@ exports.demote_user = function(id, role) {
         }
         const indexOfRole = user.roles.indexOf(role);
         if (indexOfRole == -1) {
-          return reject(new Error("User does not has this role."));
+          let error = new Error("User does not has this role.");
+          error.code = 404;
+          return reject(error);
         }
-        user.roles.splice(indexOfRole, 0);
+        user.roles.splice(indexOfRole, 1);
         user.save((err) => {
           if (err) {
             return reject(err);
@@ -69,6 +73,17 @@ exports.demote_user = function(id, role) {
     });
   });
 };
+
+exports.permissions_by_name = (user_name) => {
+  return User.findOne({ user_name }).then(user => {
+    if (!user) {
+      let error = new Error("No user found.");
+      error.code = 404;
+      throw error;
+    }
+    return user.permissions;
+  });
+}
 
 exports.grant_permission = function(id, permission) {
   return new Promise((resolve, reject) => {
@@ -97,6 +112,22 @@ exports.grant_permission = function(id, permission) {
   });
 };
 
+exports.grant_permissions = (id, permissions) => {
+  return User.findById(id).then(user => {
+    if (!user) {
+      let error = new Error("No user found.");
+      error.code = 400;
+      throw error;
+    }
+    if (!user.permissions) {
+      user.permissions = permissions;
+    } else {
+      permissions.forEach(permission => user.permissions.includes(permission) ? null : user.permissions.push(permission));
+    }
+    return user.save();
+  }).then(user => user.permissions);
+}
+
 exports.revoke_permission = function(id, permission) {
   return new Promise((resolve, reject) => {
     User.findById(id, (err, user) => {
@@ -110,7 +141,7 @@ exports.revoke_permission = function(id, permission) {
         if (indexOfPermission == -1) {
           return reject(new Error("User does not has this permission."));
         }
-        user.permissions.splice(indexOfPermission, 0);
+        user.permissions.splice(indexOfPermission, 1);
         user.save((err) => {
           if (err) {
             return reject(err);
@@ -123,6 +154,27 @@ exports.revoke_permission = function(id, permission) {
     });
   });
 };
+
+exports.revoke_permissions = (id, permissions) => {
+  return User.findById(id).then(user => {
+    if (!user) {
+      let error = new Error("No user found.");
+      error.code = 400;
+      throw error;
+    }
+    if (!user.permissions) {
+      user.permissions = [];
+    } else {
+      permissions.forEach(permission => {
+        const index = user.permissions.indexOf(permission);
+        if (index > -1) {
+          user.permissions.splice(index, 1);
+        }
+      });
+    }
+    return user.save();
+  }).then(user => user.permissions);
+}
 
 exports.has_permission = (id, permission) => {
   return new Promise((resolve, reject) => {
@@ -153,7 +205,7 @@ exports.has_permissions = (id, permissions) => {
       }
     });
   });
-}
+};
 
 exports.create_user = create_user;
 function create_user(user) {
@@ -225,7 +277,7 @@ exports.delete_user = (user_name, fromAdmin = false) => {
       });
     });
   });
-}
+};
 
 exports.remove_all = function() {
   return new Promise((resolve, reject) => {
@@ -252,14 +304,24 @@ exports.get_user = function(id) {
   });
 };
 
+exports.get_user_roles_by_username = (user_name) => {
+  return User.findOne({ user_name }, "_id user_name roles").then(user => {
+    if (!user) {
+      let error = new Error('No user found.')
+      error.code = 404;
+      throw error;
+    }
+    return user.roles;
+  });
+};
+
 exports.get_by_username = (user_name) => {
-  console.log(user_name.toLowerCase())
   return User.findOne({ user_name: user_name.toLowerCase() });
-}
+};
 
 exports.get_all = function(id) {
   return User.find({}, "_id user_name registered_date last_connect roles permissions");
-}
+};
 
 exports.update_password = function(userId, currentPassword, newPassword) {
   return new Promise((resolve, reject) => {
@@ -394,4 +456,4 @@ exports.verify_token = (token) => {
       return resolve(decoded);
     });
   });
-}
+};
