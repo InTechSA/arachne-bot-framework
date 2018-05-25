@@ -5,6 +5,10 @@ exports.ConfigurationManager = class ConfigurationManager {
         this.configurationController = configurationController || require("./../../database/controllers/configurationController");
     }
 
+    getConfiguration() {
+        return this.configurationController.get_config();
+    }
+
     getLang() {
         return this.configurationController.get_lang();
     }

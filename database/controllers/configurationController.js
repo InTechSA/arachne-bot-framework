@@ -2,7 +2,7 @@
 const Configuration = require('../models/configurationModel');
 
 module.exports.get_config = () => {
-    return Configuration.findOne({}).then(config => {
+    return Configuration.findOne({}, { '_id': 0, '__v': 0 }).then(config => {
         // Make sure configuration is in DB.
         if (!config) {
             let configuration = new Configuration();

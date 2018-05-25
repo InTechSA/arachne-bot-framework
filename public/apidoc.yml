@@ -1118,6 +1118,20 @@ paths:
       description: Requires CONFIGURE_BRAIN.
       tags:
         - configuration
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Lang is FR"
+                  configuration:
+                    type: object
   /configuration/lang:
     get:
       summary: Get field "lang" of configuration.

@@ -858,6 +858,12 @@ module.exports = function(io) {
   //////////////////
   // MANAGE ROLES
 
+  router.get('/configuration', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.getConfiguration().then(configuration => {
+      return res.json({ success: true, message: `Got configuration.`, configuration });
+    }).catch(next);
+  });
+
   router.get('/configuration/lang', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
     hub.ConfigurationManager.getLang().then(lang => {
       return res.json({ success: true, message: `Lang is ${lang}.`, lang });
