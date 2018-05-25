@@ -1111,6 +1111,116 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
 
+  /configuration:
+    get:
+      summary: Get full configuration of brain.
+      operationId: getConfiguration
+      description: Requires CONFIGURE_BRAIN.
+      tags:
+        - configuration
+  /configuration/lang:
+    get:
+      summary: Get field "lang" of configuration.
+      operationId: getLang
+      description: Requires CONFIGURE_BRAIN.
+      tags:
+        - configuration
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Lang is FR"
+                  lang:
+                    type: string
+                    example: FR
+  /configuration/lang/{lang}:
+    put:
+      summary: Set field "lang" of brain.
+      operationId: setLang
+      description: Requires CONFIGURE_BRAIN.
+      tags:
+        - configuration
+      parameters:
+        - name: lang
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Lang set to FR"
+                  lang:
+                    type: string
+                    example: FR
+  /configuration/botname:
+    get:
+      summary: Get field "botname" of configuration.
+      operationId: getBotname
+      description: Requires CONFIGURE_BRAIN.
+      tags:
+        - configuration
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Our Greatest Bot bears the name Arachne"
+                  botname:
+                    type: string
+                    example: Arachne
+  /configuration/botname/{botname}:
+    put:
+      summary: Set field "botname" of brain.
+      operationId: setBotname
+      description: Requires CONFIGURE_BRAIN.
+      tags:
+        - configuration
+      parameters:
+        - name: botname
+          in: path
+          required: true
+          schema:
+            type: string
+            example: My Super Bot
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Bot name set to My Super Bot"
+                  botname:
+                    type: string
+                    example: My Super Bot
+
+                    
 components:
   securitySchemes:
     bearerAuth:

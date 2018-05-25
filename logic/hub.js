@@ -111,6 +111,9 @@ exports.UserManager = new userComponent.UserManager();
 const permissionComponent = require('./components/PermissionManager');
 exports.PermissionManager = new permissionComponent.PermissionManager();
 
+const configurationComponent = require('./components/ConfigurationManager');
+exports.ConfigurationManager = new configurationComponent.ConfigurationManager();
+
 // Export main handlers
 exports.handleIntent = handleIntent;
 exports.handleCommand = handleCommand;
