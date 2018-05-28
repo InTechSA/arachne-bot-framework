@@ -47,35 +47,46 @@ exports.interactions = interactions;
   You must implements the functions listed as "execute" and "handle" handler, or your skill will not load.
 */
 /* <SKILL LOGIC> */
-const recastai = require('recastai');
 const secret = require('./secret');
-
-const client = new recastai.request(secret.recastai_token, 'en');
+const request = require('request');
 
 function analyzeText({ phrase = "" }) {
   return new Promise((resolve, reject) => {
-    if (!client) {
-      return reject();
-    }
+
     console.log(`> [INFO] {nlp} - Analyze "${phrase}".`);
-    client.analyseText(phrase).then((res) => {
-      let analyzed = { };
-      analyzed.intent = res.intent() ? res.intent().slug : null;
-      analyzed.entities = {};
-      for (let entityName in res.entities) {
-        analyzed.entities[entityName] = []
-        for (let entity of res.entities[entityName]) {
-          analyzed.entities[entityName].push(entity.raw);
+    request({
+        url: "https://nlu-dashboard.intech-lab.com/rasa/parse",
+        method: "POST",
+        body: {
+            "project": secret.nlu_id,
+            "text": phrase
+        },
+        json: true
+    }, (err,res,body) => {
+        if(err) {
+            console.log('> [ERROR] Error contacting the nlu API '+err);
+            return resolve({message : {text: 'Error contacting the nlu API '+err}});
         }
-      }
-
-      analyzed.message = {
-        text: res.intent() ? `I think your intent is *${res.intent().slug}*.` : `I did'nt found any intent in this sentence.`
-      };
-
-      return resolve(analyzed);
-    }).catch((err) => {
-      return reject(err);
+        let analyzed = { };
+        try {
+            console.log(body);
+            analyzed.intent = body.data.intent ? body.data.intent.name.toLowerCase() : null;
+          analyzed.entities = {};
+          if(body.data.entities) {
+              for (let entity of body.data.entities) {
+                analyzed.entities[entity.entity.toLowerCase()] = analyzed.entities[entity.entity.toLowerCase()] || [];
+                analyzed.entities[entity.entity.toLowerCase()].push(entity.value);
+              }
+          }
+    
+          analyzed.message = {
+            text: analyzed.intent ? `I think your intent is *${analyzed.intent}*.` : `I did'nt found any intent in this sentence.`
+          };
+    
+          return resolve(analyzed);
+        } catch(e) {
+            return reject(e);
+        }
     });
   });
 }
