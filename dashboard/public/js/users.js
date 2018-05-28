@@ -113,7 +113,6 @@ function deleteUser(button) {
               }
             },
             error: function(err) {
-
                 return displayModalAlert("#delete-modal", {
                     title: "Could not delete user.",
                     message: err.responseJSON.message || "Server or Network error."
