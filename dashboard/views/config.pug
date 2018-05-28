@@ -1,4 +1,54 @@
 extends layout
 
 block content
+    // Modals
+    #edit-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='edit-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#edit-modal-label.modal-title Edit Field
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    form#edit-form
+                        .form-group
+                        label.field-title(for="edit-field") Field
+                        input.form-control#edit-field(type="text" placeholder="field")
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+                    button.btn.btn-primary(type='submit' form="edit-form") Save
 
+    .row.justify-content-between
+        .col
+            h1 Edit configuration
+        .col.align-self-center.text-right
+            buton.btn.btn-outline-warning#reload-brain(role="button") Reload Brain
+
+    #reload-alert.alert.alert-warning(style="display: none;")
+        p You have pending changes to configuration. You need to reload the brain to apply them.
+
+    table.table
+        thead.thead-light
+            tr
+                th(scope='col') Field (Current)
+                th(scope='col') Saved configuration
+        tbody
+            tr#botname
+                th(scope='row')
+                    | Name of bot (
+                    span= loaded_configuration.botname
+                    | )
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="botname" onClick="editField(this)")
+                    span.current= configuration.botname
+            tr#lang
+                th(scope='row')
+                    | Name of bot (
+                    span= loaded_configuration.lang
+                    | )
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="lang" onClick="editField(this)")
+                    span.current= configuration.lang
+    
+    script
+        include ../public/js/config.js

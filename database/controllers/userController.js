@@ -194,7 +194,9 @@ exports.has_permission = (id, permission) => {
       if (err) {
         return reject(err);
       } else if (!user) {
-        return reject(new Error("No user found."));
+        let error = new Error("No authorized user found.");
+        error.code = 403;
+        return reject(error);
       } else {
         return resolve(user.roles.includes("admin") || user.permissions.includes(permission));
       }
@@ -208,7 +210,9 @@ exports.has_permissions = (id, permissions) => {
       if (err) {
         return reject(err);
       } else if (!user) {
-        return reject(new Error("No user found."));
+        let error = new Error("No authorized user found.");
+        error.code = 403;
+        return reject(error);
       } else {
         let permissionsObject = {};
         const userIsAdmin = user.roles.includes("admin");

@@ -72,12 +72,12 @@ function handleCommand(commandName, phrase = "", data = {}) {
  */
 function reloadBrain() {
   return new Promise((resolve, reject) => {
-    try {
+    ConfigurationManager.reload().then(() => {
       SkillManager.loadSkillsFromFolder();
       return resolve();
-    } catch(e) {
+    }).catch((e) => {
       return reject(e);
-    }
+    });
   });
 }
 
@@ -111,6 +111,10 @@ exports.UserManager = new userComponent.UserManager();
 const permissionComponent = require('./components/PermissionManager');
 exports.PermissionManager = new permissionComponent.PermissionManager();
 
+const configurationComponent = require('./components/ConfigurationManager');
+const ConfigurationManager = new configurationComponent.ConfigurationManager();
+exports.ConfigurationManager = ConfigurationManager;
+
 // Export main handlers
 exports.handleIntent = handleIntent;
 exports.handleCommand = handleCommand;
@@ -132,8 +136,11 @@ exports.hasSkill = (skillName) => SkillManager.hasSkill(skillName);
 
 exports.reloadBrain = reloadBrain;
 
-SkillManager.loadSkillsFromDatabase()
-  .then(() => SkillManager.loadSkillsFromFolder()).catch(err => {
+ConfigurationManager.reload().then(() => {
+  console.log(`> [INFO] Configuration loaded.`);
+  return SkillManager.loadSkillsFromDatabase();
+}).then(() => SkillManager.loadSkillsFromFolder())
+  .catch(err => {
     console.log(err);
     console.log(`\x1b[31mFailed to load skills.\x1b[0m`);
-  });
+});
