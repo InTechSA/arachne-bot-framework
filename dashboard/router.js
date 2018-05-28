@@ -45,6 +45,7 @@ module.exports = function(io) {
           nav_link: 'nav-portal',
           message: 'Welcome to administration panel of this amazing Bot.',
           mainTitle: "Bot Brain Dashboard",
+          botname: hub.ConfigurationManager.loadedConfiguration.botname,
           skills: skills,
           connector_token: connector.token
         });
@@ -57,7 +58,8 @@ module.exports = function(io) {
           title: 'Dashboard - Bot',
           nav_link: 'nav-portal',
           message: 'Welcome to administration panel of this amazing Bot.',
-          mainTitle: "Bot Brain Dashboard",
+          mainTitle: `${hub.ConfigurationManager.loadedConfiguration.botname} Dashboard`,
+          botname: hub.ConfigurationManager.loadedConfiguration.botname,
           skills: skills,
           connector_token: ""
         });
@@ -79,7 +81,8 @@ module.exports = function(io) {
         title: 'Skills - Bot',
         nav_link: 'nav-skills',
         message: 'Welcome to administration panel of this amazing Bot.',
-        mainTitle: "Bot Brain Dashboard",
+        mainTitle: `${hub.ConfigurationManager.loadedConfiguration.botname} Dashboard`,
+        botname: hub.ConfigurationManager.loadedConfiguration.botname,
         skills: skills
       });
     });
@@ -94,7 +97,8 @@ module.exports = function(io) {
   router.get('/skills/new', hasPerm('CREATE_SKILL'), (req, res) => {
     res.render('skill_edit', {
       title: 'Add Skill - Bot',
-      nav_link: 'nav-skills'
+      nav_link: 'nav-skills',
+      botname: hub.ConfigurationManager.loadedConfiguration.botname
     });
   });
 
@@ -126,7 +130,8 @@ module.exports = function(io) {
       } else {
         res.render('skill', {
           title: 'Skill not found',
-          nav_link: 'nav-skills'
+          nav_link: 'nav-skills',
+          botname: hub.ConfigurationManager.loadedConfiguration.botname
         });
       }
     }).catch((err) => {
@@ -147,6 +152,7 @@ module.exports = function(io) {
           res.render('skill_edit', {
             title: 'Edit Skill ' + req.params.skill + ' - Bot',
             nav_link: 'nav-skills',
+            botname: hub.ConfigurationManager.loadedConfiguration.botname,
             skill_edited: {
               name: req.params.skill,
               code: code,
@@ -178,6 +184,7 @@ module.exports = function(io) {
         res.render('connectors', {
           title: 'Manage Connectors',
           nav_link: 'nav-connectors',
+          botname: hub.ConfigurationManager.loadedConfiguration.botname,
           connectors
         })
       })
@@ -199,6 +206,7 @@ module.exports = function(io) {
       return res.render("users", {
         title: 'Manage Users',
         nav_link: 'nav-users',
+        botname: hub.ConfigurationManager.loadedConfiguration.botname,
         default_role,
         users,
         roles
@@ -213,10 +221,16 @@ module.exports = function(io) {
   // Cofnigure Brain
 
   router.get('/configuration', hasRole("SEE_CONFIGURATION"), (req, res, next) => {
-    return res.render("config", {
-      ttile: 'Configure brain',
-      nav_link: 'nav-configuration'
-    });
+    // Load configuration stored in database (it may be different from the currently loaded configuration!)
+    hub.ConfigurationManager.getConfiguration().then(configuration => {
+      return res.render("config", {
+        title: 'Configure brain',
+        nav_link: 'nav-configuration',
+        botname: hub.ConfigurationManager.loadedConfiguration.botname,
+        configuration,
+        loaded_configuration: hub.ConfigurationManager.loadedConfiguration
+      });
+    }).catch(next);
   });
 
   //
@@ -230,6 +244,7 @@ module.exports = function(io) {
       return res.render('settings', {
         title: "Dashboard Settings - Bot",
         nav_link: 'settings',
+        botname: hub.ConfigurationManager.loadedConfiguration.botname,
         user: user
       });
     }).catch((err) => {

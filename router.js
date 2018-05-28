@@ -21,7 +21,7 @@ module.exports = function(io) {
 
   // Bot Brain main endpoint
   router.get('/', (req, res) => {
-    res.json({ success: true, message: 'Entry of Bot Brain Interface API. /dashboard for admin interface, /nlp for a natural language conversation post, /command for a command post. Acces api doc UI at /apidoc and OpenApi definition at /apidoc.yml' });
+    res.json({ success: true, message: `Entry of ${hub.ConfigurationManager.loadedConfiguration.botname} Interface API. /dashboard for admin interface, /nlp for a natural language conversation post, /command for a command post. Acces api doc UI at /apidoc and OpenApi definition at /apidoc.yml` });
   });
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -854,6 +854,42 @@ module.exports = function(io) {
   router.get('/me/permissions', (req, res, next) => {
     return res.sendStatus(500);
   });
+
+  //////////////////
+  // MANAGE ROLES
+
+  router.get('/configuration', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.getConfiguration().then(configuration => {
+      return res.json({ success: true, message: `Got configuration.`, configuration });
+    }).catch(next);
+  });
+
+  router.get('/configuration/lang', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.getLang().then(lang => {
+      return res.json({ success: true, message: `Lang is ${lang}.`, lang });
+    }).catch(next);
+  });
+
+  router.put('/configuration/lang/:lang', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.setLang(req.params.lang).then(lang => {
+      return res.json({ success: true, message: `Lang set to ${lang}.`, lang });
+    }).catch(next);
+  });
+
+  router.get('/configuration/botname', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.getBotname().then(botname => {
+      return res.json({ success: true, message: `Out Greatest Bot bears the name ${botname}.`, botname });
+    }).catch(next);
+  });
+
+  router.put('/configuration/botname/:botname', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    hub.ConfigurationManager.setBotname(req.params.botname).then(botname => {
+      return res.json({ success: true, message: `Bot name set to ${botname}.`, botname });
+    }).catch(next);
+  });
+
+  //
+  //////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
 
