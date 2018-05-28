@@ -128,12 +128,12 @@ function brokkr({ phrase, data }) {
     } else if (cmd === "logs") {
         return appLogs({ phrase: params.join(" "), data });
     } else {
-        return resolve({
+        return Promise.resolve({
             message: {
                 title: "Not implemented",
                 text: "This functionnality is currently not implemented."
             }
-        });   
+        });
     }
 }
 /**
