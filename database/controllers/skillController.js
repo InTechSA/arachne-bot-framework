@@ -105,6 +105,7 @@ module.exports.save_secret = function(name, secret = {}) {
                 return reject(new Error("No skill with this name."));
             }
             skill.last_update = new Date();
+            skill.secret.clear();
             Object.keys(secret).forEach(key => skill.secret.set(key, secret[key]));
             skill.save().then(saved => resolve(saved)).catch(err => reject(err));
         });

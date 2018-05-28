@@ -4,7 +4,8 @@
   "description": "Bot main system.",
   "main": "brain.js",
   "scripts": {
-    "start": "node brain.js"
+    "start": "node brain.js",
+    "adstart": "set USE_AUTH_SERVICE=true && set AUTH_SERVICE_ROUTE=https://si-ad-test.intech-lab.com/authentication && set AUTH_SERVICE_METHOD=POST && set AUTH_SERVICE_PASSWORD_FIELD=password && set AUTH_SERVICE_USERNAME_FIELD=username && npm start"
   },
   "repository": {
     "type": "git",
