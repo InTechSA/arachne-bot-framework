@@ -1,0 +1,933 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Hooks · Arachne Framework</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Kevin "Nakasar" Thizy">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="dashboard.html" />
+    
+    
+    <link rel="prev" href="quizz.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../architecture/">
+            
+                <a href="../architecture/">
+            
+                    
+                    Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Arachne Brain
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="setup.html">
+            
+                <a href="setup.html">
+            
+                    
+                    Install
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="start.html">
+            
+                <a href="start.html">
+            
+                    
+                    Get Started
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3" data-path="skills.html">
+            
+                <a href="skills.html">
+            
+                    
+                    Skills
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.3.1" data-path="messages.html">
+            
+                <a href="messages.html">
+            
+                    
+                    Messages
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3.2" data-path="conversations.html">
+            
+                <a href="conversations.html">
+            
+                    
+                    Conversation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3.3" data-path="hooks.html">
+            
+                <a href="hooks.html">
+            
+                    
+                    Hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3.4" >
+            
+                <span>
+            
+                    
+                    Examples
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.3.4.1" data-path="weather.html">
+            
+                <a href="weather.html">
+            
+                    
+                    API Request
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3.4.2" data-path="quizz.html">
+            
+                <a href="quizz.html">
+            
+                    
+                    Conversation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.3.3.4.3" data-path="tea.html">
+            
+                <a href="tea.html">
+            
+                    
+                    Hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4" data-path="dashboard.html">
+            
+                <a href="dashboard.html">
+            
+                    
+                    Dashboard
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.4.1" data-path="dashboard.html">
+            
+                <a href="dashboard.html#setup">
+            
+                    
+                    Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4.2" data-path="dashboard.html">
+            
+                <a href="dashboard.html#users-and-accounts">
+            
+                    
+                    Users and Accounts
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4.3" data-path="dashboard.html">
+            
+                <a href="dashboard.html#permissions">
+            
+                    
+                    Permissions
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4.4" data-path="dashboard.html">
+            
+                <a href="dashboard.html#adapters">
+            
+                    
+                    Adapters
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4.5" data-path="dashboard.html">
+            
+                <a href="dashboard.html#skills">
+            
+                    
+                    Skills
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4.6" data-path="dashboard.html">
+            
+                <a href="dashboard.html#test">
+            
+                    
+                    Test
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.5" data-path="api.html">
+            
+                <a href="api.html">
+            
+                    
+                    API
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
+            
+                <a href="api.html#bot">
+            
+                    
+                    Bot Endpoints
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
+            
+                <a href="api.html#administration">
+            
+                    
+                    Administration Endpoints
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+            
+                <a href="permissions.html">
+            
+                    
+                    Permissions
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6" data-path="code/">
+            
+                <a href="code/">
+            
+                    
+                    Code Documentation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.6.1" data-path="code/components.html">
+            
+                <a href="code/components.html">
+            
+                    
+                    Structure & Components
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2" data-path="code/hub.html">
+            
+                <a href="code/hub.html">
+            
+                    
+                    The Hub
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.6.2.1" data-path="code/hub.html">
+            
+                <a href="code/hub.html#skills">
+            
+                    
+                    Skill loading
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2.2" data-path="code/hub">
+            
+                <span>
+            
+                    
+                    Command Handling
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2.3" data-path="code/hub">
+            
+                <span>
+            
+                    
+                    NLP
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2.4" data-path="code/hub">
+            
+                <span>
+            
+                    
+                    Overseer
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2.5" data-path="code/hub">
+            
+                <span>
+            
+                    
+                    Conversations
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.2.6" data-path="code/hub">
+            
+                <span>
+            
+                    
+                    Hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6.3" data-path="code/connectors.md">
+            
+                <span>
+            
+                    
+                    Connectors
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../adapters/">
+            
+                <a href="../adapters/">
+            
+                    
+                    Adapters
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" >
+            
+                <span>
+            
+                    
+                    Setup
+            
+                </span>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" >
+            
+                <span>
+            
+                    
+                    Examples
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.2.1" data-path="../adapters/rocketchat-hubot.html">
+            
+                <a href="../adapters/rocketchat-hubot.html">
+            
+                    
+                    RocketChat-Hubot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Hooks</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="skill-example--hooks">Skill Example : Hooks</h1>
+<p>The <em>tea</em> skill will trigger hooks for simple alarms in a channel.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">/*
+  SKILL : tea
+  AUTHOR : Anonymous
+  DATE : 25/04/2018
+*/</span>
+
+<span class="hljs-comment">/*
+  You should not modify this part unless you know what you&apos;re doing.
+*/</span>
+
+<span class="hljs-comment">// Defining the skill</span>
+<span class="hljs-comment">// Commands the skill can execute.</span>
+<span class="hljs-comment">/* &lt;SKILL COMMANDS&gt; */</span>
+<span class="hljs-keyword">let</span> commands = {
+  <span class="hljs-string">&apos;set-tea-alarm&apos;</span>: {
+    cmd: <span class="hljs-string">&quot;tea&quot;</span>,
+    execute: commandTea
+  }
+};
+<span class="hljs-comment">/* &lt;/SKILL COMMANDS&gt; */</span>
+
+<span class="hljs-comment">// intents the skill understands.</span>
+<span class="hljs-comment">/* &lt;SKILL INTENTS&gt; */</span>
+<span class="hljs-keyword">let</span> intents = {
+  <span class="hljs-string">&apos;tea-set-tea-alarm&apos;</span>: {
+    slug: <span class="hljs-string">&quot;tea-alarm&quot;</span>,
+    handle: handleTeaIntent,
+    expected_entities: [<span class="hljs-string">&quot;tea-type&quot;</span>]
+  }
+};
+<span class="hljs-comment">/* &lt;/SKILL INTENTS&gt; */</span>
+
+<span class="hljs-comment">// Conversation handlers of the skill.</span>
+<span class="hljs-comment">/* &lt;SKILL INTERACTIONS&gt; */</span>
+<span class="hljs-keyword">let</span> interactions = {
+};
+<span class="hljs-comment">/* &lt;/SKILL INTERACTIONS&gt; */</span>
+
+<span class="hljs-comment">// dependencies of the skill.</span>
+<span class="hljs-comment">/* &lt;SKILL DEPENDENCIES&gt; */</span>
+<span class="hljs-keyword">let</span> dependencies = [<span class="hljs-string">&quot;node-schedule&quot;</span>];
+<span class="hljs-comment">/* &lt;/SKILL DEPENDENCIES&gt; */</span>
+
+<span class="hljs-comment">// Exposing the skill definition.</span>
+exports.commands = commands;
+exports.intents = intents;
+exports.dependencies = dependencies;
+exports.interactions = interactions;
+
+<span class="hljs-comment">/*
+  Skill logic begins here.
+  You must implements the functions listed as &quot;execute&quot; and &quot;handle&quot; handler, or your skill will not load.
+*/</span>
+<span class="hljs-comment">/* &lt;SKILL LOGIC&gt; */</span>
+<span class="hljs-keyword">const</span> overseer = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;../../overseer&apos;</span>);
+<span class="hljs-keyword">const</span> schedule = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;node-schedule&apos;</span>);
+
+<span class="hljs-comment">/**
+  Handler for intent tea-set-tea-alarm (tea-alarm).
+
+  Params :
+  --------
+    entities (Object)
+*/</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleTeaIntent</span>(<span class="hljs-params">{ entities: { &apos;tea-type&apos;: teatype = {}}, data }</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-comment">/*
+      &gt;&gt;&gt; YOUR CODE HERE &lt;&lt;&lt;
+      resolve the handler with a formatted message object.
+    */</span>
+    <span class="hljs-keyword">return</span> resolve({
+      message: {
+        title: <span class="hljs-string">&quot;Not implemented&quot;</span>,
+        text: <span class="hljs-string">&quot;This functionnality is currently not implemented.&quot;</span>
+      }
+    });
+  });
+}
+
+<span class="hljs-comment">/**
+  Handler for command set-tea-alarm (!tea).
+
+  Params :
+  --------
+    phrase: String
+*/</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">commandTea</span>(<span class="hljs-params">{ phrase, data }</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">let</span> [teaType, ...textString] = phrase.split(<span class="hljs-string">&quot; &quot;</span>);
+        <span class="hljs-keyword">let</span> text = textString ? textString.join(<span class="hljs-string">&quot; &quot;</span>) : <span class="hljs-string">&quot;&quot;</span>;
+
+        <span class="hljs-comment">// Checking tea format</span>
+        <span class="hljs-keyword">let</span> time = <span class="hljs-number">0</span>; <span class="hljs-comment">// minutes</span>
+        <span class="hljs-keyword">let</span> image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg&quot;</span>;
+        <span class="hljs-keyword">switch</span> (teaType) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;green&quot;</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;vert&quot;</span>:
+                time = <span class="hljs-number">3</span>;
+                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg&quot;</span>;
+                <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;black&quot;</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;noir&quot;</span>:
+                time = <span class="hljs-number">5</span>;
+                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2015/07/01/08/42/oolong-827397_960_720.jpg&quot;</span>;
+                <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbs&quot;</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;infusion&quot;</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbes&quot;</span>:
+                time = <span class="hljs-number">7</span>;
+                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2018/04/02/17/10/hibiscus-3284431_960_720.jpg&quot;</span>;
+                <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">default</span>:
+                time = <span class="hljs-number">0</span>;
+        }
+        <span class="hljs-keyword">if</span> (time == <span class="hljs-number">0</span>) {
+            <span class="hljs-keyword">return</span> resolve({
+                message: {
+                    title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                    text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
+                }
+            });
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-comment">// Set timer.</span>
+            overseer.HookManager.create(<span class="hljs-string">&quot;tea&quot;</span>).then((hook) =&gt; {
+                schedule.scheduleJob(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime() + time*<span class="hljs-number">60000</span>), () =&gt; {
+                    overseer.HookManager.execute(hook._id, {
+                        message: {
+                            title: <span class="hljs-string">&quot;It&apos;s Tea Time!&quot;</span>,
+                            text: <span class="hljs-string">&quot;Your tea is ready! Run, Forest! Run!&quot;</span>,
+                            attachments: [{
+                                image_url: image
+                            }]
+                        }
+                    }).catch((err) =&gt; <span class="hljs-built_in">console</span>.log(err));
+                });
+                <span class="hljs-keyword">return</span> resolve({
+                    message: {
+                        title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                        text: <span class="hljs-string">&quot;Okay! I&apos;ll remind your in &quot;</span> + time + <span class="hljs-string">&quot; minutes :)&quot;</span>,
+                        request_hook: <span class="hljs-literal">true</span>,
+                        hook_id: hook._id
+                    }
+                })
+            }).catch((err) =&gt; {
+                <span class="hljs-keyword">return</span> resolve({
+                    message: {
+                        title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                        text: <span class="hljs-string">&quot;Tea Timer cannot set a hook in this channel, sorry.&quot;</span>
+                    }
+                })
+            });
+        }
+    } <span class="hljs-keyword">catch</span> (e) {
+        <span class="hljs-keyword">return</span> resolve({
+            message: {
+                title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
+            }
+        });
+    }
+  });
+}
+<span class="hljs-comment">/* &lt;/SKILL LOGIC&gt; */</span>
+
+<span class="hljs-comment">// You may define other logic function unexposed here. Try to keep the skill code slim.</span>
+</code></pre>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="quizz.html" class="navigation navigation-prev " aria-label="Previous page: Conversation">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="dashboard.html" class="navigation navigation-next " aria-label="Next page: Dashboard">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"next":{"title":"Dashboard","level":"1.3.4","depth":2,"path":"brain/dashboard.md","ref":"brain/dashboard.md","articles":[{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},{"title":"Users and Accounts","level":"1.3.4.2","depth":3,"anchor":"#users-and-accounts","path":"brain/dashboard.md","ref":"brain/dashboard.md#users-and-accounts","articles":[]},{"title":"Permissions","level":"1.3.4.3","depth":3,"anchor":"#permissions","path":"brain/dashboard.md","ref":"brain/dashboard.md#permissions","articles":[]},{"title":"Adapters","level":"1.3.4.4","depth":3,"anchor":"#adapters","path":"brain/dashboard.md","ref":"brain/dashboard.md#adapters","articles":[]},{"title":"Skills","level":"1.3.4.5","depth":3,"anchor":"#skills","path":"brain/dashboard.md","ref":"brain/dashboard.md#skills","articles":[]},{"title":"Test","level":"1.3.4.6","depth":3,"anchor":"#test","path":"brain/dashboard.md","ref":"brain/dashboard.md#test","articles":[]}]},"previous":{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/tea.md","mtime":"2018-05-08T14:37:03.615Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
