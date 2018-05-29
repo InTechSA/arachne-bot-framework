@@ -19,7 +19,7 @@ $('#chat-form').submit((event) => {
         $("#bot-response #source").text(json.source)
         $("#bot-response #message").html(formatText(json.message.text));
         if (json.message.interactive) {
-          currentThread = json.message.thread_id;
+          currentThread = json.message.thread.id;
         } else {
           currentThread = null;
         }
@@ -52,7 +52,7 @@ $('#chat-form').submit((event) => {
           $("#bot-response #source").text(json.source)
           $("#bot-response #message").html(formatText(json.message.text));
           if (json.message.interactive) {
-            currentThread = json.message.thread_id;
+            currentThread = json.message.thread.id;
           } else {
             currentThread = null;
           }
@@ -83,7 +83,7 @@ $('#chat-form').submit((event) => {
           $("#bot-response #source").text(json.source)
           $("#bot-response #message").html(formatText(json.message.text));
           if (json.message.interactive) {
-            currentThread = json.message.thread_id;
+            currentThread = json.message.thread.id;
           } else {
             currentThread = null;
           }
