@@ -17,7 +17,11 @@ $('#chat-form').submit((event) => {
         console.log(json)
         $("#chat").val('');
         $("#bot-response #source").text(json.source)
-        $("#bot-response #message").html(formatText(json.message.text));
+        if (json.message.text) {
+          $("#bot-response #message").html(formatText(json.message.text));
+        } else {
+          $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+        }
         if (json.message.interactive) {
           currentThread = json.message.thread.id;
         } else {
@@ -30,7 +34,11 @@ $('#chat-form').submit((event) => {
         currentThread = null;
         if (json = err.responseJSON) {
           $("#bot-response #source").text(json.source);
-          $("#bot-response #message").html(formatText(json.message.text));
+          if (json.message.text) {
+            $("#bot-response #message").html(formatText(json.message.text));
+          } else {
+            $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+          }
         } else {
           console.log(err)
         }
@@ -50,7 +58,11 @@ $('#chat-form').submit((event) => {
           console.log(json)
           $("#chat").val('');
           $("#bot-response #source").text(json.source)
-          $("#bot-response #message").html(formatText(json.message.text));
+          if (json.message.text) {
+            $("#bot-response #message").html(formatText(json.message.text));
+          } else {
+            $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+          }
           if (json.message.interactive) {
             currentThread = json.message.thread.id;
           } else {
@@ -62,7 +74,11 @@ $('#chat-form').submit((event) => {
           currentThread = null;
           if (json = err.responseJSON) {
             $("#bot-response #source").text(json.source);
-            $("#bot-response #message").html(formatText(json.message.text));
+            if (json.message.text) {
+              $("#bot-response #message").html(formatText(json.message.text));
+            } else {
+              $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+            }
           } else {
             console.log(err)
           }
@@ -81,7 +97,11 @@ $('#chat-form').submit((event) => {
           console.log(json)
           $("#chat").val('');
           $("#bot-response #source").text(json.source)
-          $("#bot-response #message").html(formatText(json.message.text));
+          if (json.message.text) {
+            $("#bot-response #message").html(formatText(json.message.text));
+          } else {
+            $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+          }
           if (json.message.interactive) {
             currentThread = json.message.thread.id;
           } else {
@@ -93,7 +113,11 @@ $('#chat-form').submit((event) => {
           currentThread = null;
           if (json = err.responseJSON) {
             $("#bot-response #source").text(json.source);
-            $("#bot-response #message").html(formatText(json.message.text));
+            if (json.message.text) {
+              $("#bot-response #message").html(formatText(json.message.text));
+            } else {
+              $("#bot-response #message").text("Skill returned a message with no text. This interface does not support attachments.");
+            }
           } else {
             console.log(err)
           }
