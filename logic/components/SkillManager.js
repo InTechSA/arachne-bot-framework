@@ -328,7 +328,7 @@ exports.SkillManager = class SkillManager {
         console.log(`\t... Writing code file.`)
         fs.writeFileSync(this.skillsDirectory + "/" + skill.name + "/skill.js", skill.code, "utf-8");
         console.log(`\t... Writing secret file.`)
-        let secret = `module.exports = {${[...skill.secret.keys()].map((key) => `\n\t"${key}": "${skill.secret.get(key)}"\n`).join("")}}`;
+        let secret = `module.exports = {\n${[...skill.secret.keys()].map((key) => `"${key}": "${skill.secret.get(key)}"`).join(",\n")}\n}`;
         fs.writeFileSync(this.skillsDirectory + "/" + skill.name + "/secret.js", secret, "utf-8");
 
         console.log(`\t... \x1b[32mDone\x1b[0m!`)

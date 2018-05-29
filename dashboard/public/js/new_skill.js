@@ -618,7 +618,8 @@ $("#configure-secret-form").submit(function(event) {
     type: "PUT",
     baseUrl: base_url,
     url: `/skills/${skill.name}/secret`,
-    data: { secret: JSON.stringify(secrets) },
+    contentType: 'application/json',
+    data: JSON.stringify({ secret: secrets }),
     dataType: "json",
     success: (json) => {
       console.log(json);

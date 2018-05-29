@@ -373,12 +373,7 @@ module.exports = function(io) {
    * @apiSuccess {String} message Message from api.
    */
   router.put('/skills/:skill/secret', hasPerm('EDIT_SKILL_SECRET'), (req, res) => {
-    let secret;
-    try {
-      secret = JSON.parse(req.body.secret);
-    } catch(e) {
-      return res.status(400).json({ code: 400, message: `No valid secret in body : secret: [ [key, value] ]` });
-    }
+    let secret = req.body.secret;
 
     if (!secret || !Array.isArray(secret)) {
       return res.status(400).json({ code: 400, message: `No valid secret in body : secret: [ [key, value] ]` });
