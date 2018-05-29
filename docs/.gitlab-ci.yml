@@ -1,0 +1,71 @@
+# requiring the environment of NodeJS 8.9.x LTS (carbon)
+image: node:8-alpine
+
+# add 'node_modules' to cache for speeding up builds
+cache:
+  paths:
+    - node_modules/ # Node modules and dependencies
+
+before_script:
+  - npm install gitbook-cli -g # install gitbook
+  - gitbook fetch latest # fetch latest stable version
+  - gitbook install # add any requested plugins in book.json
+
+stages:
+  - test
+  - deploy
+
+test:
+  tags:
+    - node
+  stage: test
+  script:
+    - gitbook build . public # build to public path
+  only:
+    - branches # this job will affect only the 'master' branch
+  except:
+    - master
+    
+# the 'pages' job will deploy and build your site to the 'public' path
+pages:
+  tags:
+    - node
+  stage: deploy
+  script:
+    - gitbook build . public # build to public path
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week
+  only:
+    - master # this job will affect only the 'master' branch
+
+# This will push the doc to a dokku container.
+deploy_staging:
+  tags:
+    - node
+  stage: deploy
+  before_script:
+    - apk add --no-cache --virtual git
+    - apk add --no-cache --virtual openssh
+    - mkdir -p ~/.ssh
+    - echo "$DOKKU_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "dokku.${DOKKU_DOMAIN}" >> ~/.ssh/known_hosts
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_ID"
+    - npm install gitbook-cli -g # install gitbook
+    - gitbook fetch latest # fetch latest stable version
+    - gitbook install # add any requested plugins in book.json
+  script:
+    - gitbook build . public
+    - git add .
+    - git commit -m "Build ${CI_COMMIT_REF_NAME}".
+    - echo "Pushing to Dokku..."
+    - git push --force ssh://dokku@dokku.${DOKKU_DOMAIN}/${DOKKU_APP} HEAD:refs/heads/master
+    - echo "Pushed to Dokku."
+  environment:
+    name: dokku
+    url: https://${DOKKU_APP}.${DOKKU_DOMAIN}
+  only:
+    - master
