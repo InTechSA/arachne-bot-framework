@@ -133,7 +133,7 @@ function brokkr({ phrase, data }) {
                 title: "Not implemented",
                 text: "This functionnality is currently not implemented."
             }
-        });
+        });   
     }
 }
 /**
