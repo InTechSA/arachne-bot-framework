@@ -71,9 +71,8 @@ overseer.StorageManager.getItem("alarms", "alarms").then((alarms) => {
           message: {
             title: "Alarm",
             text: alarm.text,
-            hook_id: alarm.hook
           }
-        }).catch((err) => {
+        }, {deleteHook: true}).catch((err) => {
           if (err == overseer.HookManager.codes.NO_HOOK) {
             overseer.StorageManager.getItem("alarms", "alarms").then((storage) => {
               let alarms = [];
@@ -167,15 +166,14 @@ function handleConfirmation(thread, { phrase, data }) {
         response = "Ok! Alarm set today at " + time.toLocaleTimeString()
     }
 
-    overseer.HookManager.create("alarms").then((hook) => {
+    overseer.HookManager.create("alarms","Alarme utilise qu'une seule fois !").then((hook) => {
       schedule.scheduleJob(time, () => {
         overseer.HookManager.execute(hook._id, {
           message: {
             title: "Alarm",
-            text: text,
-            hook_id: hook._id
+            text: text
           }
-        }).catch((err) => {
+        }, {deleteHook: true}).catch((err) => {
           if (err == overseer.HookManager.codes.NO_HOOK) {
             overseer.StorageManager.getItem("alarms", "alarms").then((storage) => {
               let alarms = [];
@@ -203,7 +201,7 @@ function handleConfirmation(thread, { phrase, data }) {
               title: "Alarm ",
               text: response,
               request_hook: true,
-              hook_id: hook._id
+              hook: hook
           }
       });
     }).catch((err) => {

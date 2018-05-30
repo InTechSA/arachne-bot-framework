@@ -22,7 +22,16 @@ function handleIntent(intentName, entities = {}, data = {}) {
       }
 
       intent.handle({ entities, data }).then((response) => {
-        return resolve({ success: true, message: response.message });
+        if (response.message.interactive) {
+          ThreadManager.addThread(response.message.thread).then((thread) => {
+            response.message.thread.duration = thread.duration;
+            response.message.thread.id = thread._id;
+
+            return resolve({ success: true, message: response.message, response: response });
+          });
+        } else {
+          return resolve({ success: true, message: response.message, response: response });
+        }
       }).catch((err) => {
         return reject(err);
       });

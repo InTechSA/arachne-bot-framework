@@ -1,7 +1,7 @@
 /*
   SKILL : weather
   AUTHOR : System
-  DATE : 14/05/2018
+  DATE : 17/04/2018
 */
 
 /*
@@ -12,7 +12,7 @@
 // Commands the skill can execute.
 /* <SKILL COMMANDS> */
 let commands = {
-  weather : {
+  weather: {
     cmd: 'weather',
     execute: getWeather,
     expected_args: ['location']
@@ -54,50 +54,57 @@ exports.interactions = interactions;
 */
 /* <SKILL LOGIC> */
 const request = require('request');
-
-const serviceURL = "http://localhost:5012";
+const token = "bfbc266d756035ffb1fcd3af4b3074ac";
+const weatherApi = `http://api.openweathermap.org/data/2.5/weather?APPID=${token}&lang=fr&units=metric`;
+const weatherIcon = 'http://openweathermap.org/img/w/';
 
 function getWeather({ phrase }) {
   return new Promise((resolve, reject) => {
-    let location = phrase;
-    if (location.length <= 0) {
-      return resolve({
-        message :{
-          text: `I need a location (like \`Kayl, lu\`).`
-        }
-      });
+    // Build the request
+    let location = phrase.trim().replace("weather", "").trim();
+    if (location === '') {
+      location = 'Kayl,lu';
     }
-
-    console.log(`> [INFO] {weather} - Get weather for "${location}".`);
+    let query = "&q=" + location;
+    // Make the query
     request({
-      baseUrl: serviceURL,
-      uri: '/weather',
-      qs: {
-        location: location
-      },
-      json: true,
-      callback: (err, res, body) => {
-        if (!err && body && body.success) {
-          let weatherMessage = `Here's the weather for *${body.weather.name}*:`
-          weatherMessage += `\nSky: ${body.weather.weather[0].main}`;
-          resolve({
-            message :{
-              text: weatherMessage
-            }
-          });
-        } else {
-          resolve({
-            message: {
-              text: "I couldn't load weather for this location :/"
-            }
-          });
-        }
+      encoding: null,
+      uri: weatherApi + query,
+      method: 'GET'
+    }, (err, res) => {
+      if (err || res.statusCode !== 200) {
+        return resolve({ message: { text: "Error contacting the weather API :(" } });
       }
+      res = JSON.parse(res.body);
+      // No error
+      let imageUrl;
+      let description = '*' + res.main.temp + '° - ';
+      // If the respons contain the weather property , print it
+      if (res.weather) {
+        imageUrl = weatherIcon + res.weather[0].icon + '.png';
+        description += res.weather[0].description + '*\n';
+      }
+      // Then print the weather
+      description += '>Température min : _' + res.main.temp_min + '°_\n'; // jshint ignore:line
+      description += '>Température max : _' + res.main.temp_max + '°_\n'; // jshint ignore:line
+      description += '>Humidité : _' + res.main.humidity + '%_\n';
+      description += '>Pression : _' + res.main.pressure + ' hPa_\n';
+      description += '>Visibilité : _' + res.visibility / 1000 + ' km_\n';
+      description += '>Vent : _' + res.wind.speed + ' km/h_';
+      var message = {message: {
+        attachments: [{
+          title: `Météo à ${location}`,
+          text: description,
+          thumb_url: imageUrl, // jshint ignore:line
+          color: 'black'
+        }]}
+      };
+      return resolve(message);
     });
   });
 }
 
-function handleWeather({ entities: {location: location = ""} }) {
+function handleWeather({ entities: { location: location = "" } }) {
   let finalLocation = location[0];
   return getWeather({ phrase: finalLocation });
 }
