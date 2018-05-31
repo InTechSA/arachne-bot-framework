@@ -86,7 +86,7 @@ function eventsHandler({ phrase, data }) {
       let options = {
         url: url_event_micro + '/getEvents/' + query,
         headers: {
-          'Authorization': response,
+          'Authorization': response.response.token,
           'Accept': 'application/json'
         },
         timeout: 3000
