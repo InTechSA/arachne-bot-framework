@@ -21,6 +21,11 @@ let commands = {
 // intents the skill understands.
 /* <SKILL INTENTS> */
 let intents = {
+  'bus-bus': {
+    slug: "bus",
+    handle: handleBus,
+    expected_entities: []
+  }
 };
 /* </SKILL INTENTS> */
 
@@ -54,7 +59,8 @@ function busHandler({phrase}) {
         var url = "http://travelplanner.mobiliteit.lu/restproxy/departureBoard?accessId=cdt&id=A=1@O=Kayl,%20Rue%20de%20Noertzange@X=6,049390@Y=49,496072@U=82@L=220601018@B=1@p=1521640094&format=json&direction=A=1@O=Luxembourg,%20Gare%20Centrale@X=6,133745@Y=49,600625@U=82@L=200405035@B=1@p=1521640094&rtMode=FULL&duration=60&lines=197";
         request({
             url: url,
-            method: 'GET'
+            method: 'GET',
+            timeout: 3000
         },(err,res,body)=>{
           // We parse the body
           try{
@@ -74,6 +80,16 @@ function busHandler({phrase}) {
           }
         });
     });
+}
+/**
+  Handler for intent bus-bus (bus).
+
+  Params :
+  --------
+    entities (Object)
+*/
+function handleBus({ entities: {}, data, phrase }) {
+  return busHandler({ phrase });
 }
 /* </SKILL LOGIC> */
 

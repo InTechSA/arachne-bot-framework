@@ -45,7 +45,7 @@ exports.dependencies = dependencies;
 */
 /* <SKILL LOGIC> */
 const overseer = require('../../overseer');
-var url_whois_micro = process.env.WHOIS_URL_MICROSERVICE || "http://localhost:8000";
+var url_whois_micro = process.env.WHOIS_URL_MICROSERVICE || "http://192.168.11.55:8124";
 
 
 const request = require('request');
@@ -87,6 +87,7 @@ function whoisHandler({ phrase }) {
             };
             request(options, (err, res, body) => {
                 var messages;
+                console.log(body)
                 if (err || res.statusCode !== 200) {
                     if(!body) {
                        messages = 'Something went wrong looking for the infos of ' + query + "\n";
@@ -97,10 +98,24 @@ function whoisHandler({ phrase }) {
                         };
                     } 
                     else {
-                        message = JSON.parse(body);
+                        try {
+                            message = JSON.parse(body);   
+                        } catch(e) {
+                            return resolve({
+                                success: false,
+                                message: "Could not parse response from microservice."
+                            });
+                        }
                     }
                 } else {
-                    message = JSON.parse(body);
+                    try {
+                        message = JSON.parse(body);   
+                    } catch(e) {
+                        return resolve({
+                            success: false,
+                            message: "Could not parse response from microservice."
+                        });
+                    }
                 }
                 return resolve({
                     success: true,
