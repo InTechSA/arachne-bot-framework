@@ -92,23 +92,23 @@ let commands = {
           
           // Checking tea format
           let time = 0; // minutes
-          let image = "https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg";
+          let image = "https://imgur.com/cm2YcD5.jpg";
           switch (teaType) {
               case "green":
               case "vert":
                   time = 3;
-                  image = "https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg";
+                  image = "https://imgur.com/cm2YcD5.jpg";
                   break;
               case "black":
               case "noir":
                   time = 5;
-                  image = "https://cdn.pixabay.com/photo/2015/07/01/08/42/oolong-827397_960_720.jpg";
+                  image = "https://imgur.com/VKn1RuC.jpg";
                   break;
               case "herbs":
               case "infusion":
               case "herbes":
                   time = 7;
-                  image = "https://cdn.pixabay.com/photo/2018/04/02/17/10/hibiscus-3284431_960_720.jpg";
+                  image = "https://imgur.com/i1DjTDi.jpg";
                   break;
               default:
                   time = 0;
@@ -132,7 +132,7 @@ let commands = {
                                   image_url: image
                               }]
                           }
-                      }).catch((err) => console.log(err));
+                      }, {deleteHook: true}).catch((err) => console.log(err));
                   });
                   return resolve({
                       message: {
