@@ -31,6 +31,11 @@ let commands = {
       slug: "app_logs",
       handle: handleAppLogs,
       expected_entities: ["client", "application"]
+    },
+    'brokkr-app-config': {
+      slug: "app-get-config",
+      handle: handleAppConfig,
+      expected_entities: ["client", "application"]
     }
   };
   /* </SKILL INTENTS> */
@@ -148,6 +153,50 @@ let commands = {
     });
   }
   
+  function appConfig({ phrase, data }) {
+    return new Promise((resolve, reject) => {
+      /*
+        >>> YOUR CODE HERE <<<
+        resolve the handler with a formatted message object.
+      */
+      const [client, app] = phrase.split(" ");
+      const headers = {};
+      if (data.userName) {
+          headers['User-Proxy'] = data.userName;
+      }
+      axios({
+          method: "GET",
+          url: `http://192.168.6.156/clients/${client}/apps/${app}/configuration`,
+          headers,
+          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+          timeout: 5000
+      }).then(res => {
+          let text = res.data.content.map(el => `*${el[0]}* ----> ${el[1]}`);
+          return resolve({
+              message: {
+                  title: `Configuration de ${app} sur ${client}`,
+                  text: text.join("\n")
+              }
+          });
+      }).catch(err => {
+          if (err.response && err.response.status == 404) {
+              return resolve({
+                  message: {
+                      title: 'Application not found.',
+                      text: err.response.data.message
+                  }
+              });    
+          }
+          return resolve({
+              message: {
+                  title: 'Could not get application configuration.',
+                  text: 'The Brokkr service is not accessible.'
+              }
+          });
+      });
+    });
+  }
+  
   function brokkr({ phrase, data }) {
       const [cmd, ...params] = phrase.split(" ");
       if (cmd === "apps") {
@@ -182,6 +231,10 @@ let commands = {
   */
   function handleAppLogs({ entities: { 'client': client = {}, 'application': application = {}}, data }) {
     return appLogs({ phrase: client[0] + " " + application[0], data })
+  }
+  
+  function handleAppConfig({ entities: { 'client': client = {}, 'application': application = {}}, data }) {
+    return appConfig({ phrase: client[0] + " " + application[0], data })
   }
   /* </SKILL LOGIC> */
   
