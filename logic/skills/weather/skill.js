@@ -54,7 +54,7 @@ exports.interactions = interactions;
 */
 /* <SKILL LOGIC> */
 const request = require('request');
-const token = "bfbc266d756035ffb1fcd3af4b3074ac";
+const token = require('./secret').token;
 const weatherApi = `http://api.openweathermap.org/data/2.5/weather?APPID=${token}&lang=fr&units=metric`;
 const weatherIcon = 'http://openweathermap.org/img/w/';
 
@@ -75,7 +75,17 @@ function getWeather({ phrase }) {
       if (err || res.statusCode !== 200) {
         return resolve({ message: { text: "Error contacting the weather API :(" } });
       }
-      res = JSON.parse(res.body);
+      try {
+        res = JSON.parse(res.body);   
+      } catch (e) {
+          console.log(e);
+          return resolve({
+             message: {
+                 title: "Could not load weather.",
+                 text: "Weather service responded with an error."
+             } 
+          });
+      }
       // No error
       let imageUrl;
       let description = '*' + res.main.temp + '° - ';

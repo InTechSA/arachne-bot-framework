@@ -74,9 +74,11 @@ function listApps({ phrase, data }) {
     */
     axios({
         method: "GET",
-        url: `http://localhost/clients/${phrase}/apps`,
-        data: { app_token: "arachne" }
+        url: `http://192.168.6.156/clients/${phrase}/apps`,
+        data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+        timeout: 5000
     }).then(res => {
+        console.log(res);
         let text = "";
         res.data.content.forEach(app => {
            text += `- *${app.name}*: _${app.status}_\n`
@@ -89,7 +91,12 @@ function listApps({ phrase, data }) {
         });
     }).catch(err => {
         console.log(err);
-        return reject(err);
+        return resolve({
+            message: {
+                title: 'Could not get applications list.',
+                text: 'The Brokkr service is not accessible.'
+            }
+        });
     });
   });
 }
@@ -104,19 +111,25 @@ function appLogs({ phrase, data }) {
     
     axios({
         method: "GET",
-        url: `http://localhost/clients/${client}/apps/${app}/logs`,
-        data: { app_token: "arachne" }
+        url: `http://192.168.6.156/clients/${client}/apps/${app}/logs`,
+        data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+        timeout: 5000
     }).then(res => {
         let text = res.data.content;
         return resolve({
             message: {
                 title: `Applications sur ${phrase}`,
-                text
+                text: text.substring(text.length - 2000, text.length)
             }
         });
     }).catch(err => {
         console.log(err);
-        return reject(err);
+        return resolve({
+            message: {
+                title: 'Could not get applications list.',
+                text: 'The Brokkr service is not accessible.'
+            }
+        });
     });
   });
 }
@@ -133,7 +146,7 @@ function brokkr({ phrase, data }) {
                 title: "Not implemented",
                 text: "This functionnality is currently not implemented."
             }
-        });   
+        });
     }
 }
 /**

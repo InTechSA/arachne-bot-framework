@@ -165,9 +165,11 @@ function handleConfirmation(thread, { phrase, data }) {
     if (["oui", "yes", "o", "oui!", "yes!"].includes(phrase)) {
         response = "Ok! Alarm set today at " + time.toLocaleTimeString()
     }
-
+    time.setHours(time.getHours()-2);
     overseer.HookManager.create("alarms","Alarme utilise qu'une seule fois !").then((hook) => {
+        console.log("Scheduling...");
       schedule.scheduleJob(time, () => {
+          console.log("Executing scheduled alarm...");
         overseer.HookManager.execute(hook._id, {
           message: {
             title: "Alarm",

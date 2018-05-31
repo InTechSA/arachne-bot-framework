@@ -21,6 +21,11 @@ let commands = {
 // intents the skill understands.
 /* <SKILL INTENTS> */
 let intents = {
+  'itinary-get-itinary': {
+    slug: "get-itinary",
+    handle: handleItinary,
+    expected_entities: ["location"]
+  }
 };
 /* </SKILL INTENTS> */
 
@@ -41,6 +46,8 @@ exports.dependencies = dependencies;
 /* <SKILL LOGIC> */
 
 const request = require('request');
+const GOOGLE_API_KEY = require('./secret').google_api_key;
+
 /**
   Handler for command itinary (!itinary).
 
@@ -51,16 +58,15 @@ const request = require('request');
 function itinaryHandler({phrase}) {
   return new Promise((resolve, reject) => {
     // The google api_key used for the request !!Link to my personnal account for the moment!!!
-    const GOOGLE_API_KEY = "AIzaSyA2rKD68MbznvV5YlFJG3XDIfUHjYAB1zc";
     console.log("Itinary");
     // Split the request to have the origin of the itinary and the destination
         var req = phrase.split("->");
         var des,ori,messages;
         if(req[1]){
-            des = req[1];
-            ori = req[0];
+            des = encodeURI(req[1]);
+            ori = encodeURI(req[0]);
         } else{
-            des = req[0];
+            des = encodeURI(req[0]);
             // If the oriign is not specified, it will be Intech
             ori = "Intech%20S.A.,Luxembourg";
         }
@@ -75,12 +81,15 @@ function itinaryHandler({phrase}) {
         else{
           // Build the url
             const url = "https://maps.googleapis.com/maps/api/directions/json?origin="+ori+"&destination="+des+"&departure_time=now&traffic_model=best_guess&key="+GOOGLE_API_KEY;
+            console.log("URl sent : "+url);
             request({
               url: url,
               method: 'GET'
             }, function(err,res,body) {
               // Response message
                 if (err || (res.statusCode !== 200)) {
+                    console.log("Error "+err);
+                    console.log("Status code : "+res.statusCode)
                     var messages = 'Something went wrong looking for your itinary';
                 } else {
                   // Everything went fine, parsing of the body
@@ -112,6 +121,18 @@ function itinaryHandler({phrase}) {
             });
         }
   });
+}
+/**
+  Handler for intent itinary-get-itinary (get-itinary).
+
+  Params :
+  --------
+    entities (Object)
+*/
+function handleItinary({ entities: { 'location': location = {}}, data }) {
+    console.log(location);
+    let phrase = location.length >= 2 ? location[0] + "->" + location[1] : location[0]
+    return itinaryHandler({ phrase, data });
 }
 /* </SKILL LOGIC> */
 

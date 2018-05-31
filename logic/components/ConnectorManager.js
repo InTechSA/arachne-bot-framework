@@ -35,7 +35,18 @@ exports.ConnectorManager = class ConnectorManager {
   }
 
   regenerateConnectorToken(id) {
-    return this.connectorController.regenerateConnectorToken(id);
+    return this.connectorController.regenerateConnectorToken(id).then(connector => {
+        if (this.io && this.io.sockets) {
+          // Reject current socket to force connector to retry connection and handshake.
+          const socket = Object.values(this.io.sockets.sockets).filter((socket) => socket.connector.id == id);
+          if (socket.length > 0) {
+            console.log(`\t... Rejecting current socket connection.`);
+            socket[0].disconnect();
+          }
+        }
+        console.log('Done!')
+        return connector;
+    });
   }
 
   checkConnectorToken(token) {
