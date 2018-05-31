@@ -139,7 +139,7 @@ let commands = {
                           title: "Tea Timer",
                           text: "Okay! I'll remind your in " + time + " minutes :)",
                           request_hook: true,
-                          hook_id: hook._id
+                          hook
                       }
                   })
               }).catch((err) => {
