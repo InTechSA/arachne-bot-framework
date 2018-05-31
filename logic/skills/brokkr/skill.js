@@ -130,10 +130,17 @@ let commands = {
               }
           });
       }).catch(err => {
-          console.log(err);
+          if (err.response && err.response.status == 404) {
+              return resolve({
+                  message: {
+                      title: 'Application not found.',
+                      text: err.response.data.message
+                  }
+              });    
+          }
           return resolve({
               message: {
-                  title: 'Could not get applications list.',
+                  title: 'Could not get applications logs.',
                   text: 'The Brokkr service is not accessible.'
               }
           });
