@@ -88,7 +88,7 @@ function busHandler({phrase}) {
   --------
     entities (Object)
 */
-function handleBus({ entities: {}, data, phrase }) {
+function handleBus({ data, phrase }) {
   return busHandler({ phrase });
 }
 /* </SKILL LOGIC> */
