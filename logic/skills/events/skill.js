@@ -88,23 +88,29 @@ function eventsHandler({ phrase, data }) {
         headers: {
           'Authorization': response,
           'Accept': 'application/json'
-        }
+        },
+        timeout: 3000
       }
       // Make the request using request
       request(options, (err, res, body) => {
-        if (err || res.statusCode !== 200) {
-          // Error
-          if(!body) {
+          try {
+            if (err || res.statusCode !== 200) {
+              // Error
+              if(!body) {
+                  message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
+              } else {
+                  message = JSON.parse(body);   
+              }
+            } else {
+              // No error
+              message = JSON.parse(body);
+            }
+          } catch (e) {
               message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
           }
-          message = JSON.parse(body);
-        } else {
-          // No error
-          message = JSON.parse(body);
-        }
-        return resolve({
-          message: message
-        });
+            return resolve({
+                message: message
+            });
       });
     }).catch((error) => {
       console.log("Catch error in command get-ad-token " + error);

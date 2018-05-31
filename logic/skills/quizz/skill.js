@@ -73,32 +73,43 @@ function quizz({ phrase }) {
         json: "true",
         callback: (err, res, body) => {
             if (!err && body) {
-                  let question = "Quizz:\n*" + body.results[0].question + "*";
+                  try {
+                      let source = decodeURI(body.results[0].question);
+                      let question = "Quizz:\n*" + source + "*";
+                      let answers = [];
+                      let incorrect_answers = [];
+                      body.results[0].incorrect_answers.forEach((value) => {
+                          incorrect_answers.push(decodeURI(value));
+                      });
+                      let correct_answer = decodeURI(body.results[0].correct_answer);
+                      answers = incorrect_answers;
+                      answers.push(correct_answer);
+                      answers.sort();
 
-                  let answers = body.results[0].incorrect_answers;
-                  answers.push(body.results[0].correct_answer);
-                  answers.sort();
-
-                  question += "\n> " + answers.join("\n> ");
-                  question += "\n (type `abort` or `skip` to skip)";
+                      question += "\n> " + answers.join("\n> ");
+                      question += "\n (type `abort` or `skip` to skip)";
 
                   return resolve({
                       message: {
                           interactive: true,
                           thread: {
-                            source: body.results[0].question,
+                            source,
                             data: [
-                                ["correct_answer", body.results[0].correct_answer],
-                                ["incorrect_answers", body.results[0].incorrect_answers]
+                                ["correct_answer", correct_answer],
+                                ["incorrect_answers", incorrect_answers]
                             ],
                             handler: "thread-quizz-handler",
-                            duration: 10,
-                            timeout_message: "Trop tard ! Soit plus rapide la prochaine fois, la bonne réponse était : "+body.results[0].correct_answer,
+                            duration: 30,
+                            timeout_message: "Trop tard ! Soit plus rapide la prochaine fois, la bonne réponse était : "+correct_answer,
                           },
                           title: body.results[0].category,
                           text: question
                       }
                   });
+                  } catch(e) {
+                      console.log(e);
+                      return resolve({message: {text:"Error in the skill :("}});
+                  }
             } else {
                 return resolve({
                     message: {
