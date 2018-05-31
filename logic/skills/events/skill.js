@@ -23,7 +23,7 @@ let commands = {
 /* <SKILL INTENTS> */
 let intents = {
   'events-events': {
-    slug: "ask-soon-events",
+    slug: "get-events",
     handle: nlpEvents,
     expected_entities: []
   }

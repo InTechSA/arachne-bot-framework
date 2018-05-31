@@ -95,6 +95,7 @@ let commands = {
           return resolve({
               message: {
                   title: `Applications sur ${phrase}`,
+                  private: true,
                   text
               }
           });
@@ -131,6 +132,7 @@ let commands = {
           return resolve({
               message: {
                   title: `Applications sur ${phrase}`,
+                  private: true,
                   text: text.substring(text.length - 4000, text.length).split("\n").map(line => " " + line).join("\n")
               }
           });
@@ -175,6 +177,7 @@ let commands = {
           return resolve({
               message: {
                   title: `Configuration de ${app} sur ${client}`,
+                  private: true,
                   text: text.join("\n")
               }
           });
