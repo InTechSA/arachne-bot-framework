@@ -80,7 +80,7 @@ module.exports.PipeManager = class {
         return this.find(skill, identifier).then(pipe => {
             // Execute pipe's skill handler if activated.
             console.log(`> [INFO] Transmitting pipe ${identifier} for skill ${skill}`);
-            return pipe.transmit({ data });
+            return pipe.transmit(identifier, { data });
         });
     }
 }
