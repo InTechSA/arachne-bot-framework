@@ -75,6 +75,18 @@ function handleCommand(commandName, phrase = "", data = {}) {
   })
 }
 
+function handlePipe(skill, identifier, data) {
+  // Check is requested skill is active.
+  return SkillManager.getSkill(skill).then(skillFound => {
+    if (!skillFound || !skillFound.active) {
+      const error = new Error("Pipe's skill is not active.")
+      error.code = 404;
+      throw error;
+    }
+    return PipeManager.transmit(skill, identifier, data);
+  });
+}
+
 /**
  * Fully reload all the skills.
  * @return {Promise} promise object that resolves if success.
@@ -114,6 +126,10 @@ const hookComponent = require('./components/HookManager');
 let HookManager = new hookComponent.HookManager();
 exports.HookManager = HookManager;
 
+const pipeComponent = require('./components/PipeManager');
+const PipeManager = new pipeComponent.PipeManager();
+exports.PipeManager = PipeManager;
+
 const userComponent = require('./components/UserManager');
 exports.UserManager = new userComponent.UserManager();
 
@@ -127,6 +143,7 @@ exports.ConfigurationManager = ConfigurationManager;
 // Export main handlers
 exports.handleIntent = handleIntent;
 exports.handleCommand = handleCommand;
+exports.handlePipe = handlePipe;
 
 // Exoport skill commands
 exports.activateSkill = (skillName) => SkillManager.activateSkill(skillName);
