@@ -52,7 +52,7 @@ exports.interactions = interactions;
 /* <SKILL LOGIC> */
 const overseer = require('../../overseer');
 var request = require('request');
-var url_vac_micro = process.env.VACATION_URL_MICROSERVICE || "http://localhost:8001";
+var url_vac_micro = process.env.VACATION_URL_MICROSERVICE || "http://192.168.6.53:8001";
 /**
   Handler for command vacation (!vacation).
 
@@ -86,7 +86,7 @@ function vacationHandler({ phrase, data }) {
     // Retrieve the action from the phrase entered by the user
     var action = phrase.trim().replace('vacation', '').trim();
     // Retrieve the usrname from the data of the brain ( sent by the adapter )
-    if(data.username) {
+    if(data.userName) {
       var query = data.userName;
     }
     else {
@@ -110,35 +110,25 @@ function vacationHandler({ phrase, data }) {
           });
         }
         // If not create a thread to initiate the vacation request thread ( used to build a conversation between the user and the bot )
-        overseer.ThreadManager.addThread({
-          timestamp: new Date(),
-          source: query + ' ' + data.userName,
-          data: [
-            ["userName", data.userName],
-            ["step", 0]
-          ],
-          handler: "thread-vacation-handler"
-        }).then((thread) => {
           // Then return the first message of the conversation with the thread_id created, in interactive mode and in a private channel
           return resolve({
             message: {
               interactive: true,
-              thread_id: thread._id,
+              thread: {
+                  timestamp: new Date(),
+                  source: query + ' ' + data.userName,
+                  data: [
+                    ["userName", data.userName],
+                    ["step", 0]
+                  ],
+                  handler: "thread-vacation-handler",
+                  duration: 59,
+                  timeout_message: "Votre demande de congée a expirée, veuillez la réitérez"
+              },
               text: conversationTexts[0],
               private: true
             }
           });
-        }).catch((e) => {
-          // Catch eventual error.
-          return resolve({
-            message: {
-              title: "Cannot send first message",
-              text: "Error while creating thread.",
-              private: true
-            }
-          });
-        });
-        break;
       case 'status':
         // It's the code to retrieve the status associated to the vacation request of the user.
         console.log("Retreiving token ... ");
@@ -250,7 +240,6 @@ function vacationResponseHandler(thread, { phrase }) {
     if (phrase === 'Abort') {
       // If the user sent an Abort, will shutdown the thread and close the vacation request
       console.log("Aborting the demand");
-      overseer.ThreadManager.closeThread(thread._id).then(() => {
         // Return the associated message
         return resolve({
           message: {
@@ -258,14 +247,6 @@ function vacationResponseHandler(thread, { phrase }) {
             private: true
           }
         });
-      }).catch((e) => {
-        return resolve({
-          message: {
-            text: `La demande de congés a été annulée. Vous pouvez refaire une demande en tapant !vacation request`,
-            private: true
-          }
-        });
-      });
     } else {
       // If the entered something different from Abort 
       console.log("Retreiving token ... ");
@@ -295,7 +276,6 @@ function vacationResponseHandler(thread, { phrase }) {
                 success: true,
                 message: {
                   interactive: true,
-                  thread_id: thread._id,
                   text: messageReturn,
                   private: true
                 }
@@ -340,7 +320,6 @@ function vacationResponseHandler(thread, { phrase }) {
                   success: true,
                   message: {
                     interactive: true,
-                    thread_id: thread._id,
                     text: messageReturn,
                     private: true
                   }
@@ -360,7 +339,6 @@ function vacationResponseHandler(thread, { phrase }) {
                   success: true,
                   message: {
                     interactive: true,
-                    thread_id: thread._id,
                     text: messageReturn,
                     private: true
                   }
@@ -374,7 +352,6 @@ function vacationResponseHandler(thread, { phrase }) {
                   success: true,
                   message: {
                     interactive: true,
-                    thread_id: thread._id,
                     text: messageReturn,
                     private: true
                   }
@@ -429,7 +406,6 @@ function vacationResponseHandler(thread, { phrase }) {
                 success: true,
                 message: {
                   interactive: true,
-                  thread_id: thread._id,
                   text: messageReturn,
                   private: true
                 }
@@ -469,7 +445,6 @@ function vacationResponseHandler(thread, { phrase }) {
                   return resolve({
                     message: {
                       interactive: true,
-                      thread_id: thread._id,
                       text: messageReturn,
                       private: true
                     }
@@ -480,21 +455,12 @@ function vacationResponseHandler(thread, { phrase }) {
                   messageReturn = "Votre demande a été transmise à vos/votre manager(s), vous pouvez voir son statut en tapant : !vacation status.\n" + "\n" + "Une fois que tous vos managers " +
                     "ont validés votre demande, un mail sera envoyé à Carine et vous serez en copie de ce mail.\n" + "\n" + "Si un de vos managers refuse votre demande, il vous sera envoyé un mail avec les raisons de son refus.";
                   // Close the thread
-                  overseer.ThreadManager.closeThread(thread._id).then(() => {
                     return resolve({
                       message: {
                         text: messageReturn,
                         private: true
                       }
                     });
-                  }).catch((e) => {
-                    return resolve({
-                      message: {
-                        text: messageReturn,
-                        private: true
-                      }
-                    });
-                  });
                 }
               });
 
@@ -505,7 +471,6 @@ function vacationResponseHandler(thread, { phrase }) {
                 success: true,
                 message: {
                   interactive: true,
-                  thread_id: thread._id,
                   text: messageReturn,
                   private: true
                 }
@@ -520,7 +485,6 @@ function vacationResponseHandler(thread, { phrase }) {
               success: true,
               message: {
                 interactive: true,
-                thread_id: thread._id,
                 text: messageReturn,
                 private: true
               }

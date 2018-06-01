@@ -14,3 +14,6 @@ module.exports.HookManager = {
   execute: (hookId, message, options) => hub.HookManager.execute(hookId, message, options),
   codes: hub.HookManager.codes
 }
+module.exports.PipeManager = {
+  create: (skill, handler, secret = null) => hub.PipeManager.create(skill, handler, secret)
+}

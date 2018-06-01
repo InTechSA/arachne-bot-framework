@@ -23,7 +23,7 @@ let commands = {
 /* <SKILL INTENTS> */
 let intents = {
   'events-events': {
-    slug: "ask-soon-events",
+    slug: "get-events",
     handle: nlpEvents,
     expected_entities: []
   }
@@ -86,7 +86,7 @@ function eventsHandler({ phrase, data }) {
       let options = {
         url: url_event_micro + '/getEvents/' + query,
         headers: {
-          'Authorization': response,
+          'Authorization': response.response.token,
           'Accept': 'application/json'
         },
         timeout: 3000
