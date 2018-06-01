@@ -1,4 +1,4 @@
-'ue strict';
+'use strict';
 
 exports.StorageManager = class StorageManager {
   constructor() {

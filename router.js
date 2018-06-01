@@ -143,9 +143,11 @@ module.exports = function(io) {
 
   // MIDDLEWARE FOR BOT ADMIN AUTH
   const authMiddleware = require('./middlewares/auth');
-  router.use(authMiddleware.isAuthed());
   const hasRole = authMiddleware.hasRole;
   const hasPerm = authMiddleware.hasPerm;
+  
+  router.use(authMiddleware.isAuthed());
+  
 
   // Reload brain
   /**
