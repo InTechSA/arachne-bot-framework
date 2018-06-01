@@ -127,10 +127,10 @@ module.exports = function(io) {
     });
   });
 
-  router.post('/pipes/:skill/:identifier', (req, res, next) => {
+  router.post('/pipes/:skill/:identifier', (req, res) => {
     console.log(`> [INFO] Checking at pipe ${req.params.identifier} for skill ${req.params.skill}...`);
-    hub.handlePipe(req.params.skill, req.params.identifier, req.body).then(() => {
-      return res.status(200).json({ success: true, message: 'Data recieved and tarnsmitted.' });
+    hub.handlePipe(req.params.skill, req.params.identifier, req.body, req.headers).then(() => {
+      return res.status(200).json({ success: true, message: 'Data received and transmitted.' });
     }).catch((error) => {
       return res.status(error.code || 500).json({ success: false, message: error.code ? (error.message || "Unkown error with pipe.") : "Unkown error with pipe." });
     });

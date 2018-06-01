@@ -63,7 +63,7 @@ module.exports.PipeManager = class {
     find(skill, identifier) {
         return Promise.resolve().then(() => {
             let pipe = this.pipes.find(pipe => pipe.skill === skill && pipe.identifier === identifier);
-            
+
             if (!pipe) {
                 const error = new Error("No pipe found.");
                 error.code = this.codes.NO_PIPE;
@@ -74,13 +74,13 @@ module.exports.PipeManager = class {
     }
 
     /**
-     * Execute a pipe by its token.
+     * Execute a pipe by its token. The skill will receive the pipe identifier, the pipe data and the pipe headers.
      */
-    transmit(skill, identifier, data) {
+    transmit(skill, identifier, data, headers) {
         return this.find(skill, identifier).then(pipe => {
             // Execute pipe's skill handler if activated.
             console.log(`> [INFO] Transmitting pipe ${identifier} for skill ${skill}`);
-            return pipe.transmit(identifier, { data });
+            return pipe.transmit(identifier, { data, headers });
         });
     }
 }
