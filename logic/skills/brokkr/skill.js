@@ -200,12 +200,75 @@ let commands = {
     });
   }
   
+  function appConfigSet({ phrase, data }) {
+    return new Promise((resolve, reject) => {
+      /*
+        >>> YOUR CODE HERE <<<
+        resolve the handler with a formatted message object.
+      */
+  
+      const [client, app, ...configs] = phrase.split(" ");
+  
+      const configObject = {};
+      configs.map(config => config.split("=")).forEach(config => configObject[config[0]] = config[1]);
+      
+      const headers = {};
+      if (data.userName) {
+          headers['User-Proxy'] = data.userName;
+      }
+      
+      axios({
+          method: "POST",
+          url: `http://192.168.6.156/clients/${client}/apps/${app}/configuration`,
+          headers,
+          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G", configuration: configObject },
+          timeout: 200000
+      }).then(res => {
+          return resolve({
+              message: {
+                  title: `Configuration de ${app} sur ${client} mise à jour.`,
+                  private: true
+              }
+          });
+      }).catch(err => {
+          if (err.response && err.response.status == 404) {
+              return resolve({
+                  message: {
+                      title: 'Application not found.',
+                      text: err.response.data.message
+                  }
+              });    
+          }
+          if (err.response && err.response.status == 400) {
+              return resolve({
+                  message: {
+                      title: 'Invalid command.',
+                      text: err.response.data.message
+                  }
+              });    
+          }
+          return resolve({
+              message: {
+                  title: 'Could not set application configuration.',
+                  text: 'The Brokkr service is not accessible.'
+              }
+          });
+      });
+    });
+  }
+  
   function brokkr({ phrase, data }) {
       const [cmd, ...params] = phrase.split(" ");
       if (cmd === "apps") {
           return listApps({ phrase: params.join(" "), data });
       } else if (cmd === "logs") {
           return appLogs({ phrase: params.join(" "), data });
+      } else if (cmd === "config") {
+          if (params[0] === "set") {
+              return appConfigSet({ phrase: params.slice(1).join(" "), data });
+          } else {
+              return appConfig({ phrase: params.join(" "), data });   
+          }
       } else {
           return Promise.resolve({
               message: {
