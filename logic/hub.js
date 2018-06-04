@@ -127,7 +127,7 @@ let HookManager = new hookComponent.HookManager();
 exports.HookManager = HookManager;
 
 const pipeComponent = require('./components/PipeManager');
-const PipeManager = new pipeComponent.PipeManager();
+const PipeManager = new pipeComponent.PipeManager(SkillManager);
 exports.PipeManager = PipeManager;
 
 const userComponent = require('./components/UserManager');

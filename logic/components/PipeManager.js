@@ -4,7 +4,8 @@
  * Manager for Web Pipes. Pipes allow skills to receieve events from external services via POST HTTP request to the brain.
  */
 module.exports.PipeManager = class {
-    constructor() {
+    constructor(SkillManager) {
+        this.SkillManager = SkillManager;
         this.pipes = [];
         this.codes = {
             EXISTING_PIPE: 1,
@@ -21,7 +22,7 @@ module.exports.PipeManager = class {
             const pipe = {
                 skill,
                 identifier,
-                transmit: handler
+                handler
             };
             if (secret) {
                 pipe.secret = secret;
@@ -62,7 +63,7 @@ module.exports.PipeManager = class {
      */
     find(skill, identifier) {
         return Promise.resolve().then(() => {
-            let pipe = this.pipes.find(pipe => pipe.skill === skill && pipe.identifier === identifier);
+            let pipe = this.pipes.find(pipe => pipe.skill === skill && pipe.identifier == identifier);
 
             if (!pipe) {
                 const error = new Error("No pipe found.");
@@ -76,11 +77,19 @@ module.exports.PipeManager = class {
     /**
      * Execute a pipe by its token. The skill will receive the pipe identifier, the pipe data and the pipe headers.
      */
-    transmit(skill, identifier, data, headers) {
-        return this.find(skill, identifier).then(pipe => {
-            // Execute pipe's skill handler if activated.
-            console.log(`> [INFO] Transmitting pipe ${identifier} for skill ${skill}`);
-            return pipe.transmit(identifier, { data, headers });
+    transmit(skillName, identifier, data, headers) {
+        return this.find(skillName, identifier).then(pipe => {
+            // Fetch skill.
+            return this.SkillManager.getSkill(skillName).then(skill => {
+                if (!skill.pipes || !Object.keys(skill.pipes).includes(pipe.handler)) {
+                    const error = new Error("Pipe does no longer exist for skill.");
+                    error.code = this.codes.NO_PIPE;
+                    throw error;
+                }
+                // Execute pipe's skill handler if activated.
+                console.log(`> [INFO] Transmitting pipe ${identifier} for skill ${skillName}`);
+                return skill.pipes[pipe.handler].transmit(identifier, { data, headers });
+            });
         });
     }
 }
