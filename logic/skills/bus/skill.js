@@ -81,6 +81,7 @@ function busHandler({phrase}) {
         });
     });
 }
+
 /**
   Handler for intent bus-bus (bus).
 
@@ -88,7 +89,7 @@ function busHandler({phrase}) {
   --------
     entities (Object)
 */
-function handleBus({ entities: {}, data, phrase }) {
+function handleBus({ data, phrase }) {
   return busHandler({ phrase });
 }
 /* </SKILL LOGIC> */
