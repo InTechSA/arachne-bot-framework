@@ -23,7 +23,7 @@ let commands = {
 /* <SKILL INTENTS> */
 let intents = {
   'events-events': {
-    slug: "ask-soon-events",
+    slug: "get-events",
     handle: nlpEvents,
     expected_entities: []
   }
@@ -86,25 +86,31 @@ function eventsHandler({ phrase, data }) {
       let options = {
         url: url_event_micro + '/getEvents/' + query,
         headers: {
-          'Authorization': response,
+          'Authorization': response.response.token,
           'Accept': 'application/json'
-        }
+        },
+        timeout: 3000
       }
       // Make the request using request
       request(options, (err, res, body) => {
-        if (err || res.statusCode !== 200) {
-          // Error
-          if(!body) {
+          try {
+            if (err || res.statusCode !== 200) {
+              // Error
+              if(!body) {
+                  message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
+              } else {
+                  message = JSON.parse(body);   
+              }
+            } else {
+              // No error
+              message = JSON.parse(body);
+            }
+          } catch (e) {
               message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
           }
-          message = JSON.parse(body);
-        } else {
-          // No error
-          message = JSON.parse(body);
-        }
-        return resolve({
-          message: message
-        });
+            return resolve({
+                message: message
+            });
       });
     }).catch((error) => {
       console.log("Catch error in command get-ad-token " + error);

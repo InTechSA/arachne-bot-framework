@@ -114,13 +114,19 @@ module.exports = function(io) {
         let skill = Object.assign({}, skillFound);
         skill.name = req.params.skill;
 
-        Promise.all([hub.HookManager.getForSkill(req.params.skill), hub.StorageManager.getForSkill(req.params.skill)]).then(([ hooks, storage ]) => {
+        Promise.all([
+          hub.HookManager.getForSkill(req.params.skill),
+          hub.StorageManager.getForSkill(req.params.skill), 
+          hub.PipeManager.getForSkill(req.params.skill)
+        ]).then(([ hooks, storage, pipes ]) => {
           skill.hooks = hooks;
           skill.storage = storage;
+          skill.pipes = pipes;
 
           res.render('skill', {
             title: skill.name,
             nav_link: 'nav-skills',
+            botname: hub.ConfigurationManager.loadedConfiguration.botname,
             skill
           });
         }).catch((err) => {

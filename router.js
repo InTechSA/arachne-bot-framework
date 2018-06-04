@@ -143,9 +143,11 @@ module.exports = function(io) {
 
   // MIDDLEWARE FOR BOT ADMIN AUTH
   const authMiddleware = require('./middlewares/auth');
-  router.use(authMiddleware.isAuthed());
   const hasRole = authMiddleware.hasRole;
   const hasPerm = authMiddleware.hasPerm;
+  
+  router.use(authMiddleware.isAuthed());
+  
 
   // Reload brain
   /**
@@ -445,6 +447,25 @@ module.exports = function(io) {
     } else {
       return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
     }
+  });
+
+  router.get('/skills/:skill/pipes', hasPerm('SEE_SKILL_PIPES'), (req, res, next) => {
+    hub.PipeManager.getForSkill(req.params.skill).then(pipes => {
+      return res.json({
+        success: true,
+        message: "List of pipes.",
+        pipes
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/pipes', hasPerm('DELETE_SKILL_PIPES'), (req, res, next) => {
+    hub.PipeManager.clearForSkill(req.params.skill).then(() => {
+      return res.json({
+        success: true,
+        message: "Pipes cleared for skill."
+      });
+    }).catch(next);
   });
 
   // Get list of connectors (without token)

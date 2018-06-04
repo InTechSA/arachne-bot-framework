@@ -63,7 +63,7 @@ function refreshAccessToken(next) {
         'Content-Length': ServiceQuery.length,
         'Content-Type': 'application/x-www-form-urlencoded'
     },
-    uri: 'https://si-ad-test.intech-lab.com/authentication',
+    uri: 'https://si-ad.intech.lu/authentication',
     body: ServiceQuery,
     method: 'POST'
   }, (err, res) => {
@@ -80,7 +80,6 @@ function refreshAccessToken(next) {
 */
 function getToken({phrase}) {
   return new Promise((resolve, reject) => {
-    console.log("Expiration time token : "+token_expiration+" time now : "+Date.now());
     if(!token_AD && token_expiration<=Date.now()){ // Le token est null ou il a expiré
       console.log("Token null or expired, refreshing it ... ");
       refreshAccessToken((err,res)=>{
@@ -93,8 +92,6 @@ function getToken({phrase}) {
           var responseToken = JSON.parse(res.body);
           token_AD = responseToken.accessToken;
           token_expiration = responseToken.expiresAt *1000;
-          console.log("New token retrieved "+token_AD);
-          console.log("Expiration : "+new Date(token_expiration).toString());
         }
         console.log("Sending token ... ");
         return resolve({

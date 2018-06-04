@@ -55,10 +55,9 @@ function analyzeText({ phrase = "" }) {
 
     console.log(`> [INFO] {nlp} - Analyze "${phrase}".`);
     request({
-        url: "https://nlu-dashboard.intech-lab.com/rasa/parse",
+        url: "https://nlu-api.intech-lab.com/nlp/parse/"+secret.nlu_id,
         method: "POST",
         body: {
-            "project": secret.nlu_id,
             "text": phrase
         },
         json: true
@@ -69,7 +68,6 @@ function analyzeText({ phrase = "" }) {
         }
         let analyzed = { };
         try {
-            console.log(body);
             analyzed.intent = body.data.intent ? body.data.intent.name.toLowerCase() : null;
           analyzed.entities = {};
           if(body.data.entities) {

@@ -60,7 +60,7 @@ class HookManager {
           });
           if (socket.length > 0) {
             message.deleteHook = deleteHook;
-            console.log(message);
+            
             socket[0].emit('hook',hookId, {
               message
             }, (err) => {
