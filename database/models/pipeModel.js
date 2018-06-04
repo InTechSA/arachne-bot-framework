@@ -15,6 +15,14 @@ const PipeSchema = new Schema({
       type: String,
       required: true
   },
+  created: {
+      type: Date,
+      default: new Date()
+  },
+  last_use: {
+    type: Date,
+    default: new Date()
+  },
   secret: {
       type: String
   }

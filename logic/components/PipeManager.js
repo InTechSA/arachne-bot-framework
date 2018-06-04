@@ -35,6 +35,20 @@ module.exports.PipeManager = class {
     }
 
     /**
+     * Get all pipes for a skill.
+     */
+    getForSkill(skill) {
+        return this.pipeController.get_for_skill(skill);
+    }
+
+    /**
+     * Clear all pipes for a skill.
+     */
+    clearForSkill(skill) {
+        return this.pipeController.remove_for_skill(skill);
+    }
+
+    /**
      * Execute a pipe by its token. The skill will receive the pipe identifier, the pipe data and the pipe headers.
      */
     transmit(skillName, identifier, data, headers) {

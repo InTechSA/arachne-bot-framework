@@ -23,7 +23,7 @@ module.exports.remove = (skill, identifier) => {
 }
 
 module.exports.find = (skill, identifier) => {
-    return Pipe.findOne({ skill, identifier }).then(pipe => {
+    return Pipe.findOne({ skill, identifier }, { '_id': 0, '__v': 0 }).then(pipe => {
         if (!pipe) {
             const error = new Error("No pipe found.");
             error.code = 404;
@@ -31,4 +31,12 @@ module.exports.find = (skill, identifier) => {
         }
         return pipe;
     });
+}
+
+module.exports.get_for_skill = (skill) => {
+    return Pipe.find({ skill }, { '_id': 0, '__v': 0 });
+}
+
+module.exports.remove_for_skill = (skill) => {
+    return Pipe.remove({ skill });
 }
