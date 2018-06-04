@@ -140,6 +140,10 @@ const configurationComponent = require('./components/ConfigurationManager');
 const ConfigurationManager = new configurationComponent.ConfigurationManager();
 exports.ConfigurationManager = ConfigurationManager;
 
+const logComponent = require('./components/LogManager');
+let LogManager = new logComponent.LogManager();
+exports.LogManager = LogManager;
+
 // Export main handlers
 exports.handleIntent = handleIntent;
 exports.handleCommand = handleCommand;
