@@ -53,5 +53,33 @@ function clearStorage(button) {
             });
         }
     })
+}
+
+function clearPipes(button) {
+    let skill = $(button).data('skill');
+    $.ajax({
+        method: 'DELETE',
+        baseUrl: base_url,
+        url: `/skills/${skill}/pipes`,
+        dataType: 'json',
+        success: (json) => {
+            $('#pipes').text('0');
+            notifyUser({
+                title: "Pipes cleared!",
+                message: "This skill has now zero remaining pipes. Users that used this functionnality will have to request new pipes.",
+                type: "success",
+                delay: "3"
+            });
+        },
+        error: (err) =>{
+            console.log(err);
+            notifyUser({
+                title: "Couldn't clear pipes.",
+                message: "Impossible to clear pipes for this skill.",
+                type: "error",
+                delay: "3"
+            });
+        }
+    })
 
 }

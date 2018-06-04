@@ -888,6 +888,59 @@ paths:
           content:
             application/json:
               $ref: '#/components/schemas/ApiResponse'
+  /skills/{name}/pipes:
+    get:
+      summary: Get active pipes for skill.
+      operationId: getSkillPipes
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of pipes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  pipes:
+                    type: array
+                    items:
+                      $ref: '#components/schemas/Pipe'
+    delete:
+      summary: Clear pipes for skill.
+      operationId: clearSkillPipes
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pipes cleared.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
 
   /connectors:
     get:
@@ -1376,6 +1429,24 @@ components:
       type: array
       items:
         $ref: '#components/schemas/Connector'
+    Pipe:
+      type: object
+      properties:
+        skill:
+          type: string
+          example: Git
+        identifier:
+          type: string
+          example: 1B95439E2A1FF163CA014C56
+        handler:
+          type: string
+          example: repoActivityHandler
+        created:
+          type: string
+          example: '2018-06-04T09:17:49.854Z'
+        last_use:
+          type: string
+          example: '2018-06-04T09:17:49.854Z'
 
 security:
   - bearerAuth: []

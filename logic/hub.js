@@ -75,7 +75,7 @@ function handleCommand(commandName, phrase = "", data = {}) {
   })
 }
 
-function handlePipe(skill, identifier, data) {
+function handlePipe(skill, identifier, data = {}, headers = {}) {
   // Check is requested skill is active.
   return SkillManager.getSkill(skill).then(skillFound => {
     if (!skillFound || !skillFound.active) {
@@ -83,7 +83,7 @@ function handlePipe(skill, identifier, data) {
       error.code = 404;
       throw error;
     }
-    return PipeManager.transmit(skill, identifier, data);
+    return PipeManager.transmit(skill, identifier, data, headers);
   });
 }
 
@@ -127,7 +127,7 @@ let HookManager = new hookComponent.HookManager();
 exports.HookManager = HookManager;
 
 const pipeComponent = require('./components/PipeManager');
-const PipeManager = new pipeComponent.PipeManager();
+const PipeManager = new pipeComponent.PipeManager(SkillManager);
 exports.PipeManager = PipeManager;
 
 const userComponent = require('./components/UserManager');

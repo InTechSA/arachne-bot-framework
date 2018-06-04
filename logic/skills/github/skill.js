@@ -49,13 +49,42 @@ exports.interactions = interactions;
 /* <SKILL LOGIC> */
 const overseer = require('../../overseer');
 
-/**
-  Handler for command github (!github).
+function hookHandler(pipeIdentifier, { data }) {
+    console.log(data);
+    
+    // Parsing webhook event and building message object.
+    
+    let message = {};
+    console.log(data.object_kind);
+    if (data.object_kind) {
+        // This is a gitlab wehbook event.
+        if (data.object_kind === "pipeline") {
+            // This is a pipeline event.
+            if (data.object_attributes.status === "success") {
+                message.title = `Pipeline for ${data.project.name} is successfull.`
+                message.text = `Your pipeline for branch ${data.object_attributes.ref} is a success. It was started by ${data.commit.author.name}.`
+                message.attachments = data.builds.map(build => {
+                    return {
+                        title: `${build.name} for stage ${build.stage}`,
+                        text: `Status: **${build.status}**`
+                    }
+                });
+            } else {
+                message.title = `Pipeline for ${data.project.name}: ${data.object_attributes.status}.`
+                message.text = `Your pipeline for branch ${data.object_attributes.ref} returned the code **${data.object_attributes.status}**. It was started by ${data.commit.author.name}.`
+            }
+        }
+    } else {
+        message.title = 'Bip bip, activity detected on repository!';
+    }
+    
+    console.log(message);
+    
+    return overseer.HookManager.execute(pipeIdentifier, {
+        message
+    });
+}
 
-  Params :
-  --------
-    phrase: String
-*/
 function githubCommand({ phrase, data }) {
   return new Promise((resolve, reject) => {
     const args = phrase.split(" ");
@@ -72,25 +101,31 @@ function githubCommand({ phrase, data }) {
                   });
                 }
                 overseer.HookManager.create("github").then((hook) => {
-                  overseer.StorageManager.getItem("github", "hooks").then((storage) => {
-                    let hooks = {};
-                    if (storage) {
-                      hooks = storage;
-                    }
-                    hooks[data.channel] = hook._id;
-                    
-                    overseer.StorageManager.storeItem("github", "hooks", hooks).then(() => {
-                      return resolve({
-                          message: {
-                              title: "Github ♦ Hook",
-                              text: "Your webhook is ready to alert you!",
-                              request_hook: true,
-                              hook_id: hook._id
-                          }
-                      });
-                    }).catch();
-                  }).catch();
-                }).catch();
+                      overseer.StorageManager.getItem("github", "hooks").then((storage) => {
+                        let hooks = {};
+                        
+                        if (storage) {
+                          hooks = storage;
+                        }
+                        
+                        hooks[data.channel] = {
+                            id: hook._id,
+                        };
+                        
+                        overseer.StorageManager.storeItem("github", "hooks", hooks).then(() => {
+                            overseer.PipeManager.create("github", hook._id.toString(), hookHandler).then(pipe => {
+                                return resolve({
+                                      message: {
+                                          title: "Github ♦ Hook",
+                                          text: "Your webhook is ready to alert you! The url is " + "https://arachne-bot.intech-lab.com/pipes/github/" + pipe.identifier,
+                                          request_hook: true,
+                                          hook: hook
+                                      }
+                                  });
+                            });
+                        }).catch();
+                      }).catch();
+                    }).catch(); 
                 break;
             case "detach":
                 // detach

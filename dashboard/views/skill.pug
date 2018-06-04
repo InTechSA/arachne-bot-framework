@@ -27,6 +27,14 @@ block supercontent
                                 strong#hooks= skill.hooks.length
                                 |  hooks for this skill.
                             a.card-link.text-danger(href="#" onClick="clearHooks(this)" data-skill=skill.name) Clear
+                    .card
+                        .card-header Pipes
+                        .card-body
+                            p.card-text
+                                | There are 
+                                strong#pipes= skill.pipes.length
+                                |  active pipes for this skill.
+                            a.card-link.text-danger(href="#" onClick="clearPipes(this)" data-skill=skill.name) Clear
 
         else
             .text-center

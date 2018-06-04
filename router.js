@@ -449,6 +449,25 @@ module.exports = function(io) {
     }
   });
 
+  router.get('/skills/:skill/pipes', hasPerm('SEE_SKILL_PIPES'), (req, res, next) => {
+    hub.PipeManager.getForSkill(req.params.skill).then(pipes => {
+      return res.json({
+        success: true,
+        message: "List of pipes.",
+        pipes
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/pipes', hasPerm('DELETE_SKILL_PIPES'), (req, res, next) => {
+    hub.PipeManager.clearForSkill(req.params.skill).then(() => {
+      return res.json({
+        success: true,
+        message: "Pipes cleared for skill."
+      });
+    }).catch(next);
+  });
+
   // Get list of connectors (without token)
   /**
    * @api {get} /connectors Get list of connectors registered for this bot, and their status.
