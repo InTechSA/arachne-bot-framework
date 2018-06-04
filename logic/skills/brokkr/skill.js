@@ -63,6 +63,7 @@ let commands = {
   */
   /* <SKILL LOGIC> */
   const axios = require('axios');
+  const app_token = require('./secret').app_token;
   
   /**
     Handler for command list-apps (!brokkr apps).
@@ -85,7 +86,7 @@ let commands = {
           method: "GET",
           url: `http://192.168.6.156/clients/${phrase}/apps`,
           headers,
-          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+          data: { app_token },
           timeout: 5000
       }).then(res => {
           let text = "";
@@ -125,7 +126,7 @@ let commands = {
           method: "GET",
           url: `http://192.168.6.156/clients/${client}/apps/${app}/logs`,
           headers,
-          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+          data: { app_token },
           timeout: 5000
       }).then(res => {
           let text = res.data.content;
@@ -170,7 +171,7 @@ let commands = {
           method: "GET",
           url: `http://192.168.6.156/clients/${client}/apps/${app}/configuration`,
           headers,
-          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G" },
+          data: { app_token },
           timeout: 5000
       }).then(res => {
           let text = res.data.content.map(el => `*${el[0]}* ----> ${el[1]}`);
@@ -221,7 +222,7 @@ let commands = {
           method: "POST",
           url: `http://192.168.6.156/clients/${client}/apps/${app}/configuration`,
           headers,
-          data: { app_token: "2MJKSKPXWAKJHT2ZMZDELN64ZRYH6G", configuration: configObject },
+          data: { app_token, configuration: configObject },
           timeout: 200000
       }).then(res => {
           return resolve({

@@ -167,9 +167,7 @@ function handleConfirmation(thread, { phrase, data }) {
     }
     time.setHours(time.getHours()-2);
     overseer.HookManager.create("alarms","Alarme utilise qu'une seule fois !").then((hook) => {
-        console.log("Scheduling...");
       schedule.scheduleJob(time, () => {
-          console.log("Executing scheduled alarm...");
         overseer.HookManager.execute(hook._id, {
           message: {
             title: "Alarm",

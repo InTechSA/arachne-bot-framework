@@ -57,6 +57,7 @@ function analyzeText({ phrase = "" }) {
     request({
         url: "https://nlu-api.intech-lab.com/nlp/parse/"+secret.nlu_id,
         method: "POST",
+        headers: { 'App-Token': secret.nlu_token },
         body: {
             "text": phrase
         },
