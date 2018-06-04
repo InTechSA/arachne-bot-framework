@@ -52,7 +52,7 @@ exports.interactions = interactions;
 /* <SKILL LOGIC> */
 const overseer = require('../../overseer');
 var request = require('request');
-var url_vac_micro = process.env.VACATION_URL_MICROSERVICE || "http://192.168.6.53:8001";
+var url_vac_micro = "http://bot-vacation.intech-lab.com";
 /**
   Handler for command vacation (!vacation).
 
@@ -144,7 +144,8 @@ function vacationHandler({ phrase, data }) {
             headers: {
               'Authorization': 'Bearer ' + response.response.token,
               'Accept': 'application/json'
-            }
+            },
+            timeout: 5000
           };
           // Do the request using request
           request(options, (err, res, body) => {
@@ -161,6 +162,8 @@ function vacationHandler({ phrase, data }) {
               message = JSON.parse(body);
             }
             message.private = true;
+            console.log("Sent message error");
+            console.log(message);
             return resolve({
               success: true,
               message: message
@@ -192,7 +195,8 @@ function vacationHandler({ phrase, data }) {
             headers: {
               'Authorization': 'Bearer ' + response.response.token,
               'Accept': 'application/json'
-            }
+            },
+            timeout: 10000
           };
           // Make the request
           request(options, (err, res, body) => {
@@ -289,7 +293,8 @@ function vacationResponseHandler(thread, { phrase }) {
                 headers: {
                   'Authorization': 'Bearer ' + tokenAD,
                   'Accept': 'application/json'
-                }
+                },
+                timeout: 10000
               };
               // Make the request using request
               request(options, (err, res, body) => {
@@ -297,7 +302,7 @@ function vacationResponseHandler(thread, { phrase }) {
                   // Error it can be if a date is malformed, the person have insuffisient days of vacations remaining , the dates did not respect the order etc
                   if (body) {
                     console.log("Error, returning the body " + body);
-                    messageReturn = body;
+                    messageReturn = JSON.parse(body).text;
                   } else {
                     console.log("Error, no body");
                     messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( ";
@@ -345,7 +350,7 @@ function vacationResponseHandler(thread, { phrase }) {
                 });
               }
               // Check if the person doesn't put himself as manager
-              if (trigrams_manager[i] === thread.getData("trigram")) {
+              /*if (trigrams_manager[i] === thread.getData("trigram")) {
                 // Return the appropriate message
                 messageReturn = "Vous ne pouvez pas vous mettre vous même en tant que manager !! Veuillez réitérer votre demande. ";
                 return resolve({
@@ -356,7 +361,7 @@ function vacationResponseHandler(thread, { phrase }) {
                     private: true
                   }
                 });
-              }
+              }*/
             }
             // Build the url to the vacation micro
             urlRequest = url_vac_micro + "/verifManager/" + trigrams_manager.join(',');
@@ -367,7 +372,8 @@ function vacationResponseHandler(thread, { phrase }) {
               headers: {
                 'Authorization': 'Bearer ' + tokenAD,
                 'Accept': 'application/json'
-              }
+              },
+              timeout: 10000
             };
             // Do the request using request
             request(options, (err, res, body) => {
@@ -375,7 +381,7 @@ function vacationResponseHandler(thread, { phrase }) {
                 // Error, can be if the managers doesn't exist
                 if (body) {
                   console.log("Error, returning the body " + body);
-                  messageReturn = body;
+                  messageReturn = JSON.parse(body).text;
                 } else {
                   console.log("Error, no body");
                   messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( ";
@@ -428,7 +434,8 @@ function vacationResponseHandler(thread, { phrase }) {
                 headers: {
                   'Authorization': 'Bearer ' + tokenAD,
                   'Accept': 'application/json'
-                }
+                },
+                timeout: 10000
               };
               // Make the request using request
               request(options, (err, res, body) => {
@@ -436,15 +443,14 @@ function vacationResponseHandler(thread, { phrase }) {
                   // Eventual error ( can be during the execution of the confirm process ( inserting in the DB, sending the mails etc ))
                   if (body) {
                     console.log("Error, returning the body " + body);
-                    messageReturn = body;
+                    messageReturn = JSON.parse(body).text + ", veuillez réitérer votre demande plus tard";
                   } else {
                     console.log("Error, no body");
-                    messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( ";
+                    messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( , veuillez réitérer votre demande plus tard ";
                   }
                   // Return the error
                   return resolve({
                     message: {
-                      interactive: true,
                       text: messageReturn,
                       private: true
                     }

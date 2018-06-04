@@ -54,7 +54,7 @@ exports.interactions = interactions;
 */
 /* <SKILL LOGIC> */
 var request = require('request');
-var url_event_micro = "http://192.168.6.53:8003";
+var url_event_micro = "http://bot-actintech.intech-lab.com";
 /**
   Handler for command events (!events).
 

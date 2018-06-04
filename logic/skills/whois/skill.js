@@ -45,7 +45,7 @@ exports.dependencies = dependencies;
 */
 /* <SKILL LOGIC> */
 const overseer = require('../../overseer');
-var url_whois_micro = process.env.WHOIS_URL_MICROSERVICE || "http://192.168.6.53:8000";
+var url_whois_micro = "http://bot-whois.intech-lab.com";
 
 const request = require('request');
 /**

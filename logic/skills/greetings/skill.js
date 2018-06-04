@@ -29,7 +29,7 @@ let commands = {
 /* <SKILL INTENTS> */
 let intents = {
   'greetings-say-hello': {
-    slug: 'say-hello',
+    slug: 'greetings',
     handle: handleHello,
     expected_entities: []
   },
@@ -78,7 +78,7 @@ function sayHello({ data }) {
   return new Promise((resolve, reject) => {
     return resolve({
       message: {
-        text: `Hello${" "+data.user_name || " "}o/`
+        text: `Hello ${(data.user_name || "")} o/`
       }
     });
   });
