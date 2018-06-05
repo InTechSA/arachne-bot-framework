@@ -109,6 +109,9 @@ class LogManager {
                         return resolve();
                     });
                 }
+            }).catch(err => {
+                logger.error(err)
+                return reject(err);
             });
         });
     }

@@ -48,8 +48,8 @@ module.exports.get = function() {
  */
 module.exports.getOne = function(nameSkill) {
     return Log.findOne({ nameSkill }).then(log => {
-        if(!log) {
-            log = {noLog:true, log: "No log for this skill"};
+        if (!log) {
+            log = { noLog: true, log: "No log for this skill" };
         }
         return log;
     });
