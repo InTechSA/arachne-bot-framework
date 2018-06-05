@@ -1,4 +1,5 @@
 'use strict';
+const logger = new (require('./../../logic/components/Logger'))();
 
 class LogManager {
 
@@ -27,7 +28,7 @@ class LogManager {
                 this.bufferHandler();
             })
             .catch((err) => {
-                console.log(err);
+                logger.error(err);
                 this.buffer.splice(0, 1);
                 this.bufferHandler();
             });
@@ -41,6 +42,7 @@ class LogManager {
      * THis function will push the new log to put in the buffer and will call it if it's not already executed 
      */
     log(nameSkill, log) {
+        logger.info("New log for skill "+nameSkill);
         this.buffer.push({ nameSkill, log });
         if (!this.isRunning) {
             this.isRunning = true;
@@ -59,6 +61,7 @@ class LogManager {
     pushLogToDB(nameSkill, log) {
         return new Promise((resolve, reject) => {
             this.logController.getOne(nameSkill).then((Log) => {
+                logger.info("Taking existing log for "+nameSkill);
                 if (!Log.noLog) {
                     // Existing log
                     // Split on the lines
@@ -100,6 +103,7 @@ class LogManager {
                         });
                     }
                 } else {
+                    logger.info("Create new log for skill "+nameSkill);
                     // NO log for this skill, create one
                     this.logController.create_log(nameSkill, "[" + new Date().toISOString() + "] " + log).then(() => {
                         return resolve();

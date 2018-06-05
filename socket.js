@@ -1,5 +1,6 @@
 'use strict';
 let hub = require('./logic/hub');
+const logger = new (require('./logic/components/Logger'))();
 
 /**
  * socket(.js)
@@ -8,10 +9,10 @@ let hub = require('./logic/hub');
  * It will load in memomy all event listeners linked to this socket.
  */
 module.exports = function (socket) {
-  console.log(`> [INFO] Connector ${socket.connector.name} (${socket.connector.id}) connected!`);
+  logger.info(`Connector ${socket.connector.name} (${socket.connector.id}) connected!`);
 
   socket.on('disconnect', function () {
-    console.log(`> [INFO] Connector ${socket.connector.name} (${socket.connector.id}) disconnected!`);
+    logger.info(`Connector ${socket.connector.name} (${socket.connector.id}) disconnected!`);
   });
 
   /**
@@ -54,11 +55,11 @@ module.exports = function (socket) {
       hub.handleIntent(response.response.intent, response.response.entities, data).then((response) => {
         return res(null, { success: response.success, message: response.message, source: phrase });
       }).catch((error) => {
-        console.log(error)
+        logger.error(error)
         return res({ status: 500 }, { success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: phrase });
       })
     }).catch((error) => {
-      console.log(error);
+      logger.error(error);
       return res({ status: 500 }, { success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: phrase });
     });
   });
@@ -90,7 +91,7 @@ module.exports = function (socket) {
     hub.handleCommand(word, params.join(" "), data).then((response) => {
       return res(null, { success: response.success, message: response.message, source: command });
     }).catch((error) => {
-      console.log(error);
+      logger.error(error);
       return res({ status: 500 }, { success: false, message: { text: 'Unkown error while handling command.' }, source: command });
     });
   });
@@ -125,7 +126,7 @@ module.exports = function (socket) {
     hub.ThreadManager.handleThread(thread_id, phrase, data).then((response) => {
       return res(null, { success: true, message: response.message, source: phrase, thread_id });
     }).catch((error) => {
-      console.log(error);
+      logger.error(error);
       return res({ status: 500 }, { success: false, message: { text: 'Unkown error while handling conversation in thread.' }, source: phrase, thread_id });
     });
   });
@@ -145,7 +146,7 @@ module.exports = function (socket) {
     hub.HookManager.finalize(hookId, socket.connector.id).then(() => {
       error(null);
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       error("Could not finalize hook.");
     });
   });
@@ -161,14 +162,14 @@ module.exports = function (socket) {
   socket.on('close-thread-on-timeout', (thread_id, callback) => {
     hub.ThreadManager.getThread(thread_id).then((thread) => {
       hub.ThreadManager.closeThread(thread_id).then(() => {
-        console.log("> [INFO] Thread " + thread_id + " closed");
+        logger.info("Thread " + thread_id + " closed");
         return callback(thread.timeout_message);
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return callback(thread.timeout_message);
       });
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       return callback(null);
     });
   });
@@ -184,14 +185,14 @@ module.exports = function (socket) {
   socket.on('close-hook', (hook_id, callback) => {
     hub.HookManager.get(hook_id).then((hook) => { 
       hub.HookManager.remove(hook_id).then(() => {
-          console.log("> [INFO] Deleted hook "+hook_id);
+          logger.info("Deleted hook "+hook_id);
           return callback(hook.messageOnDelete);
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return callback(err);
       });
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       return callback(err);
     });
   });

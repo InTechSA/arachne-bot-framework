@@ -1,4 +1,5 @@
 'use strict';
+const logger = new (require('./../../logic/components/Logger'))();
 
 /**
  * Manager for Web Pipes. Pipes allow skills to receieve events from external services via POST HTTP request to the brain.
@@ -61,7 +62,7 @@ module.exports.PipeManager = class {
                     throw error;
                 }
                 // Execute pipe's skill handler if activated.
-                console.log(`> [INFO] Transmitting pipe ${identifier} for skill ${skillName}`);
+                logger.info(`Transmitting pipe ${identifier} for skill ${skillName}`);
                 return skill.pipes[pipe.handler].transmit(identifier, { data, headers });
             });
         });

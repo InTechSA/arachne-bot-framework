@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const secret = require("../../secret");
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const logger = new (require('../../logic/components/Logger'))();
 
 exports.is_empty = function() {
   return new Promise((resolve, reject) => {
@@ -61,7 +62,7 @@ exports.demote_user = function(id, role) {
   }).then(user => {
     if (role == "admin") {
       return User.count({ roles: 'admin' }).then(count => {
-        console.log(count);
+        logger.log(count);
         if (count == 1) {
           let error = new Error('Cannot delete last admin user.');
           error.code = 400;
@@ -430,7 +431,7 @@ exports.sign_in = function(username, password) {
         // Auth is a success. Find local user.
         User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
           if (err) {
-            console.log(err);
+            logger.error(err);
             return reject({ message: "Could not find user." });
           } else if (user) {
             let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
@@ -440,7 +441,7 @@ exports.sign_in = function(username, password) {
               let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user.id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
               return resolve({ message: "User created and signed in.", token, user });
             }).catch(err => {
-              console.log(err);
+              logger.error(err);
               return reject({ message: "Auth service approved the connexion, but the brain was unable to create a new user associated." });
             });
           }
@@ -462,7 +463,7 @@ exports.sign_in = function(username, password) {
       // Otherwise, check against local database.
       User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
         if (err) {
-          console.log(err.stack);
+          logger.error(err.stack);
           return reject(new Error("Could not find user."));
         } else if (user) {
           bcrypt.compare(password, user.password, (err, res) => {

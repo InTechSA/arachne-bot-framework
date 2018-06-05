@@ -1,5 +1,6 @@
 'use strict';
 const path = require('path');
+const logger = new (require('./components/Logger'))();
 
 /**
  * Handle an intent. Find the related skill and call it.
@@ -11,7 +12,7 @@ const path = require('path');
  */
 function handleIntent(intentName, entities = {}, data = {}) {
   return new Promise((resolve, reject) => {
-    console.log(`> [INFO] Handling intent "\x1b[4m${intentName}\x1b[0m"`);
+    logger.info(`Handling intent "\x1b[4m${intentName}\x1b[0m"`);
     if (SkillManager.intents.has(intentName) && SkillManager.intents.get(intentName).active) {
       let intent = SkillManager.intents.get(intentName);
 
@@ -36,7 +37,7 @@ function handleIntent(intentName, entities = {}, data = {}) {
         return reject(err);
       });
     } else {
-      console.log(`> [WARNING] Intent "\x1b[4m${intentName}\x1b[0m" is not handled.`);
+      logger.warn(`Intent "\x1b[4m${intentName}\x1b[0m" is not handled.`);
       return resolve({ success: true, message: { text: `I can't handle your intention, yet I think it is *${intentName}*. Maybe it was disabled :/` }});
     }
   })
@@ -51,7 +52,7 @@ function handleIntent(intentName, entities = {}, data = {}) {
  */
 function handleCommand(commandName, phrase = "", data = {}) {
   return new Promise((resolve, reject) => {
-    console.log(`> [INFO] Handling command "\x1b[4m${commandName}\x1b[0m"`)
+    logger.info(`Handling command "\x1b[4m${commandName}\x1b[0m"`)
 
     if (SkillManager.commands.has(commandName) && SkillManager.commands.get(commandName).active) {
       let command = SkillManager.commands.get(commandName);
@@ -167,10 +168,10 @@ exports.hasSkill = (skillName) => SkillManager.hasSkill(skillName);
 exports.reloadBrain = reloadBrain;
 
 ConfigurationManager.reload().then(() => {
-  console.log(`> [INFO] Configuration loaded.`);
+  logger.info(`Configuration loaded.`);
   return SkillManager.loadSkillsFromDatabase();
 }).then(() => SkillManager.loadSkillsFromFolder())
   .catch(err => {
-    console.log(err);
-    console.log(`\x1b[31mFailed to load skills.\x1b[0m`);
+    logger.error(err);
+    logger.error(`\x1b[31mFailed to load skills.\x1b[0m`);
 });

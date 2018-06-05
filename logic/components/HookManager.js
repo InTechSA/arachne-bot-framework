@@ -1,4 +1,5 @@
 'use strict';
+const logger = new (require("./../components/Logger"))();
 
 class HookManager {
 
@@ -47,11 +48,11 @@ class HookManager {
    * @return {Promise} Promise that resolves if the message was sent, false otherwise.
    */
   execute(hookId, message, {deleteHook = false} = {}) {
-    console.log("Delete Hook "+deleteHook);
+    logger.info("Delete Hook "+deleteHook);
     return new Promise((resolve, reject) => {
       this.get(hookId).then((hook) => {
         if (!hook) {
-          console.log(`> [WARNING] A skill tried to execute an unkown hook ${hookId}.`);
+          logger.info(`A skill tried to execute an unkown hook ${hookId}.`);
           return reject(this.codes.NO_HOOK);
         }
         if (this.io && this.io.sockets) {
@@ -68,7 +69,7 @@ class HookManager {
                 this.remove(hookId);
               }
             });
-            console.log(`> [INFO] Executed hook ${hookId}.`);
+            logger.info(`Executed hook ${hookId}.`);
             return resolve();
           } else {
             return reject(this.codes.NO_CONNECTOR_LINKED);
@@ -77,7 +78,7 @@ class HookManager {
           return reject(this.codes.NO_CONNECTOR_ONLINE);
         }
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return reject(err);
       });
     });
