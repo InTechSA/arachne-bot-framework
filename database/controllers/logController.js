@@ -1,7 +1,6 @@
 'use strict';
 var Log = require("../models/logModel");
 
-var buffer = [];
 /**
  * Create a new Log.
  *
@@ -50,9 +49,7 @@ module.exports.get = function() {
 module.exports.getOne = function(nameSkill) {
     return Log.findOne({ nameSkill }).then(log => {
         if(!log) {
-            let error =  new Error('Log Not Found');
-            error.code = 404;
-            throw error;
+            log = {noLog:true, log: "No log for this skill"};
         }
         return log;
     });

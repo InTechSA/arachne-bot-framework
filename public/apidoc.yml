@@ -941,6 +941,51 @@ paths:
                     type: boolean
                   message:
                     type: string
+  /skills/{name}/logs:
+    get:
+      summary: Get active logs for skill.
+      operationId: getSkilllogs
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of logs.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#components/schemas/Logs'
+    delete:
+      summary: delete active logs for skill.
+      operationId: deleteSkilllogs
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Delete of logs.
+    
 
   /connectors:
     get:
@@ -1447,6 +1492,14 @@ components:
         last_use:
           type: string
           example: '2018-06-04T09:17:49.854Z'
+    Logs:
+      type: object
+      properties:
+        skillName:
+          type: string
+          example: Git
+        Log:
+          type: string
 
 security:
   - bearerAuth: []
