@@ -52,18 +52,24 @@ let interactions = ${this.interactionString};
 let dependencies = ${dependencies};
 /* </SKILL DEPENDENCIES> */
 
+// pipes of the skill.
+/* <SKILL DEPENDENCIES> */
+let pipes = {};
+/* </SKILL DEPENDENCIES> */
+
 // Exposing the skill definition.
 exports.commands = commands;
 exports.intents = intents;
 exports.dependencies = dependencies;
 exports.interactions = interactions;
+exports.pipes = pipes;
 
 /*
   Skill logic begins here.
   You must implements the functions listed as "execute" and "handle" handler, or your skill will not load.
 */
 /* <SKILL LOGIC> */
-
+const overseer = require('../../overseer');
 /* </SKILL LOGIC> */
 
 // You may define other logic function unexposed here. Try to keep the skill code slim.
