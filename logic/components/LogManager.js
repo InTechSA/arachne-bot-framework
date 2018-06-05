@@ -107,6 +107,8 @@ class LogManager {
                     // NO log for this skill, create one
                     this.logController.create_log(nameSkill, "[" + new Date().toISOString() + "] " + log).then(() => {
                         return resolve();
+                    }).catch(err => {
+                        return reject(err);        
                     });
                 }
             }).catch(err => {
