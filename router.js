@@ -770,19 +770,32 @@ module.exports = function(io) {
 
   // Grant permissions to user.
   router.put('/users/:user_name/permissions', hasPerm('GRANT_PERM'), (req, res, next) => {
-    if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+    let permissionsToSet = req.body.permissions || [];
+    
+    if (permissionsToSet && !Array.isArray(permissionsToSet)) {
       return res.status(400).json({
         success: false,
         message: "Missing permissions array in body."
       });
     }
-    hub.UserManager.grantPermissionsByName(req.params.user_name, req.body.permissions).then(permissions => {
-      return res.json({
-        success: true,
-        message: "Permissions granted to user.",
-        permissions
-      });
-    }).catch(next);
+    
+    if (req.query.replace && req.query.replace == "true") {
+      hub.UserManager.setPermissionsByName(req.params.user_name, permissionsToSet).then(permissions => {
+        return res.json({
+          success: true,
+          message: "Permissions granted to user.",
+          permissions
+        });
+      }).catch(next);
+    } else {
+      hub.UserManager.grantPermissionsByName(req.params.user_name, permissionsToSet).then(permissions => {
+        return res.json({
+          success: true,
+          message: "Permissions granted to user.",
+          permissions
+        });
+      }).catch(next);
+    }
   });
 
   // Revoke permissions of user.

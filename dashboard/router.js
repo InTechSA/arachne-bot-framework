@@ -214,6 +214,7 @@ module.exports = function(io) {
         nav_link: 'nav-users',
         botname: hub.ConfigurationManager.loadedConfiguration.botname,
         default_role,
+        permissions: hub.PermissionManager.permissions,
         users,
         roles
       });

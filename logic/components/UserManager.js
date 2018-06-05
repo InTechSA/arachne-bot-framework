@@ -50,6 +50,12 @@ exports.UserManager = class UserManager {
         });
     }
 
+    setPermissionsByName(userName, permissions) {
+        return this.userController.get_by_username(userName).then(user => {
+            return this.userController.set_permissions(user.id, permissions);
+        });
+    }
+
     revokePermissionsByName(userName, permissions) {
         return this.userController.get_by_username(userName).then(user => {
             return this.userController.revoke_permissions(user.id, permissions);
