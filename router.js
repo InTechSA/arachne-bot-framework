@@ -3,6 +3,7 @@ const express = require('express');
 const botRouter = require('./botRouter');
 let hub = require('./logic/hub');
 const users = require('./database/controllers/userController');
+const logger = new (require("./logic/components/Logger"))();
 
 // Main router for the brain. Will load te dashboard router and the bot router.
 module.exports = function(io) {
@@ -45,7 +46,7 @@ module.exports = function(io) {
       if (err.message) {
         return res.status(err.code || 400).json({ success: false, message: err.message });
       }
-      console.log(err.stack);
+      logger.error(err.stack);
       return res.status(500).json({ success: false, message: "Unkown error." });
     });
   });
@@ -104,14 +105,14 @@ module.exports = function(io) {
         }).then(admin => {
           return res.json({ success: true, message: "Admin user added.", user: { id: admin._id, roles: admin.roles, user_name: admin.user_name } });
         }).catch((err) => {
-          console.log(err);
+          logger.error(err);
           return res.status(500).json({ success: false, message: "Could not setup admin user." });
         });
       } else {
         return res.status(403).json({ success: false, message: "The user database is not empty." });
       }
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       return res.status(500).json({ success: false, message: "Could not setup admin user." });
     });
   });
@@ -162,7 +163,7 @@ module.exports = function(io) {
     hub.reloadBrain().then(() => {
       return res.json({ success: true, message: "Successfully reloaded brain." });
     }).catch((err) => {
-      console.log(err.stack);
+      logger.error(err.stack);
       return res.json({ success: false, message: "An unkown error occured while reloading brain." });
     });
   }),
@@ -235,7 +236,7 @@ module.exports = function(io) {
       if (err.message) {
         return res.json({ success: false, message: err.message });
       } else {
-        console.log(err.stack);
+        logger.error(err.stack);
         return res.json({ success: false, message: "An unkown error occured while saving new skill." });
       }
     });
@@ -256,7 +257,7 @@ module.exports = function(io) {
     hub.deleteSkill(req.params.skill).then(() => {
       return res.json({ success: true, message: "Successfully deleted skill." });
     }).catch((err) => {
-      console.log(err.stack);
+      logger.error(err.stack);
       return res.json({ success: false, message: "An unkown error occured while deleting skill." });
     });
   });
@@ -384,7 +385,7 @@ module.exports = function(io) {
     hub.updateSkillSecret(req.params.skill, secret).then(() => {
       return res.json({ success: true, message: `Secret saved and skill reloaded.` });
     }).catch((e) => {
-      console.log(e);
+      logger.error(e);
       return res.status(e.code || 500).json({ code: e.code || 500, message: e.message || "Internal server error while updating skill secret."});
     });
 
@@ -428,7 +429,7 @@ module.exports = function(io) {
       hub.HookManager.clearForSkill(req.params.skill).then(() => {
         return res.json({ success: true, message: `Hooks cleared for skill ${req.params.skill}.`});  
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return res.status(500).json({ success: false, message: `Could not clear hooks of skill ${req.params.skill}.`});  
       });
     } else {
@@ -441,7 +442,7 @@ module.exports = function(io) {
       hub.StorageManager.clearForSkill(req.params.skill).then(() => {
         return res.json({ success: true, message: `Storage cleared for skill ${req.params.skill}.`});  
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return res.status(500).json({ success: false, message: `Could not clear storage of skill ${req.params.skill}.`});  
       });
     } else {
@@ -615,7 +616,7 @@ module.exports = function(io) {
     hub.ConnectorManager.toggleConnector(req.params.id, req.params.status === "on" ? true : false)
       .then((connector) => res.json({ success: true, connector: connector }))
       .catch((err) => {
-        console.log(err);
+        logger.error(err);
         res.status(err.code || 500).json({ error: err.code || 500, message: err.message || "Internal server error while setting connector status." })
       });
   });
@@ -956,7 +957,7 @@ module.exports = function(io) {
     } else if (err.code) {
       return res.status(err.code || 500).json({ success: false, status: err.code || 500, message: err.message || "Internal server error." });
     }
-    console.log(err)
+    logger.error(err)
     res.status(500).json({ success: false, status: 500, message: 'Internal Server Error.' });
   });
 

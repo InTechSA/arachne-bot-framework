@@ -1,4 +1,5 @@
 'use strict';
+const logger = new (require('./../../logic/components/Logger'))();
 
 const fs = require('fs');
 const path = require('path');
@@ -132,39 +133,39 @@ exports.SkillManager = class SkillManager {
     return new Promise((resolve, reject) => {
       if (this.skills.has(skillName)) {
         try {
-          console.log(`> [INFO] Reloading skill \x1b[33m${skillName}\x1b[0m...`);
+          logger.info(`Reloading skill \x1b[33m${skillName}\x1b[0m...`);
 
-          console.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
-          console.log(`\tRemoving associated Intents...`);
+          logger.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
+          logger.log(`\tRemoving associated Intents...`);
           let skill = this.skills.get(skillName);
           if (skill.intents) {
             for (let intent in skill.intents) {
-              console.log("\t\tRemoving " + intent);
+              logger.log("\t\tRemoving " + intent);
               this.intents.remove(skill.intents[intent].slug);
             }
           }
 
-          console.log(`\tRemoving linked Commands...`);
+          logger.log(`\tRemoving linked Commands...`);
           if (skill.commands) {
             for (let command in skill.commands) {
-              console.log("\t\tRemoving " + command);
+              logger.log("\t\tRemoving " + command);
               this.commands.remove(command);
             }
           }
 
-          console.log(`\tRemoving linked Interactions...`);
+          logger.log(`\tRemoving linked Interactions...`);
           if (skill.interactions) {
             for (let interaction in skill.interactions) {
-              console.log("\t\tRemoving " + interaction);
+              logger.log("\t\tRemoving " + interaction);
               this.interactions.remove(interaction);
             }
           }
 
-          console.log(`\tRemoving skill...`);
+          logger.log(`\tRemoving skill...`);
           this.skills.remove(skillName);
-          console.log(`> [INFO] Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
+          logger.info(`Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
 
-          console.log('> [INFO] Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
+          logger.info('Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
           delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
           if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
             delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
@@ -173,11 +174,11 @@ exports.SkillManager = class SkillManager {
           this.loadSkill(skillName).then(() => {
             return resolve()
           }).catch((err) => {
-            console.log(err);
+            logger.error(err);
             return reject();
           });
         } catch (e) {
-          console.log(e.stack);
+          logger.error(e.stack);
           return reject();
         }
       } else {
@@ -193,7 +194,7 @@ exports.SkillManager = class SkillManager {
    */
   loadSkill(skillName) {
     return this.skillController.is_active(skillName).then(status => {
-      console.log(`\tLoading skill \x1b[33m${skillName}\x1b[0m...`);
+      logger.log(`\tLoading skill \x1b[33m${skillName}\x1b[0m...`);
       delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
       if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
         delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
@@ -222,12 +223,12 @@ exports.SkillManager = class SkillManager {
       }
 
       this.skills.get(skillName).active = status;
-      console.log(`\t..."${skillName}" successfully loaded`);
-      console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
+      logger.log(`\t..."${skillName}" successfully loaded`);
+      logger.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
       return status;
     }).catch((err) => {
-      console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
-      console.log(err);
+      logger.error(`\x1b[31m\t..."${skillName}" could not load!\x1b[0m`);
+      logger.error(err);
       throw err;
     });
   }
@@ -238,13 +239,13 @@ exports.SkillManager = class SkillManager {
    * @param {String[]} skillsToLoad The names of skills to load.
    */
   loadSkills(skillsToLoad) {
-    console.log(`> [INFO] Loading skills...`);
+    logger.info(`Loading skills...`);
     let loaders = [];
     for (let skillName of skillsToLoad) {
       this.skills.add(skillName, {});
       loaders.push(
         this.skillController.is_active(skillName).then(status => {
-          console.log(`\tLoading skill "${skillName}"...`);
+          logger.log(`\tLoading skill "${skillName}"...`);
           delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
           if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
             delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
@@ -272,20 +273,20 @@ exports.SkillManager = class SkillManager {
           }
 
         this.skills.get(skillName).active = status;
-        console.log(`\t..."${skillName}" successfully loaded`);
-        console.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
+        logger.log(`\t..."${skillName}" successfully loaded`);
+        logger.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
       }).catch(err => {
-        console.error(`\x1b[31m[ERROR]\t..."${skillName}" could not load!\x1b[0m`);
-        console.log(err);
+        logger.error(`\x1b[31m\t..."${skillName}" could not load!\x1b[0m`);
+        logger.log(err);
       })
     );
     }
 
     Promise.all(loaders).then(() => {
-      console.log("               ");
-      console.log(`> [INFO] Loaded Skills: ${this.skills.list.join(", ")}`);
-      console.log(`> [INFO] Plugged Intents: ${this.intents.list.join(", ")}`);
-      console.log(`> [INFO] Available Commands: ${this.commands.list.join(", ")}`);
+      logger.log("               ");
+      logger.info(`Loaded Skills: ${this.skills.list.join(", ")}`);
+      logger.info(`Plugged Intents: ${this.intents.list.join(", ")}`);
+      logger.info(`Available Commands: ${this.commands.list.join(", ")}`);
     })
   }
 
@@ -304,34 +305,34 @@ exports.SkillManager = class SkillManager {
    * Load skills from database (on bot start) and create local files.
    */
   loadSkillsFromDatabase() {
-    console.log(`> [INFO] Retrieving skills from Database...`);
+    logger.info(` Retrieving skills from Database...`);
     return this.skillController.get().then(skills => {
-      console.log(`\t... Done. Writing kills to local disk...`);
+      logger.log(`\t... Done. Writing kills to local disk...`);
       // Create files for each skill.
       // Will override any local files.
       // But will retain untracked local skills.
       for (const skill of skills) {
-        console.log(`> [INFO] Taking care of \x1b[33m${skill.name}\x1b[0m...`);
+        logger.info(` Taking care of \x1b[33m${skill.name}\x1b[0m...`);
 
         // Remove local folder if present.
         if (fs.existsSync(this.skillsDirectory + "/" + skill.name)) {
           // Override this folder.
-          console.log(`\t... Removing folder.`)
+          logger.log(`\t... Removing folder.`);
           this.deleteFolderRecursive(this.skillsDirectory + "/" + skill.name);
         }
 
         // Create the folder for this skill.
-        console.log(`\t... Init folder.`)
+        logger.log(`\t... Init folder.`);
         fs.mkdirSync(this.skillsDirectory + "/" + skill.name);
 
         // Write code and secret files to disk.
-        console.log(`\t... Writing code file.`)
+        logger.log(`\t... Writing code file.`);
         fs.writeFileSync(this.skillsDirectory + "/" + skill.name + "/skill.js", skill.code, "utf-8");
-        console.log(`\t... Writing secret file.`)
+        logger.log(`\t... Writing secret file.`);
         let secret = `module.exports = {\n${[...skill.secret.keys()].map((key) => `"${key}": "${skill.secret.get(key)}"`).join(",\n")}\n}`;
         fs.writeFileSync(this.skillsDirectory + "/" + skill.name + "/secret.js", secret, "utf-8");
 
-        console.log(`\t... \x1b[32mDone\x1b[0m!`)
+        logger.log(`\t... \x1b[32mDone\x1b[0m!`)
       }
     });
   }
@@ -343,16 +344,16 @@ exports.SkillManager = class SkillManager {
   loadSkillsFromFolder() {
     let skillsFolders;
     try {
-      console.log(`> [INFO] Loading skills directory: "\x1b[4m${"/skills"}\x1b[0m"...`);
+      logger.info(` Loading skills directory: "\x1b[4m${"/skills"}\x1b[0m"...`);
       skillsFolders = this.getDirectories(this.skillsDirectory)
-      console.log(`> [INFO] Skills folders found: \x1b[33m${skillsFolders.join(", ")}\x1b[0m.`);
+      logger.info(` Skills folders found: \x1b[33m${skillsFolders.join(", ")}\x1b[0m.`);
       this.skillController.get().then((skills_db) => {
         const skillsNameInDb = skills_db.map((skill => skill.name));
         const skillsToPersist = skillsFolders.filter(skillName => !skillsNameInDb.includes(skillName));
         const loaders = skillsToPersist.map((skill) => {
           return Promise.resolve().then(() => {
               return new Promise((resolve, reject) => {
-                console.log(`\t... Persist skill ${skill} in database...`);
+                logger.log(`\t... Persist skill ${skill} in database...`);
                 // Extract the skill code
                 const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
                 // Extract the secret ( if it exist )
@@ -361,19 +362,19 @@ exports.SkillManager = class SkillManager {
                   secret = require(this.skillsDirectory + "/" + skill + "/secret");
                 }
                 return resolve(this.skillController.create_skill(skill, skill_code, secret).then(() => {
-                  console.log(`\t... Persisted skill ${skill} in database...`);
+                  logger.log(`\t... Persisted skill ${skill} in database...`);
                 }));
               });
           });
         });
 
-        console.log(`> [INFO] Persist local skills in database...`);
+        logger.info(`Persist local skills in database...`);
         
         Promise.all(loaders).then(() => {
           if(loaders.length > 0) {
-            console.log("> [INFO] Inserted successfully new skills  " + skillsToPersist.join(',') + " from local to the database");
+            logger.info("Inserted successfully new skills  " + skillsToPersist.join(',') + " from local to the database");
           } else {
-            console.log("> [INFO] No local skills to persist.");
+            logger.info("No local skills to persist.");
           }
           /**
             Load skills on module require (bot start).
@@ -382,13 +383,13 @@ exports.SkillManager = class SkillManager {
 
           this.loadSkills(skillsToLoad);
         }).catch((err) => {
-          console.log("> [ERROR] Error inserting new skill from local dir to the database : " + err);
+          logger.error(" Error inserting new skill from local dir to the database : " + err);
         });
       }).catch((err) => {
-        console.log("> [ERROR] Error retrieiving the skills from the database : " + err);
+        logger.error(" Error retrieiving the skills from the database : " + err);
       });
     } catch (e) {
-      console.log(e.stack);
+      logger.error(e.stack);
     }
   }
 
@@ -415,7 +416,7 @@ exports.SkillManager = class SkillManager {
           for (let interactionName in skill.interactions) {
             skill.interactions[interactionName].active = true;
           }
-          console.log(`\t\t... \x1b[32mactivated\x1b[0m`);
+          logger.log(`\t\t... \x1b[32mactivated\x1b[0m`);
           return resolve();
         })
         .catch(err => { reject(err) });
@@ -456,7 +457,7 @@ exports.SkillManager = class SkillManager {
       if (this.skills.has(skillName)) {
         fs.readFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), 'utf8', (err, data) => {
           if (err) {
-            console.log(err.stack);
+            logger.error(err.stack);
             return reject();
           }
           let code = data;
@@ -498,34 +499,34 @@ exports.SkillManager = class SkillManager {
         // TODO: Validate skill code instead of TRUE...
 
         if (true) { // eslint-disable-line no-constant-condition
-          console.log(`> [INFO] Saving code of skill \x1b[33m${skillName}\x1b[0m...`);
-          console.log(`\t... Push ${skillName} to database...`);
+          logger.info(`Saving code of skill \x1b[33m${skillName}\x1b[0m...`);
+          logger.log(`\t... Push ${skillName} to database...`);
           this.skillController.save_code(skillName, code).then((skill) => {
-            console.log(`\t... Writing code file of ${skillName}...`);
+            logger.log(`\t... Writing code file of ${skillName}...`);
             fs.writeFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), code, 'utf8', (err) => {
               if (err) {
-                console.log(err);
+                logger.error(err);
                 return reject();
               }
 
-              console.log(`\t... Reload skill.`);
+              logger.log(`\t... Reload skill.`);
 
               this.reloadSkill(skillName).then(() => {
                 return resolve();
               }).catch((err) => {
-                console.log(err);
+                logger.error(err);
                 return reject();
               });
             });
           }).catch((err) => {
-            console.log(`\t... [ERROR] \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+            logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
             return reject(new Error("Could not push skill code."));
           });
         } else {
           return reject(new Error("Skill code is not valid : " + reason || ""));
         }
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return reject(new Error("Skill code is not valid."));
       });
     });
@@ -544,44 +545,44 @@ exports.SkillManager = class SkillManager {
 
       // TODO: Check skill definition and skill code.
       this.validateSkillCode(skill.code).then((success, reason) => {
-        console.log(`> [INFO] Adding code of skill \x1b[33m${skill.name}\x1b[0m...`);
-        console.log(`\t... Push ${skill.name} to database...`);
+        logger.info(`Adding code of skill \x1b[33m${skill.name}\x1b[0m...`);
+        logger.log(`\t... Push ${skill.name} to database...`);
         this.skillController.create_skill(skill.name, skill.code).then((savedSkill) => {
-          console.log(`\t... Create ${skill.name} folder...`);
+          logger.log(`\t... Create ${skill.name} folder...`);
           fs.mkdir(path.join(this.skillsDirectory, `/${skill.name}`), (err) => {
             if (err) {
-              console.log(err);
+              logger.error(err);
               return reject({ title: "Could not create folder.", message: "Could not create skill folder on server." });
             }
-            console.log(`\t... Create skill.js in ${skill.name} folder...`)
+            logger.log(`\t... Create skill.js in ${skill.name} folder...`)
             fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/skill.js`), skill.code, (err) => {
               if (err) {
-                console.log(err);
+                logger.error(err);
                 return reject({ title: "Could not create skill.js file.", message: "Could not create skill.js file on server." });
               }
 
               if (skill.secret) {
-                console.log(`\t... Create secret.js in ${skill.name} folder...`)
+                logger.log(`\t... Create secret.js in ${skill.name} folder...`)
                 fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/secret.js`), "{}", (err) => {
                   if (err) {
-                    console.log(err);
+                    logger.error(err);
                     return reject({ title: "Could not create secret.js file.", message: "Could not create secret.js file on server." });
                   }
-                  console.log(`> [INFO] Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
+                  logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
                   return resolve();
                 });
               } else {
-                console.log(`> [INFO] Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
+                logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
                 return resolve();
               }
             });
           });
         }).catch((err) => {
-          console.log(`\t... [ERROR] \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
           return reject(new Error("Could not push skill code."));
         });
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return reject({ title: "Could not validate skill code.", message: "Could not validate skill code." });
       });
     });
@@ -594,53 +595,53 @@ exports.SkillManager = class SkillManager {
    */
   deleteSkill(skillName) {
     return new Promise((resolve, reject) => {
-      console.log(`> [INFO] Deleting skill \x1b[33m${skillName}\x1b[0m...`);
+      logger.info(`Deleting skill \x1b[33m${skillName}\x1b[0m...`);
 
-      console.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
-      console.log(`\tRemoving associated Intents...`);
+      logger.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
+      logger.log(`\tRemoving associated Intents...`);
       let skill = this.skills.get(skillName);
       if (skill.intents) {
         for (let intent in skill.intents) {
-          console.log("\t\tRemoving " + intent);
+          logger.log("\t\tRemoving " + intent);
           this.intents.remove(skill.intents[intent].slug);
         }
       }
 
-      console.log(`\tRemoving linked Commands...`);
+      logger.log(`\tRemoving linked Commands...`);
       if (skill.commands) {
         for (let command in skill.commands) {
-          console.log("\t\tRemoving " + command);
+          logger.log("\t\tRemoving " + command);
           this.commands.remove(command);
         }
       }
 
-      console.log(`\tRemoving linked interactions...`);
+      logger.log(`\tRemoving linked interactions...`);
       if (skill.interactions) {
         for (let interaction in skill.interactions) {
-          console.log("\t\tRemoving " + interaction);
+          logger.log("\t\tRemoving " + interaction);
           this.interactions.remove(interaction);
         }
       }
 
-      console.log(`\tRemoving skill...`);
+      logger.log(`\tRemoving skill...`);
       this.skills.remove(skillName);
-      console.log(`> [INFO] Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
+      logger.info(`Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
 
-      console.log(`> [INFO] Clearing cache for skill \x1b[33m${skillName}\x1b[0m`);
+      logger.info(`Clearing cache for skill \x1b[33m${skillName}\x1b[0m`);
       delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
 
-      console.log(`> [INFO] Removing skill \x1b[33m${skillName}\x1b[0m from database...`);
+      logger.info(`Removing skill \x1b[33m${skillName}\x1b[0m from database...`);
       this.skillController.delete(skillName).then(() => {
-        console.log(`> [INFO] Removing files for skill \x1b[33m${skillName}\x1b[0m...`);
+        logger.info(`Removing files for skill \x1b[33m${skillName}\x1b[0m...`);
         try {
           this.deleteFolderRecursive(path.join(this.skillsDirectory, "/" + skillName));
-          console.log(`> [INFO] Successfully removed folder ${"/skills/" + skillName}`);
+          logger.info(`Successfully removed folder ${"/skills/" + skillName}`);
           return resolve();
         } catch (e) {
           return reject({ message: "Could not delete folder " + "/skills/" + skillName });
         }
       }).catch(err => {
-        console.log(`\t... [ERROR] \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+        logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
         return reject(new Error("Could not delete skill."));
       })
     });
@@ -740,31 +741,31 @@ exports.SkillManager = class SkillManager {
           }
         }
 
-        console.log(`> [INFO] Saving secret of skill \x1b[33m${skillName}\x1b[0m...`);
-        console.log(`\t... Push ${skillName} secret to database...`);
+        logger.info(`Saving secret of skill \x1b[33m${skillName}\x1b[0m...`);
+        logger.log(`\t... Push ${skillName} secret to database...`);
         this.skillController.save_secret(skillName, secret).then(skill => {
           let filePath = path.join(this.skillsDirectory, `/${skillName}/secret.js`);
           // Using stream is the recommended method to edit files with potentiel concurrency.
           let stream = fs.createWriteStream(filePath);
           stream.on("error", (error) => {
-            console.log(error);
+            logger.error(error);
             return reject();
           });
           stream.on("finish", () => {
-            console.log(`\t... Reload skill.`);
+            logger.log(`\t... Reload skill.`);
 
             delete require.cache[require.resolve(filePath)];
             this.reloadSkill(skillName).then(() => {
               return resolve();
             }).catch((err) => {
-              console.log(err.stack);
+              logger.error(err.stack);
               return reject();
             });
           });
           stream.write(`module.exports = ${JSON.stringify(secret)};`, 'utf8');
           stream.end();
         }).catch(err => {
-          console.log(`\t... [ERROR] \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
           return reject(new Error("Could not push skill code."));
         });
 

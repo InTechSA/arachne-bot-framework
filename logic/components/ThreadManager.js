@@ -1,4 +1,5 @@
 'use strict';
+const logger = new (require("./../components/Logger"))();
 
 exports.ThreadManager = class ThreadManager {
   constructor(interactions) {
@@ -46,16 +47,16 @@ exports.ThreadManager = class ThreadManager {
   handleThread(threadId, phrase, data = {}) {
     return new Promise((resolve, reject) => {
       this.threadController.get_thread(threadId).then((thread) => {
-        console.log(`> [INFO] Handling interaction "\x1b[4m${thread.handler}\x1b[0m"`)
+        logger.info(`Handling interaction "\x1b[4m${thread.handler}\x1b[0m"`)
 
         if (this.interactions.has(thread.handler) && this.interactions.get(thread.handler).active) {
           this.interactions.get(thread.handler).interact(thread, { phrase, data }).then((res) => {
             if (!res.message.interactive) {
-              console.log("> [INFO] Closing the thread because no interactive parameter ");
+              logger.info("Closing the thread because no interactive parameter ");
               this.closeThread(threadId).then(() => {
                 return resolve(res);
               }).catch((err) => {
-                console.log("> [ERROR] Could not close thread " + threadId + " error : " + err);
+                logger.error("Could not close thread " + threadId + " error : " + err);
               });
             } else {
               res.message.thread = { id: thread._id, duration: thread.duration };

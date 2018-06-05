@@ -1,5 +1,6 @@
 'use strict';
 var Connector = require("../models/connectorModel");
+const logger = new (require("../../logic/components/Logger"))();
 
 module.exports.create_connector = function(name, ip = "") {
   return new Promise((resolve, reject) => {
@@ -35,7 +36,7 @@ module.exports.toggleConnector = function(id, status) {
         });
       }
     }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return reject({
           code: 500,
           message: "Could not update connector."

@@ -3,6 +3,7 @@ const express = require('express');
 const hub = require('../logic/hub');
 const path = require('path');
 const users = require('../database/controllers/userController');
+const logger = new (require('../logic/components/Logger'))();
 
 module.exports = function(io) {
   let router = express.Router();
@@ -113,7 +114,6 @@ module.exports = function(io) {
       if (skillFound) {
         let skill = Object.assign({}, skillFound);
         skill.name = req.params.skill;
-        console.log(req.params.skill);
         Promise.all([
           hub.HookManager.getForSkill(req.params.skill),
           hub.StorageManager.getForSkill(req.params.skill), 
@@ -132,7 +132,7 @@ module.exports = function(io) {
             skill
           });
         }).catch((err) => {
-          console.log(err);
+          logger.error(err);
           return next({ code: 500 });
         });
       } else {
@@ -171,7 +171,7 @@ module.exports = function(io) {
             }
           });
         }).catch((err) => {
-          console.log(err);
+          logger.error(err);
           res.redirect('/dashboard/skills');
         });
       } else {
@@ -331,7 +331,7 @@ module.exports = function(io) {
         });
       }
     }
-    console.log(err);
+    logger.error(err);
     res.status(500).render('error', { code: 500, message: "500 Error: Internal Server Error." })
   });
 

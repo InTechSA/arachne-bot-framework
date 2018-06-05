@@ -1,5 +1,6 @@
 'use strict';
 var Hook = require("../models/hookModel");
+const logger = new (require('../../logic/components/Logger'))();
 
 /**
  * Create a new hook.
@@ -43,7 +44,7 @@ module.exports.add_connector = function (hookId, connectorId) {
       hook.connector = connectorId;
       hook.save((err) => {
         if (err) {
-          console.log(err);
+          logger.error(err);
           return reject({
             code: 500,
             message: "Could not link hook to connector."
@@ -52,7 +53,7 @@ module.exports.add_connector = function (hookId, connectorId) {
         return resolve();
       });
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       return reject({
         code: 500,
         message: "Could not link hook to connector."
@@ -65,7 +66,7 @@ module.exports.get_hook = function(hookId) {
   return new Promise((resolve, reject) => {
     Hook.findById(hookId, (err, hook) => {
       if (err) {
-        console.log(err);
+        logger.error(err);
         return reject({
           code: 500,
           message: "Could not get hook."
@@ -95,7 +96,7 @@ module.exports.purge_hooks = function() {
   return new Promise((resolve, reject) => {
     Hook.remove({ connector: { $exists: false }}, (err) => {
       if (err) {
-        console.log(err);
+        logger.error(err);
         return reject(err);
       }
       return resolve();
@@ -107,7 +108,7 @@ module.exports.purge_for_skill = function(skill) {
   return new Promise((resolve, reject) => {
     Hook.remove({ skill }, (err) => {
       if (err) {
-        console.log(err);
+        logger.error(err);
         return reject(err);
       }
       return resolve();
@@ -123,7 +124,7 @@ module.exports.get_by_connector = function(connector) {
   return new Promise((resolve, reject) => {
     Hook.find({ connector }, (err, hooks) => {
       if (err) {
-        console.log(err);
+        logger.error(err);
         return reject(err);
       }
       return resolve(hooks);
@@ -135,7 +136,7 @@ module.exports.get_by_skill = function(skill) {
   return new Promise((resolve, reject) => {
     Hook.find({ skill }, (err, hooks) => {
       if (err) {
-        console.log(err);
+        logger.error(err);
         return reject(err);
       }
       return resolve(hooks);

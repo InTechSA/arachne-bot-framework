@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 let hub = require('./logic/hub');
+const logger = new (require('./logic/components/Logger'))();
 
 // Bot endpoints middleware
 function checkConnectorToken(req, res, next) {
@@ -25,7 +26,7 @@ function checkConnectorToken(req, res, next) {
       }
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       return res.status(500).json({ success: false, error: 501, message: "Internal server error while checking token."});
     });
 }
@@ -59,11 +60,11 @@ module.exports = function(io) {
       hub.handleIntent(response.response.intent, response.response.entities, req.body.data || {}).then((response) => {
         return res.json({ success: response.success, message: response.message, source: req.body.phrase });
       }).catch((error) => {
-        console.log(error)
+        logger.error(error)
         return res.json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: req.body.phrase });
       })
     }).catch((error) => {
-      console.log(error);
+      logger.error(error);
       return res.json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: req.body.phrase });
     });
   })
@@ -91,7 +92,7 @@ module.exports = function(io) {
     hub.handleCommand(command, params.join(" "), req.body.data || {}).then((response) => {
       return res.json({ success: response.success, message: response.message, source: command });
     }).catch((error) => {
-      console.log(error);
+      logger.error(error);
       return res.json({ success: false, message: { text: 'Unkown error while handling command.' }, source: command });
     });
   });
@@ -128,7 +129,7 @@ module.exports = function(io) {
   });
 
   router.post('/pipes/:skill/:identifier', (req, res) => {
-    console.log(`> [INFO] Checking at pipe ${req.params.identifier} for skill ${req.params.skill}...`);
+    logger.info(`Checking at pipe ${req.params.identifier} for skill ${req.params.skill}...`);
     hub.handlePipe(req.params.skill, req.params.identifier, req.body, req.headers).then(() => {
       return res.status(200).json({ success: true, message: 'Data received and transmitted.' });
     }).catch((error) => {
@@ -151,14 +152,14 @@ module.exports = function(io) {
     var thread_id = req.params.threadid;
     hub.ThreadManager.getThread(thread_id).then((thread) => {
       hub.ThreadManager.closeThread(thread_id).then(() => {
-        console.log("> [INFO] Thread " + thread_id + " closed");
+        logger.info("Thread " + thread_id + " closed");
         return res.json({success: true, message: {text: thread.timeout_message}});
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return res.json({success: false, message: {text: "Error closing the thread : "+err}});
       });
     }).catch((err) => {
-      console.log(err);
+      logger.error(err);
       return res.json({success: false, message: {text: "Error getting the thread : "+err}});
     });
   });
@@ -183,7 +184,7 @@ module.exports = function(io) {
     hub.HookManager.finalize(req.body.hookId, req.decoded.connector.id).then(() => {
       return res.json({ success: true, message: "Hook finalized and registered." })
     }).catch((err) => {
-      console.log(err);
+    logger.error(err);
       return res.status(err.code || 500).json({ code: err.code || 500, success: false, message: (err.code ? ( err.message || "Internal Server Error while finalizing hook." ) : "Internal Server Error while finalizing hook." ) });
     });
   });
@@ -202,16 +203,16 @@ module.exports = function(io) {
       var hookId = req.params.hookId;
       hub.HookManager.get(hookId).then((hook) => { 
         hub.HookManager.remove(hookId).then(() => {
-            console.log("> [INFO] Deleted hook "+hookId);
+            logger.info("Deleted hook "+hookId);
             if(hook.messageOnDelete){
               return res.json({success: true, message: {text: hook.messageOnDelete}});
             }
         }).catch((err) => {
-          console.log(err);
+          logger.error(err);
           return res.json({success: true, message: {text: "Error removing the hook "+err}});
         });
       }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         return res.json({success: true, message: {text: "Error getting the hook "+err}});
       });
   });
@@ -235,7 +236,7 @@ module.exports = function(io) {
     let token = socket.handshake.headers['x-access-token'];
 
     if (!token) {
-      console.log("> [WARNING] A connector attempted to connect without a token.")
+      logger.warn("A connector attempted to connect without a token.")
       socket.disconnect(); // Force disconnection to allow connector to retry link without being automatically rejected.
       return next(new Error('authentication error'));
     }
@@ -247,13 +248,13 @@ module.exports = function(io) {
           return next();
         } else {
           socket.disconnect(); // Force disconnection to allow connector to retry link without being automatically rejected.
-          console.log("> [WARNING] A rejected connector attempted to connect.")
+          logger.warn("A rejected connector attempted to connect.")
           return next(new Error('authentication error'));
         }
       })
       .catch((err) => {
         socket.disconnect(); // Force disconnection to allow connector to retry link without being automatically rejected.
-        console.log(err);
+        logger.error(err);
         return next(new Error('authentication error'));
       });
   });
