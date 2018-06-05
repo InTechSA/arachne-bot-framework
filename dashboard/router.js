@@ -113,15 +113,17 @@ module.exports = function(io) {
       if (skillFound) {
         let skill = Object.assign({}, skillFound);
         skill.name = req.params.skill;
-
+        console.log(req.params.skill);
         Promise.all([
           hub.HookManager.getForSkill(req.params.skill),
           hub.StorageManager.getForSkill(req.params.skill), 
-          hub.PipeManager.getForSkill(req.params.skill)
-        ]).then(([ hooks, storage, pipes ]) => {
+          hub.PipeManager.getForSkill(req.params.skill),
+          hub.LogManager.logController.getOne(req.params.skill)
+        ]).then(([ hooks, storage, pipes, logs ]) => {
           skill.hooks = hooks;
           skill.storage = storage;
           skill.pipes = pipes;
+          skill.logs = logs.log;
 
           res.render('skill', {
             title: skill.name,
@@ -214,6 +216,7 @@ module.exports = function(io) {
         nav_link: 'nav-users',
         botname: hub.ConfigurationManager.loadedConfiguration.botname,
         default_role,
+        permissions: hub.PermissionManager.permissions,
         users,
         roles
       });

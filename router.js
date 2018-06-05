@@ -468,6 +468,25 @@ module.exports = function(io) {
     }).catch(next);
   });
 
+  router.get('/skills/:skill/logs', hasPerm('SEE_SKILL_LOGS'), (req, res, next) => {
+    hub.LogManager.logController.getOne(req.params.skill).then((Log) => {
+      return res.json({
+        success: true,
+        message: "Get logs for skill",
+        logs: Log.log
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/logs', hasPerm('DELETE_SKILL_LOGS'), (req, res, next) => {
+    hub.LogManager.logController.delete(req.params.skill).then(() => {
+      return res.json({
+        success: true,
+        message: "Delete logs for skill"
+      });
+    }).catch(next);
+  });
+
   // Get list of connectors (without token)
   /**
    * @api {get} /connectors Get list of connectors registered for this bot, and their status.
@@ -770,19 +789,32 @@ module.exports = function(io) {
 
   // Grant permissions to user.
   router.put('/users/:user_name/permissions', hasPerm('GRANT_PERM'), (req, res, next) => {
-    if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+    let permissionsToSet = req.body.permissions || [];
+    
+    if (permissionsToSet && !Array.isArray(permissionsToSet)) {
       return res.status(400).json({
         success: false,
         message: "Missing permissions array in body."
       });
     }
-    hub.UserManager.grantPermissionsByName(req.params.user_name, req.body.permissions).then(permissions => {
-      return res.json({
-        success: true,
-        message: "Permissions granted to user.",
-        permissions
-      });
-    }).catch(next);
+    
+    if (req.query.replace && req.query.replace == "true") {
+      hub.UserManager.setPermissionsByName(req.params.user_name, permissionsToSet).then(permissions => {
+        return res.json({
+          success: true,
+          message: "Permissions granted to user.",
+          permissions
+        });
+      }).catch(next);
+    } else {
+      hub.UserManager.grantPermissionsByName(req.params.user_name, permissionsToSet).then(permissions => {
+        return res.json({
+          success: true,
+          message: "Permissions granted to user.",
+          permissions
+        });
+      }).catch(next);
+    }
   });
 
   // Revoke permissions of user.

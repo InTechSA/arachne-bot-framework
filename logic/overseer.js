@@ -17,3 +17,4 @@ module.exports.HookManager = {
 module.exports.PipeManager = {
   create: (skill, handler, secret = null) => hub.PipeManager.create(skill, handler, secret)
 }
+module.exports.log = (skillName, log) => hub.LogManager.log(skillName, log);

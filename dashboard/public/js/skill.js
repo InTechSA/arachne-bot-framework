@@ -83,3 +83,98 @@ function clearPipes(button) {
     })
 
 }
+
+function deleteLogs(skillName) {
+    $.ajax({
+        method: "DELETE",
+        baseUrl: base_url,
+        url: "/skills/"+skillName+"/logs",
+        dataType: "json",
+        success: function(json) {
+            location.reload();
+        },
+        error: function(err) {
+        notifyUser({
+            title: "Could not delete logs",
+            message: err.responseJSON.message || "Unknown error occured",
+            type: "error",
+            delay: 2
+        })
+        }
+    })
+}
+
+function deleteLogsModal(skillName) {
+    $.ajax({
+        method: "DELETE",
+        baseUrl: base_url,
+        url: "/skills/"+skillName+"/logs",
+        dataType: "json",
+        success: function(json) {
+            $("#logsForSkill").text("No log for this skill");
+            $("#logsSkill").text("No log for this skill");
+        },
+        error: function(err) {
+        notifyUser({
+            title: "Could not delete logs",
+            message: err.responseJSON.message || "Unknown error occured",
+            type: "error",
+            delay: 2
+        })
+        }
+    })
+}
+
+function loadLogs(skillName) {
+    $.ajax({
+        method: "GET",
+        baseUrl: base_url,
+        url: "/skills/"+skillName+"/logs",
+        dataType: "json",
+        success: function(json) {
+            $("#logsForSkill").text(json.logs);
+            $("#logsSkill").text(json.logs);
+            $("#logsModal").modal("show");
+        },
+        error: function(err) {
+        notifyUser({
+            title: "Could not get logs",
+            message: err.responseJSON.message || "Unknown error occured",
+            type: "error",
+            delay: 2
+        })
+        }
+    })
+}
+    
+$('#logsModal').on('shown.bs.modal', (e) => {
+    $("#logsForSkill").scrollTop($("#logsForSkill").prop('scrollHeight'));
+});
+
+function getLogs(button) {
+    let skill = $(button).data('skill');
+    $.ajax({
+        method: 'GET',
+        baseUrl: base_url,
+        url: `/skills/${skill}/logs`,
+        dataType: 'json',
+        success: (json) => {
+            var logTab = $('#logsSkill').text(json.logs).split('\n');
+            if(logTab.length > 10) {
+                logTab.splice(0,logTab.length - 10);
+            }
+            $('#logsSkill').text(logTab.join('\n'));
+        },
+        error: (err) =>{
+            console.log(err);
+            notifyUser({
+                title: "Couldn't get logs.",
+                message: "Impossible to get logs for this skill.",
+                type: "error",
+                delay: "3"
+            });
+        }
+    })
+}
+
+$("#logsSkill").scrollTop($("#logsSkill").prop('scrollHeight'));

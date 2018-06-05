@@ -9,38 +9,58 @@ block supercontent
             #skill-bar
                 h3= skill.name
             
-            #skill-monitor.p-1
-                .card-columns
-                    .card
-                        .card-header Storage
-                        .card-body
-                            p.card-text
-                                | There are 
-                                strong#storage= skill.storage.length
-                                |  elements of storage for this skill.
-                            a.card-link.text-danger(href="#" onClick="clearStorage(this)" data-skill=skill.name) Clear
-                    .card
-                        .card-header Hooks
-                        .card-body
-                            p.card-text
-                                | There are 
-                                strong#hooks= skill.hooks.length
-                                |  hooks for this skill.
-                            a.card-link.text-danger(href="#" onClick="clearHooks(this)" data-skill=skill.name) Clear
-                    .card
-                        .card-header Pipes
-                        .card-body
-                            p.card-text
-                                | There are 
-                                strong#pipes= skill.pipes.length
-                                |  active pipes for this skill.
-                            a.card-link.text-danger(href="#" onClick="clearPipes(this)" data-skill=skill.name) Clear
+            #skill-monitor
+                .row(style="width:100%")
+                    .col-sm-6(style="margin-top: 20px")
+                        .card
+                            .card-header Storage
+                            .card-body
+                                p.card-text
+                                    | There are 
+                                    strong#storage= skill.storage.length
+                                    |  elements of storage for this skill.
+                                a.card-link.text-danger(href="#" onClick="clearStorage(this)" data-skill=skill.name) Clear
+                        .card(style="margin-top:20px")
+                            .card-header Hooks
+                            .card-body
+                                p.card-text
+                                    | There are 
+                                    strong#hooks= skill.hooks.length
+                                    |  hooks for this skill.
+                                a.card-link.text-danger(href="#" onClick="clearHooks(this)" data-skill=skill.name) Clear
+                        .card(style="margin-top:20px")
+                            .card-header Pipes
+                            .card-body
+                                p.card-text
+                                    | There are 
+                                    strong#pipes= skill.pipes.length
+                                    |  active pipes for this skill.
+                                a.card-link.text-danger(href="#" onClick="clearPipes(this)" data-skill=skill.name) Clear
+                    .col-sm-6(style="margin-top: 20px")
+                        .card
+                            .card-header 
+                                | Logs
+                                button.btn.btn-info(style="float:right;" type='button' onClick="loadLogs('"+skill.name+"')") See all logs
+                                button.btn.btn-warning(style="float:right;margin-right:10px" type='button' onClick="deleteLogs('"+skill.name+"')") Clear logs
+                            .card-body
+                                pre#logsSkill.card-text(style="height:74vh;overflow-y:hidden")= skill.logs                   
 
         else
             .text-center
             img(src="/dashboard/static/imgs/error.svg" width="200px" alt="error" style="margin: auto;")
             h1 Oups :'(
             p.lead Our robot couldn't find any skill here, maybe you're trying to access a deleted skill?
+
+    #logsModal.modal.fade.bd-example-modal-lg(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+            .modal-dialog.modal-lg(role='document')
+                .modal-content
+                    .modal-header
+                        h5#exampleModalLabel.modal-title Logs
+                        button.close(type='button', data-dismiss='modal', aria-label='Close')
+                        span(aria-hidden='true') ×
+                    button.btn.btn-warning(type='button' onClick="deleteLogsModal('"+skill.name+"')" style="float: right;") Clear Logs
+                    .modal-body
+                        pre#logsForSkill(style="max-height: 75vh;")  
 
     script
         include ../public/js/skill.js
