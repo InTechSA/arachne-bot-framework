@@ -60,6 +60,27 @@ block content
                             i.fas.fa-plus.text-success.text-right.action(title="Assign a role" onClick="assignRole()")
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Close
+    
+    #user-perms-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='user-perms-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#user-perms-modal-label.modal-title
+                        strong.user This user
+                        | 's permissions
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    .modal-alert
+                    p Permissions of this user:
+                    form#user-permissions-form
+                        each perm, permName in permissions
+                            .form-check.permission
+                                input.form-check-input(type="checkbox" value=permName id=permName)
+                                label.form-check-label(for=perName)= perm.description
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+                    button.btn.btn-success(type='submit' form="user-permissions-form") Save
 
     h1 Users
     p These users have access to the brain. You may configure their permissions and roles here.

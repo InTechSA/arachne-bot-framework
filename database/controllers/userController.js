@@ -140,6 +140,19 @@ exports.grant_permissions = (id, permissions) => {
   }).then(user => user.permissions);
 }
 
+exports.set_permissions = (id, permissions) => {
+  return User.findById(id).then(user => {
+    if (!user) {
+      let error = new Error("No user found.");
+      error.code = 400;
+      throw error;
+    }
+    
+    user.permissions = permissions;
+    return user.save();
+  }).then(user => user.permissions);
+}
+
 exports.revoke_permission = function(id, permission) {
   return new Promise((resolve, reject) => {
     User.findById(id, (err, user) => {
@@ -332,7 +345,14 @@ exports.get_user_roles_by_username = (user_name) => {
 };
 
 exports.get_by_username = (user_name) => {
-  return User.findOne({ user_name: user_name.toLowerCase() });
+  return User.findOne({ user_name: user_name.toLowerCase() }).then(user => {
+    if (!user) {
+      const error = new Error("No user found.");
+      error.code = 404;
+      throw error;
+    }
+    return user;
+  });
 };
 
 exports.get_all = function(id) {

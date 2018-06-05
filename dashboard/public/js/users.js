@@ -25,7 +25,7 @@ function displayModalAlert(modal, { title = "Error", message = "Could not attemp
         </button>
       </div>
     `.trim());
-  };
+}
 
 $("#new-user-form").submit((event) => {
     event.preventDefault();
@@ -227,6 +227,74 @@ function removeUserRole(user, role) {
 function makeUserRoleHtml(user, role) {
     return `<li class="list-group-item d-flex justify-content-between align-items-center">${role} <i class="fas fa-minus text-danger action" title="Remove role" onClick="removeUserRole('${user}', '${role}')"></i></li>`;
 }
+
+//
+/////////////////////////////////////
+
+/////////////////////////////////////
+// MANAGE USER PERMISSIONS
+
+function seeUserPerms(button) {
+    // Get curret user's permissions
+    const user = $(button).data("user");
+
+    $.ajax({
+        method: "GET",
+        baseUrl: base_url,
+        url: `/users/${user}/permissions`,
+        success: (json) => {
+            let permissions = json.permissions || [];
+            $("#user-permissions-form .form-check-input").map((i, el) => $(el).prop("checked", permissions.includes(el.value)));
+
+            $("#user-perms-modal .user").text(`${user}`);
+            $("#user-perms-modal").modal("show");
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not get user's permissions.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+}
+
+$("#user-permissions-form").submit(event => {
+    event.preventDefault();
+
+    const user = $($('#user-perms-modal .user')[0]).text();
+
+    // Get checked permissions.
+    let permissions = [...$("#user-permissions-form .form-check input:checked").map((i, el) => $(el).val())];
+
+    console.log(permissions);
+
+    // Push them to API.
+    $.ajax({
+        method: "PUT",
+        baseUrl: base_url,
+        url: `/users/${user}/permissions?replace=true`,
+        data: { permissions: permissions || [] },
+        success: (json) => {
+            $("#user-perms-modal").modal("hide");
+            notifyUser({
+                title: "Permissions of " + user + " updated.",
+                message: "",
+                type: "success",
+                delay: 2
+            });
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not set user's permissions.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+});
 
 //
 /////////////////////////////////////
