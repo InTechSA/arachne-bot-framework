@@ -85,7 +85,7 @@ exports.interactions = interactions;
       let trueName = name.toLowerCase();
 
       if (!skillNameRegex.test(trueName)) {
-        return reject({ title: "Invalid skill name.", message: "Name must be lower-case, contain only letters and -."})
+        return reject({ title: "Invalid skill name.", message: "Name must be lower-case, contain only letters and -." })
       }
 
       if (Object.keys(skills).includes(trueName)) {
@@ -522,7 +522,7 @@ function showEditor() {
   $("#editor").show();
 }
 
-$("#skill-generate").submit(function(event) {
+$("#skill-generate").submit(function (event) {
   var id = event.target.id;
   console.log("Generate new skill");
   event.preventDefault();
@@ -604,7 +604,7 @@ $("#new-secret").click((event) => {
   $('#configure-secret-form table tbody').append(`<tr><td><input class="form-control key" placeholder="key"></td><td><input class="form-control value" placeholder="value"></td><td class="align-middle"><span class="action text-danger" aria-label="Delete secret." title="Delete secret." onClick="deleteSecret(this)"><i class="fas fa-times"></i></span></td></tr>`.trim());
 });
 
-$("#configure-secret-form").submit(function(event) {
+$("#configure-secret-form").submit(function (event) {
   event.preventDefault();
 
   // Build secret array
@@ -612,7 +612,7 @@ $("#configure-secret-form").submit(function(event) {
   for (let secret of $("#configure-secret-form table tbody tr")) {
     let key = $(secret).find(".key").val();
     let value = $(secret).find(".value").val();
-    secrets.push([ key, value ]);
+    secrets.push([key, value]);
   }
   $.ajax({
     type: "PUT",
@@ -659,7 +659,7 @@ function displayAddIntentAlert({ title = "Error", message = "Couldn't create int
   `.trim());
 };
 
-$("#add-intent-form").submit(function(event) {
+$("#add-intent-form").submit(function (event) {
   event.preventDefault();
   // Parsing new intent
   let name = $('#add-intent-form #intent-name').val();
@@ -707,7 +707,7 @@ function displayAddCommandAlert({ title = "Error", message = "Couldn't create co
   `.trim());
 };
 
-$("#add-command-form").submit(function(event) {
+$("#add-command-form").submit(function (event) {
   event.preventDefault();
   // Parsing new intent
   let name = $('#add-command-form #command-name').val();
@@ -748,7 +748,7 @@ function displayAddInteractionAlert({ title = "Error", message = "Couldn't creat
   `.trim());
 };
 
-$("#add-interaction-form").submit(function(event) {
+$("#add-interaction-form").submit(function (event) {
   event.preventDefault();
   // Parsing new intent
   let name = $('#add-interaction-form #interaction-name').val();
@@ -815,7 +815,7 @@ function displayUseSkillAlert({ title = "Error", message = "Couldn't use skill c
   `.trim());
 };
 
-$("#use-skill-form").submit(function(event) {
+$("#use-skill-form").submit(function (event) {
   event.preventDefault();
   // Parsing new intent
   let skillName = $('#use-skill-form #use-skill-name option:selected').val();
@@ -851,7 +851,7 @@ overseer.handleCommand('${command.cmd}').then((response) => {
   });
 });
 
-$("#save-skill").click(function() {
+$("#save-skill").click(function () {
   skill.code = editor.getValue();
 
   if ($('#edited-skill-data').data('edit-skill')) {
@@ -868,7 +868,7 @@ $("#save-skill").click(function() {
       url: "/skills/" + skill.name + "/code",
       data: { code: skill.code },
       dataType: "json",
-      success: function(json) {
+      success: function (json) {
         console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
@@ -887,7 +887,7 @@ $("#save-skill").click(function() {
           });
         }
       },
-      error: function(err) {
+      error: function (err) {
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",
@@ -920,7 +920,7 @@ $("#save-skill").click(function() {
       url: "/skills",
       data: skilljson,
       dataType: "json",
-      success: function(json) {
+      success: function (json) {
         console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
@@ -940,7 +940,7 @@ $("#save-skill").click(function() {
           });
         }
       },
-      error: function(err) {
+      error: function (err) {
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",
@@ -970,7 +970,7 @@ $.ajax({
   baseUrl: base_url,
   url: "/skills",
   dataType: 'json',
-  success: function(json) {
+  success: function (json) {
     if (json.success) {
       skills = json.skills;
 
@@ -1033,7 +1033,64 @@ $.ajax({
       }
     }
   },
-  error: function(err) {
+  error: function (err) {
 
   }
+});
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////
+// TOOLBOX
+
+/**
+ * Onclick from button to see logs
+ */
+function loadLogs() {
+  let editedSkillData = $('#edited-skill-data');
+  let skillName = editedSkillData.data('skill-name');
+  $.ajax({
+    method: "GET",
+    baseUrl: base_url,
+    url: "/skills/" + skillName + "/logs",
+    dataType: "json",
+    success: function (json) {
+      $("#logsForSkill").text(json.logs);
+      $("#logsModal").modal("show");
+    },
+    error: function (err) {
+      notifyUser({
+        title: "Could not get logs",
+        message: err.responseJSON.message || "Unknown error occured",
+        type: "error",
+        delay: 2
+      })
+    }
+  })
+}
+
+function deleteLogs() {
+  let editedSkillData = $('#edited-skill-data');
+  let skillName = editedSkillData.data('skill-name');
+  $.ajax({
+    method: "DELETE",
+    baseUrl: base_url,
+    url: "/skills/" + skillName + "/logs",
+    dataType: "json",
+    success: function (json) {
+      loadLogs();
+    },
+    error: function (err) {
+      notifyUser({
+        title: "Could not delete logs",
+        message: err.responseJSON.message || "Unknown error occured",
+        type: "error",
+        delay: 2
+      })
+    }
+  })
+}
+
+$('#logsModal').on('shown.bs.modal', (e) => {
+  $("#logsForSkill").scrollTop($("#logsForSkill").prop('scrollHeight'));
 });

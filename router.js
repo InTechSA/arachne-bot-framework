@@ -468,6 +468,25 @@ module.exports = function(io) {
     }).catch(next);
   });
 
+  router.get('/skills/:skill/logs', hasPerm('SEE_SKILL_LOGS'), (req, res, next) => {
+    hub.LogManager.logController.getOne(req.params.skill).then((Log) => {
+      return res.json({
+        success: true,
+        message: "Get logs for skill",
+        logs: Log.log
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/logs', hasPerm('DELETE_SKILL_LOGS'), (req, res, next) => {
+    hub.LogManager.logController.delete(req.params.skill).then(() => {
+      return res.json({
+        success: true,
+        message: "Delete logs for skill"
+      });
+    }).catch(next);
+  });
+
   // Get list of connectors (without token)
   /**
    * @api {get} /connectors Get list of connectors registered for this bot, and their status.
