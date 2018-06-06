@@ -9,41 +9,13 @@ module.exports.get_config = () => {
             return configuration.save();
         }
         return config;
-    }).then(config => {
-        return config;
     });
 };
 
-module.exports.get_botname = () => {
-    return this.get_config().then(config => {
-        return config.botname;
-    });
-}
-
-module.exports.set_botname = (botname) => {
+module.exports.set_config = (config) => {
     return this.get_config().then(() => {
-        return Configuration.findOneAndUpdate({}, { $set: { botname } });
+        return Configuration.findOneAndUpdate({}, config);
     }).then(() => {
-        return botname;
-    })
-}
-
-module.exports.get_lang = () => {
-    return this.get_config().then(config => {
-        return config.lang;
-    });
-}
-
-module.exports.set_lang = (lang) => {
-    return this.get_config().then(() => {
-        // Check lang validity
-        if (!["FR", "EN"].includes(lang)) {
-            let error = new Error("lang must be of : ['FR', EN'].")
-            error.code = 400;
-            throw error;
-        }
-        return Configuration.findOneAndUpdate({}, { $set: { lang } });
-    }).then(() => {
-        return lang;
+        return config;
     })
 }
