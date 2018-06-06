@@ -896,12 +896,24 @@ module.exports = function(io) {
 
   // Get some informations about the bearer of the token.
   router.get('/me', (req, res, next) => {
-    return res.sendStatus(500);
+    hub.UserManager.getByUsername(req.decoded.user.user_name).then(user => {
+      return res.json({
+        success: true,
+        message: "Informations about the bearer of the token.",
+        user
+      });
+    }).catch(next);
   });
 
   // Get permissions of the bearer of the token.
   router.get('/me/permissions', (req, res, next) => {
-    return res.sendStatus(500);
+    hub.UserManager.getByUsername(req.decoded.user.user_name).then(user => {
+      return res.json({
+        success: true,
+        message: "Array of permissions.",
+        permissions: user.permissions
+      });
+    }).catch(next);
   });
 
   //////////////////

@@ -163,3 +163,13 @@
   color: #ffffff;
   background-color: #c77800;
 }
+
+#help-list .list-group-item {
+  padding: .2rem 0rem;
+  color: gray;
+}
+
+#help-list .list-group-item:hover {
+  padding: .2rem 0rem;
+  color: darkgrey;
+}

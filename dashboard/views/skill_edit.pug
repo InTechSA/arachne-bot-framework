@@ -131,15 +131,27 @@ block supercontent
             button.btn.btn-secondary(type="button" data-dismiss="modal") Cancel
 
     #logsModal.modal.fade.bd-example-modal-lg(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
-            .modal-dialog.modal-lg(role='document')
-                .modal-content
-                    .modal-header
-                      h5#exampleModalLabel.modal-title Logs
-                      button.close(type='button', data-dismiss='modal', aria-label='Close')
-                      span(aria-hidden='true') ×
-                    button.btn.btn-warning(type='button' onClick="deleteLogs()" style="float: right;") Clear Logs
-                    .modal-body
-                        pre#logsForSkill(style="max-height: 75vh;")     
+      .modal-dialog.modal-lg(role='document')
+        .modal-content
+          .modal-header
+            h5#exampleModalLabel.modal-title Logs
+            button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          button.btn.btn-warning(type='button' onClick="deleteLogs()" style="float: right;") Clear Logs
+          .modal-body
+              pre#logsForSkill(style="max-height: 75vh;")     
+
+    #help-modal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="help-modal" aria-hidden="true")
+      .modal-dialog.modal-lg(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#help-modal-label Help
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            p Bla bla bal
+          .modal-footer
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Close
 
   main.container-fluid
     .loader#loader
@@ -184,15 +196,15 @@ block supercontent
           #skill-toolbox(style="display: none;")
             .list-group.list-group-flush
               if skill_edited
-                a.list-group-item.list-group-item-action(onClick="configureSecret()") Configure Secret
+                a.list-group-item.list-group-item-action.action(onClick="configureSecret()") Configure Secret
               else
-                a.list-group-item.list-group-item-action.disabled.text-muted(title="You must create the skill before editing its secrets.") Configure Secret
+                a.list-group-item.list-group-item-action.disabled.text-muted.action(title="You must create the skill before editing its secrets.") Configure Secret
               a.list-group-item
-              a.list-group-item.list-group-item-action(onClick="addIntent()") Add intent
-              a.list-group-item.list-group-item-action(onClick="addCommand()") Add command
-              a.list-group-item.list-group-item-action(onClick="addInteraction()") Add interaction
+              a.list-group-item.list-group-item-action.action(onClick="addIntent()") Add intent
+              a.list-group-item.list-group-item-action.action(onClick="addCommand()") Add command
+              a.list-group-item.list-group-item-action.action(onClick="addInteraction()") Add interaction
               a.list-group-item
-              a.list-group-item.list-group-item-action(onClick="useSkillCommand()") Use another skill              
+              a.list-group-item.list-group-item-action.action(onClick="useSkillCommand()") Use another skill              
         .col-md-6#middle-panel
           .row.justify-content-between
             .col
@@ -203,14 +215,37 @@ block supercontent
           p.lead#code-alert Use the left pane to generate a new skill.
           #editor(style="display: none")
         .col-md-2#right-panel
-          .row.h-50
+          .row.h-25
             .col.h-100
               h4 Tools
-              button.btn.btn-info(type='button' onClick="loadLogs()") See Logs
+              button.btn.btn-info.m-1(type='button' onClick="loadLogs()") See Logs
+          hr
           .row
             .col.h-100
-              h4 Help
-  
+              // Display help box on large screens only
+              h5.d-none.d-lg-block.action(onClick="displayHelp()") How to...
+                .list-group.list-group-flush#help-list
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('commands')")
+                    small add a command ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('intents')")
+                    small add an intent ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('threads')")
+                    small create a conversation ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('secrets')")
+                    small store secret variables ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('skills')")
+                    small use another skill ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('requests')")
+                    small call an external API ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('pipes')")
+                    small listen for external events ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('hooks')")
+                    small send a message to a channel ?
+                  a.list-group-item.list-group-item-action.action(onClick="displayHelp('storage')")
+                    small store persistent data ?
+              // Display modal otherwise
+              h5.d-lg-none.action(onClick="displayHelp()") Display help
+
   if skill_edited
     #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="true" data-skill-name=skill_edited.name data-skill-code=skill_edited.code)
   else
