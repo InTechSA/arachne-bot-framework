@@ -758,7 +758,7 @@ exports.SkillManager = class SkillManager {
             this.reloadSkill(skillName).then(() => {
               return resolve();
             }).catch((err) => {
-              logger.error(err.stack);
+              logger.error(err);
               return reject();
             });
           });
