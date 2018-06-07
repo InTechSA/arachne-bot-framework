@@ -43,12 +43,70 @@ block content
                     span.current= configuration.botname
             tr#lang
                 th(scope='row')
-                    | Name of bot (
+                    | Language (
                     span= loaded_configuration.lang
                     | )
                 td
                     i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="lang" onClick="editField(this)")
                     span.current= configuration.lang
+
+    table.table
+        thead.thead-light
+            tr
+                th(scope='col') Field 
+                th(scope='col') current
+                th(scope='col') Saved configuration
+                th(scope='col') Description
+        tbody        
+            tr#noskillfound
+                th(scope='row') No Skill Found message
+                td= loaded_configuration.noskillfound
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="noskillfound" onClick="editField(this)")
+                    span.current= configuration.noskillfound
+                td Message printed when there was no skill found with the /command route
+            tr#errornlp
+                th(scope='row') Error of nlp message
+                td= loaded_configuration.errornlp
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="errornlp" onClick="editField(this)")
+                    span.current= configuration.errornlp
+                td Message printed when there is an error with the nlp
+            tr#errorintent
+                th(scope='row') Error of intent message
+                td= loaded_configuration.errorintent
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="errorintent" onClick="editField(this)")
+                    span.current= configuration.errorintent
+                td Message printed when there was no intent found 
+            tr#noskillfoundnlp
+                th(scope='row') No skill found nlp message 
+                td= loaded_configuration.noskillfoundnlp
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="noskillfoundnlp" onClick="editField(this)")
+                    span.current= configuration.noskillfoundnlp
+                td Message printed when there was no skill with the intent retrieved found
+            tr#noentitiesfound
+                th(scope='row') No entities found message
+                td= loaded_configuration.noentitiesfound
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="noentitiesfound" onClick="editField(this)")
+                    span.current= configuration.noentitiesfound
+                td Message printed when there was no entities found in the given message
+            tr#errorcommand
+                th(scope='row') Error with command message
+                td= loaded_configuration.errorcommand
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="errorcommand" onClick="editField(this)")
+                    span.current= configuration.errorcommand
+                td Message printed when there is an error in the command execution
+            tr#errorthread
+                th(scope='row') Error with thread message
+                td= loaded_configuration.errorthread
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="errorthread" onClick="editField(this)")
+                    span.current= configuration.errorthread
+                td Message printed when there is an error in the thread execution
     
     script
         include ../public/js/config.js

@@ -3,10 +3,7 @@
 exports.ConfigurationManager = class ConfigurationManager {
     constructor(configurationController) {
         this.configurationController = configurationController || require("./../../database/controllers/configurationController");
-        this.loadedConfiguration = {
-            botname: "Arachne",
-            lang: "EN"
-        }
+        this.loadedConfiguration = {}
     }
 
     getConfiguration() {
@@ -20,19 +17,8 @@ exports.ConfigurationManager = class ConfigurationManager {
         });
     }
 
-    getLang() {
-        return this.configurationController.get_lang();
+    setConfiguration(config) {
+        return this.configurationController.set_config(config);
     }
 
-    setLang(lang) {
-        return this.configurationController.set_lang(lang);
-    }
-    
-    getBotname() {
-        return this.configurationController.get_botname();
-    }
-
-    setBotname(botname) {
-        return this.configurationController.set_botname(botname);
-    }
 };

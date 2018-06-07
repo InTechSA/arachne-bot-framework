@@ -42,7 +42,7 @@ class LogManager {
      * THis function will push the new log to put in the buffer and will call it if it's not already executed 
      */
     log(nameSkill, log) {
-        logger.info("New log for skill "+nameSkill);
+        logger.info("New log for skill " + nameSkill);
         this.buffer.push({ nameSkill, log });
         if (!this.isRunning) {
             this.isRunning = true;
@@ -61,21 +61,21 @@ class LogManager {
     pushLogToDB(nameSkill, log) {
         return new Promise((resolve, reject) => {
             this.logController.getOne(nameSkill).then((Log) => {
-                logger.info("Taking existing log for "+nameSkill);
+                var newLogTable;
+                let stringlog = log;
+                if (typeof(log) === 'string') {
+                    // If it is a string, will split on the line
+                    newLogTable = log.split('\n');
+                } else {
+                    // Else will stringigy the object and split on the lines
+                    stringlog = JSON.stringify(log);    
+                    newLogTable = stringlog.split('\n');
+                }
                 if (!Log.noLog) {
+                    logger.info("Taking existing log for " + nameSkill);
                     // Existing log
                     // Split on the lines
                     var tableLog = Log.log.split('\n');
-                    var newLogTable;
-                    let stringlog = log;
-                    // If it is a string, will split on the line
-                    if (typeof (log) === 'string') {
-                        newLogTable = log.split('\n');
-                    } else {
-                        // Else will stringigy the object and split on the lines
-                        stringlog = JSON.stringify(log);
-                        newLogTable = stringlog.split('\n');
-                    }
                     var returnTab = [];
                     // If the old logs and the new ones are too big
                     if (tableLog.length + newLogTable.length > 100) {
@@ -103,9 +103,12 @@ class LogManager {
                         });
                     }
                 } else {
-                    logger.info("Create new log for skill "+nameSkill);
+                    logger.info("Create new log for skill " + nameSkill);
+                    if(newLogTable.length > 100 ) {
+                        newLogTable.splice(0,newLogTable - 100);
+                    }
                     // NO log for this skill, create one
-                    this.logController.create_log(nameSkill, "[" + new Date().toISOString() + "] " + log).then(() => {
+                    this.logController.create_log(nameSkill, "[" + new Date().toISOString() + "] " + newLogTable.join('\n')).then(() => {
                         return resolve();
                     }).catch(err => {
                         return reject(err);        

@@ -6,7 +6,7 @@ const users = require('./database/controllers/userController');
 const logger = new (require("./logic/components/Logger"))();
 
 // Main router for the brain. Will load te dashboard router and the bot router.
-module.exports = function(io) {
+module.exports = function (io) {
   let router = express.Router();
 
   // Main middleware
@@ -65,18 +65,18 @@ module.exports = function(io) {
    */
   router.get('/apidoc.yml', (req, res, next) => {
     res.sendFile("apidoc.yml", {
-        root: __dirname + "/public/",
-        headers: {
-            'x-timestamp': Date.now(),
-            'x-sent': true
-        }
+      root: __dirname + "/public/",
+      headers: {
+        'x-timestamp': Date.now(),
+        'x-sent': true
+      }
     }, (err) => {
-        if (err) {
-            return next(err);
-        }
+      if (err) {
+        return next(err);
+      }
     });
   });
-  
+
   router.get('/apidoc', (req, res, next) => {
     return res.render('../../public/apidoc.pug');
   });
@@ -146,9 +146,9 @@ module.exports = function(io) {
   const authMiddleware = require('./middlewares/auth');
   const hasRole = authMiddleware.hasRole;
   const hasPerm = authMiddleware.hasPerm;
-  
+
   router.use(authMiddleware.isAuthed());
-  
+
 
   // Reload brain
   /**
@@ -168,36 +168,36 @@ module.exports = function(io) {
     });
   }),
 
-  // list skills
-  /**
-   * @api {get} /skills List skills avaible.
-   * @apiName ListSkills
-   * @apiGroup Skills
-   *
-   * @apiSuccess {Boolean} success Success of operation.
-   * @apiSuccess {String} message Message from api.
-   * @apiSuccess {Skill} skills List of available skills.
-   */
-  router.get('/skills', hasPerm('SEE_SKILLS'), (req, res) => {
-    hub.getSkills().then((skills) => {
-      let skillsToReturn = JSON.parse(JSON.stringify(skills));
+    // list skills
+    /**
+     * @api {get} /skills List skills avaible.
+     * @apiName ListSkills
+     * @apiGroup Skills
+     *
+     * @apiSuccess {Boolean} success Success of operation.
+     * @apiSuccess {String} message Message from api.
+     * @apiSuccess {Skill} skills List of available skills.
+     */
+    router.get('/skills', hasPerm('SEE_SKILLS'), (req, res) => {
+      hub.getSkills().then((skills) => {
+        let skillsToReturn = JSON.parse(JSON.stringify(skills));
 
-      // Be sure to send handle and execute names instead of function object
-      for (let skill in skills) {
-        for (let intentName in skillsToReturn[skill].intents) {
-          skillsToReturn[skill].intents[intentName].handle = `${skills[skill].intents[intentName].handle.name}`;
+        // Be sure to send handle and execute names instead of function object
+        for (let skill in skills) {
+          for (let intentName in skillsToReturn[skill].intents) {
+            skillsToReturn[skill].intents[intentName].handle = `${skills[skill].intents[intentName].handle.name}`;
+          }
+          for (let commandName in skillsToReturn[skill].commands) {
+            skillsToReturn[skill].commands[commandName].execute = `${skills[skill].commands[commandName].execute.name}`;
+          }
+          for (let interactionName in skillsToReturn[skill].interactions) {
+            skillsToReturn[skill].interactions[interactionName].interact = `${skills[skill].interactions[interactionName].interact.name}`;
+          }
         }
-        for (let commandName in skillsToReturn[skill].commands) {
-          skillsToReturn[skill].commands[commandName].execute = `${skills[skill].commands[commandName].execute.name}`;
-        }
-        for (let interactionName in skillsToReturn[skill].interactions) {
-          skillsToReturn[skill].interactions[interactionName].interact = `${skills[skill].interactions[interactionName].interact.name}`;
-        }
-      }
 
-      return res.json({ success: true, message: 'Got list of bot skills.', skills: skillsToReturn });
+        return res.json({ success: true, message: 'Got list of bot skills.', skills: skillsToReturn });
+      });
     });
-  });
 
   // Add a new skill
   /**
@@ -276,12 +276,12 @@ module.exports = function(io) {
   router.post('/skills/:skill/reload', hasPerm('RELOAD_SKILL'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.reloadSkill(req.params.skill).then(() => {
-        return res.json({ success: true, message: `Skill ${req.params.skill} reloaded.`})
+        return res.json({ success: true, message: `Skill ${req.params.skill} reloaded.` })
       }).catch((err) => {
-        return res.status(500).json({ success: false, message: `Could not reload Skill ${req.params.skill}.`})
+        return res.status(500).json({ success: false, message: `Could not reload Skill ${req.params.skill}.` })
       });
     } else {
-      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -302,10 +302,10 @@ module.exports = function(io) {
       hub.getSkillCode(req.params.skill).then((code) => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} retrieved.`, code: code })
       }).catch(() => {
-        return res.json({ success: false, message: `Could not get code of Skill ${req.params.skill}.`})
+        return res.json({ success: false, message: `Could not get code of Skill ${req.params.skill}.` })
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -330,10 +330,10 @@ module.exports = function(io) {
       hub.saveSkillCode(req.params.skill, req.body.code).then(() => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.` })
       }).catch((err) => {
-        return res.json({ success: false, message: `Could not save code of Skill ${req.params.skill}.`})
+        return res.json({ success: false, message: `Could not save code of Skill ${req.params.skill}.` })
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -386,7 +386,7 @@ module.exports = function(io) {
       return res.json({ success: true, message: `Secret saved and skill reloaded.` });
     }).catch((e) => {
       logger.error(e);
-      return res.status(e.code || 500).json({ code: e.code || 500, message: e.message || "Internal server error while updating skill secret."});
+      return res.status(e.code || 500).json({ code: e.code || 500, message: e.message || "Internal server error while updating skill secret." });
     });
 
   });
@@ -417,36 +417,36 @@ module.exports = function(io) {
         hub.deactivateSkill(req.params.skill);
         return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
       } else {
-        return res.json({ success: false, message: `Wrong status code : on or off.`});
+        return res.json({ success: false, message: `Wrong status code : on or off.` });
       }
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
   router.delete('/skills/:skill/hooks', hasPerm('DELETE_SKILL_HOOKS'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.HookManager.clearForSkill(req.params.skill).then(() => {
-        return res.json({ success: true, message: `Hooks cleared for skill ${req.params.skill}.`});  
+        return res.json({ success: true, message: `Hooks cleared for skill ${req.params.skill}.` });
       }).catch((err) => {
         logger.error(err);
-        return res.status(500).json({ success: false, message: `Could not clear hooks of skill ${req.params.skill}.`});  
+        return res.status(500).json({ success: false, message: `Could not clear hooks of skill ${req.params.skill}.` });
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
   router.delete('/skills/:skill/storage', hasPerm('DELETE_SKILL_STORAGE'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.StorageManager.clearForSkill(req.params.skill).then(() => {
-        return res.json({ success: true, message: `Storage cleared for skill ${req.params.skill}.`});  
+        return res.json({ success: true, message: `Storage cleared for skill ${req.params.skill}.` });
       }).catch((err) => {
         logger.error(err);
-        return res.status(500).json({ success: false, message: `Could not clear storage of skill ${req.params.skill}.`});  
+        return res.status(500).json({ success: false, message: `Could not clear storage of skill ${req.params.skill}.` });
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.`});
+      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -503,9 +503,9 @@ module.exports = function(io) {
   router.get('/connectors', hasPerm('SEE_ADAPTERS'), (req, res) => {
     hub.ConnectorManager.getConnectors()
       .then((connectors) => res.json({
-          success: true,
-          connectors
-        }))
+        success: true,
+        connectors
+      }))
       .catch((err) => res.status(err.code || 500).json({ error: 500, message: 'Internal server error while retrieving connectors list.' }));
   });
 
@@ -525,7 +525,7 @@ module.exports = function(io) {
   router.get('/connectors/:id', hasPerm('SEE_ADAPTER_TOKEN'), (req, res) => {
     hub.ConnectorManager.getConnector(req.params.id)
       .then((connector) => res.json({ success: true, connector: connector }))
-      .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector '+req.params.id }));
+      .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector ' + req.params.id }));
   });
 
   // Delete connector.
@@ -541,7 +541,7 @@ module.exports = function(io) {
   router.delete('/connectors/:id', hasPerm('DELETE_ADAPTER'), (req, res) => {
     hub.ConnectorManager.deleteConnector(req.params.id)
       .then(() => res.json({ success: true, message: "Connector " + req.params.id + "successfully removed." }))
-      .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector '+req.params.id }));
+      .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while fetching connector ' + req.params.id }));
   });
 
   // Add connector.
@@ -562,13 +562,13 @@ module.exports = function(io) {
    */
   router.put('/connectors', hasPerm('CREATE_ADAPTER'), (req, res) => {
     if (!req.body.name) {
-      return res.status(400).json({ success: false, message: "No connector name in body."});
+      return res.status(400).json({ success: false, message: "No connector name in body." });
     }
     if (!/^[a-zA-Z\u00C0-\u017F\-'_]{3,30}$/.test(req.body.name)) {
-      return res.status(400).json({ success: false, message: "Connector name container letters, digits, spaces and no special characters (max length: 30)."});
+      return res.status(400).json({ success: false, message: "Connector name container letters, digits, spaces and no special characters (max length: 30)." });
     }
     if (req.body.address && !/^(?:\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/.test(req.body.address)) {
-      return res.status(400).json({ success: false, message: "Invalid ip address"});
+      return res.status(400).json({ success: false, message: "Invalid ip address" });
     }
 
     hub.ConnectorManager.createConnector(req.body.name, req.body.address || "")
@@ -589,12 +589,12 @@ module.exports = function(io) {
    */
   router.put('/connectors/:id', hasPerm('EDIT_ADAPTER'), (req, res) => {
     if (!req.body.address || !/^(?:\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/.test(req.body.address)) {
-      return res.status(400).json({ success: false, message: "Invalid or missing ip address in body."});
+      return res.status(400).json({ success: false, message: "Invalid or missing ip address in body." });
     }
 
     hub.ConnectorManager.updateConnector(req.params.id, { ip: req.body.address })
-    .then((connector) => res.json({ success: true, message: "Connector successfully updated.", connector: connector }))
-    .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while creating connector' }));
+      .then((connector) => res.json({ success: true, message: "Connector successfully updated.", connector: connector }))
+      .catch((error) => res.status(error.code || 500).json({ error: error.code || 500, message: error.message || 'Internal server error while creating connector' }));
   });
 
   // Toggle adapter.
@@ -733,7 +733,7 @@ module.exports = function(io) {
     const user_name = req.body.user_name;
     const password = req.body.password;
     hub.UserManager.create(user_name, password).then(user => {
-      return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, }})
+      return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, } })
     }).catch(next);
   });
 
@@ -765,7 +765,7 @@ module.exports = function(io) {
       });
     }).catch(next);
   });
-  
+
   // Remove a role from a user
   router.delete('/users/:user_name/roles/:role', hasPerm('REMOVE_ROLE'), (req, res, next) => {
     hub.UserManager.removeRole(req.params.user_name, req.params.role).then((user) => {
@@ -791,14 +791,14 @@ module.exports = function(io) {
   // Grant permissions to user.
   router.put('/users/:user_name/permissions', hasPerm('GRANT_PERM'), (req, res, next) => {
     let permissionsToSet = req.body.permissions || [];
-    
+
     if (permissionsToSet && !Array.isArray(permissionsToSet)) {
       return res.status(400).json({
         success: false,
         message: "Missing permissions array in body."
       });
     }
-    
+
     if (req.query.replace && req.query.replace == "true") {
       hub.UserManager.setPermissionsByName(req.params.user_name, permissionsToSet).then(permissions => {
         return res.json({
@@ -919,33 +919,35 @@ module.exports = function(io) {
   //////////////////
   // MANAGE ROLES
 
-  router.get('/configuration', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+  router.get('/configuration/', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
     hub.ConfigurationManager.getConfiguration().then(configuration => {
       return res.json({ success: true, message: `Got configuration.`, configuration });
     }).catch(next);
   });
 
-  router.get('/configuration/lang', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
-    hub.ConfigurationManager.getLang().then(lang => {
-      return res.json({ success: true, message: `Lang is ${lang}.`, lang });
+  router.get('/configuration/:field', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    var field = req.params.field;
+    hub.ConfigurationManager.getConfiguration().then(configuration => {
+      if (configuration[field]) {
+        return res.json({ success: true, message: `${field} is ${configuration[field]}.`, value: configuration[field] });
+      } else {
+        return res.status(404).json({ success: false, message: `No value for ${field}`, value: null });
+      }
     }).catch(next);
   });
 
-  router.put('/configuration/lang/:lang', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
-    hub.ConfigurationManager.setLang(req.params.lang).then(lang => {
-      return res.json({ success: true, message: `Lang set to ${lang}.`, lang });
-    }).catch(next);
-  });
-
-  router.get('/configuration/botname', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
-    hub.ConfigurationManager.getBotname().then(botname => {
-      return res.json({ success: true, message: `Out Greatest Bot bears the name ${botname}.`, botname });
-    }).catch(next);
-  });
-
-  router.put('/configuration/botname/:botname', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
-    hub.ConfigurationManager.setBotname(req.params.botname).then(botname => {
-      return res.json({ success: true, message: `Bot name set to ${botname}.`, botname });
+  router.put('/configuration/:field', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    var field = req.params.field;
+    var value = req.body.value;
+    hub.ConfigurationManager.getConfiguration().then(configuration => {
+      if (configuration[field]) {
+        configuration[field] = value;
+        hub.ConfigurationManager.setConfiguration(configuration).then(() => {
+          return res.json({ success: true, message: `${field} updated with value ${value}`});
+        }).catch(next);
+      } else {
+        return res.status(404).json({ success: false, message: `No field ${field}`});
+      }
     }).catch(next);
   });
 
