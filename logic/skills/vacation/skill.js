@@ -99,7 +99,7 @@ function vacationHandler({ phrase, data }) {
       case 'request':
         // If it's a request, test first if the person sent the message in a public channel
         if (!data.privateChannel) {
-          console.log("Test : " + data.channel);
+          overseer.log("vacation", "Test : " + data.channel);
           return resolve({
             message: {
               title: "Cannot send first message",
@@ -131,13 +131,13 @@ function vacationHandler({ phrase, data }) {
           });
       case 'status':
         // It's the code to retrieve the status associated to the vacation request of the user.
-        console.log("Retreiving token ... ");
+        overseer.log("vacation", "Retreiving token ... ");
         // First retrieve the ad-token using the get-ad-token method
         overseer.handleCommand('get-ad-token').then((response) => {
-          console.log("Retrieve Token");
+          overseer.log("vacation", "Retrieve Token");
           // call the vacation microservice on the getStatus route
           var url = url_vac_micro + "/getStatus/" + query;
-          console.log(url);
+          overseer.log("vacation", url);
           // Build the request
           var options = {
             url: encodeURI(url),
@@ -156,21 +156,21 @@ function vacationHandler({ phrase, data }) {
               } else {
                 message = JSON.parse(body);
               }
-              console.log('Error contacting the service or error in the service');
+              overseer.log("vacation", 'Error contacting the service or error in the service');
             } else {
               // Else we retrieve the message sent by the microservice
               message = JSON.parse(body);
             }
             message.private = true;
-            console.log("Sent message error");
-            console.log(message);
+            overseer.log("vacation", "Sent message error");
+            overseer.log("vacation", message);
             return resolve({
               success: true,
               message: message
             });
           });
         }).catch((error) => {
-          console.log("Catch error in command get-ad-token " + error);
+          overseer.log("vacation", "Catch error in command get-ad-token " + error);
           // Handle the error of get-ad-token
           message.private = true;
           message.text = "Error retrieiving the token from the ad";
@@ -182,13 +182,13 @@ function vacationHandler({ phrase, data }) {
         break;
       default:
         // default part ie retrieve the vacation for the user
-        console.log("Retreiving token ... ");
+        overseer.log("vacation", "Retreiving token ... ");
         overseer.handleCommand('get-ad-token').then((response) => {
           // Retrieve the ad-token
-          console.log("Retrieve Token");
+          overseer.log("vacation", "Retrieve Token");
           // Build the url to retrieve info from the vacation microservice api
           var url = url_vac_micro + "/leaves/" + query;
-          console.log(url);
+          overseer.log("vacation", url);
           // Build the request
           var options = {
             url: encodeURI(url),
@@ -207,7 +207,7 @@ function vacationHandler({ phrase, data }) {
               } else {
                  message = JSON.parse(body);
               }
-              console.log('Error contacting the service or error in the service');
+              overseer.log("vacation", 'Error contacting the service or error in the service');
             } else {
               // Else we retrieve the message sent by the microservice
               message = JSON.parse(body);
@@ -219,7 +219,7 @@ function vacationHandler({ phrase, data }) {
             });
           });
         }).catch((error) => {
-          console.log("Catch error in command get-ad-token " + error);
+          overseer.log("vacation", "Catch error in command get-ad-token " + error);
           /* Handle the error of this command here */
           message.private = true;
           message.text = "Error retrieiving the token from the ad";
@@ -243,7 +243,7 @@ function vacationResponseHandler(thread, { phrase }) {
   return new Promise((resolve, reject) => {
     if (phrase === 'Abort') {
       // If the user sent an Abort, will shutdown the thread and close the vacation request
-      console.log("Aborting the demand");
+      overseer.log("vacation", "Aborting the demand");
         // Return the associated message
         return resolve({
           message: {
@@ -253,18 +253,18 @@ function vacationResponseHandler(thread, { phrase }) {
         });
     } else {
       // If the entered something different from Abort 
-      console.log("Retreiving token ... ");
+      overseer.log("vacation", "Retreiving token ... ");
       // Retrieve the ad-token 
       overseer.handleCommand('get-ad-token').then((responseToken) => {
         var tokenAD = responseToken.response.token;
-        console.log("Retrieved Token");
+        overseer.log("vacation", "Retrieved Token");
         // Retrieve the userName from the the thread daat
         var userName = thread.getData("userName");
         var messageReturn = "";
         var urlRequest = null;
         // retrieve the step from the thread data ie where the user is in the vacation request process.
         var step = thread.getData("step");
-        console.log("Step : " + step);
+        overseer.log("vacation", "Step : " + step);
         // Will execute different blocks depending on the value of step
         var options;
         switch (step) {
@@ -301,16 +301,16 @@ function vacationResponseHandler(thread, { phrase }) {
                 if (err || res.statusCode !== 200) {
                   // Error it can be if a date is malformed, the person have insuffisient days of vacations remaining , the dates did not respect the order etc
                   if (body) {
-                    console.log("Error, returning the body " + body);
+                    overseer.log("vacation", "Error, returning the body " + body);
                     messageReturn = JSON.parse(body).text;
                   } else {
-                    console.log("Error, no body");
+                    overseer.log("vacation", "Error, no body");
                     messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( ";
                   }
                 }
                 else {
                   // Else will store the dates, the trigram returned, and build the message return ( with the text message retrieved from the api and the next element in the conversationtext string );
-                  console.log("No error, returning the success message and the next question");
+                  overseer.log("vacation", "No error, returning the success message and the next question");
                   thread.setData("dateDebut", dates[0]);
                   thread.setData("dateFin", dates[1]);
                   thread.setData("trigram", JSON.parse(body).trigram);
@@ -320,7 +320,7 @@ function vacationResponseHandler(thread, { phrase }) {
                   messageReturn += conversationTexts[1];
                 }
                 // return the message
-                console.log("Returning the message : " + messageReturn);
+                overseer.log("vacation", "Returning the message : " + messageReturn);
                 return resolve({
                   success: true,
                   message: {
@@ -365,7 +365,7 @@ function vacationResponseHandler(thread, { phrase }) {
             }
             // Build the url to the vacation micro
             urlRequest = url_vac_micro + "/verifManager/" + trigrams_manager.join(',');
-            console.log(urlRequest);
+            overseer.log("vacation", urlRequest);
             // BUild the request
             options = {
               url: encodeURI(urlRequest),
@@ -380,17 +380,17 @@ function vacationResponseHandler(thread, { phrase }) {
               if (err || res.statusCode !== 200) {
                 // Error, can be if the managers doesn't exist
                 if (body) {
-                  console.log("Error, returning the body " + body);
+                  overseer.log("vacation", "Error, returning the body " + body);
                   messageReturn = JSON.parse(body).text;
                 } else {
-                  console.log("Error, no body");
+                  overseer.log("vacation", "Error, no body");
                   messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( ";
                 }
               }
               else {
                 // All the managers are valid, we retrieve all the informations about them
                 var managers = JSON.parse(body);
-                console.log("No error, returning the success message and the next question");
+                overseer.log("vacation", "No error, returning the success message and the next question");
                 // We store the manager in the thread datas
                 thread.setData("managers", managers);
                 // We go to the next step
@@ -407,7 +407,7 @@ function vacationResponseHandler(thread, { phrase }) {
                 messageReturn += "  \n";
                 messageReturn += conversationTexts[3] + "\n";
               }
-              console.log("Returning the message : " + messageReturn);
+              overseer.log("vacation", "Returning the message : " + messageReturn);
               return resolve({
                 success: true,
                 message: {
@@ -427,7 +427,7 @@ function vacationResponseHandler(thread, { phrase }) {
                 "&managers=" + JSON.stringify(thread.getData("managers")) +
                 "&trigram=" + thread.getData("trigram") +
                 "&userName=" + thread.getData("userName");
-              console.log(urlRequest);
+              overseer.log("vacation", urlRequest);
               // Build the request
               options = {
                 url: encodeURI(urlRequest),
@@ -442,10 +442,10 @@ function vacationResponseHandler(thread, { phrase }) {
                 if (err || res.statusCode !== 200) {
                   // Eventual error ( can be during the execution of the confirm process ( inserting in the DB, sending the mails etc ))
                   if (body) {
-                    console.log("Error, returning the body " + body);
+                    overseer.log("vacation", "Error, returning the body " + body);
                     messageReturn = JSON.parse(body).text + ", veuillez réitérer votre demande plus tard";
                   } else {
-                    console.log("Error, no body");
+                    overseer.log("vacation", "Error, no body");
                     messageReturn = "Une erreur s'est produite en contactant l'api Vacation :( , veuillez réitérer votre demande plus tard ";
                   }
                   // Return the error
@@ -486,7 +486,7 @@ function vacationResponseHandler(thread, { phrase }) {
           default:
             // Normally will never enter this block but it's a security concerning the switch
             messageReturn = " Une erreur inconnue s'est produite :/ ";
-            console.log("Returning the message : " + messageReturn);
+            overseer.log("vacation", "Returning the message : " + messageReturn);
             return resolve({
               success: true,
               message: {
@@ -497,7 +497,7 @@ function vacationResponseHandler(thread, { phrase }) {
             });
         }
       }).catch((error) => {
-        console.log("Catch error in command get-ad-token " + error);
+        overseer.log("vacation", "Catch error in command get-ad-token " + error);
         /* Handle the error of this command here */
         return resolve({
           success: false,

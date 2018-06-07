@@ -36,6 +36,11 @@ let commands = {
       slug: "app-get-config",
       handle: handleAppConfig,
       expected_entities: ["client", "application"]
+    },
+    'brokkr-get-projects': {
+      slug: "brokkr-get-projects",
+      handle: handleListProjects,
+      expected_entities: ["client"]
     }
   };
   /* </SKILL INTENTS> */
@@ -64,6 +69,7 @@ let commands = {
   /* <SKILL LOGIC> */
   const axios = require('axios');
   const app_token = require('./secret').app_token;
+  const overseer = require('../../overseer');
   
   /**
     Handler for command list-apps (!brokkr apps).
@@ -258,6 +264,45 @@ let commands = {
     });
   }
   
+  function listProjects({ phrase, data }) {
+      return new Promise((resolve, reject) => {
+      /*
+        >>> YOUR CODE HERE <<<
+        resolve the handler with a formatted message object.
+      */
+      const headers = {};
+      if (data.userName) {
+          headers['User-Proxy'] = data.userName;
+      }
+      axios({
+          method: "GET",
+          url: `http://192.168.6.156/clients/${phrase}/projects`,
+          headers,
+          data: { app_token },
+          timeout: 5000
+      }).then(res => {
+          let text = "";
+          res.data.content.forEach(project => {
+             text += `• *<${project.web_url}|${project.name_with_namespace}>*: \n`
+          });
+          return resolve({
+              message: {
+                  title: `Vos projets sur ${phrase}`,
+                  private: true,
+                  text
+              }
+          });
+      }).catch(err => {
+          return resolve({
+              message: {
+                  title: 'Could not get applications list.',
+                  text: 'The Brokkr service is not accessible.'
+              }
+          });
+      });
+    });
+  }
+  
   function brokkr({ phrase, data }) {
       const [cmd, ...params] = phrase.split(" ");
       if (cmd === "apps") {
@@ -279,29 +324,21 @@ let commands = {
           });
       }
   }
-  /**
-    Handler for intent brokkr-list-apps (LIST-APPS).
   
-    Params :
-    --------
-      entities (Object)
-  */
   function handleListApps({ entities: { 'client': client = {}}, data }) {
     return listApps({ phrase: client[0], data });
   }
-  /**
-    Handler for intent brokkr-app-logs (app-logs).
   
-    Params :
-    --------
-      entities (Object)
-  */
   function handleAppLogs({ entities: { 'client': client = {}, 'application': application = {}}, data }) {
     return appLogs({ phrase: client[0] + " " + application[0], data })
   }
   
   function handleAppConfig({ entities: { 'client': client = {}, 'application': application = {}}, data }) {
     return appConfig({ phrase: client[0] + " " + application[0], data })
+  }
+  
+  function handleListProjects({ entities: { 'client': client = {}}, data }) {
+    return listProjects({ phrase: client[0], data });
   }
   /* </SKILL LOGIC> */
   

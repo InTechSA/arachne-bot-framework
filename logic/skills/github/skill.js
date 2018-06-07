@@ -26,6 +26,11 @@ let commands = {
       slug: "create-git-webhook",
       handle: handleGitCreate,
       expected_entities: ["repository"]
+    },
+    'github-list-git-hooks': {
+      slug: "list-git-webhook",
+      handle: handleListHookIntent,
+      expected_entities: []
     }
   };
   /* </SKILL INTENTS> */
@@ -72,15 +77,14 @@ let commands = {
               throw error;
           }
   
+          // Retrieve hook linked to this pipe.
           let hook = storage.find(hook => hook.pipe == pipeIdentifier);
           if (!hook) {
               let error = new Error("No available hook for this pipe.");
               throw error;
           }
           
-          // Retrieve hook linked to this pipe.
-          
-          console.log(data);
+          //overseer.log("github", data);
           
           // Parsing webhook event and building message object.
           let message = {};
@@ -124,6 +128,37 @@ let commands = {
                          text: commit.message + "\n\n> Modified:\n" + commit.modified.join(" - ")
                      } 
                   });
+              } else if (data.object_kind === "merge_request") {
+                  if (data.object_attributes.action === "open") {
+                      message.attachments = [
+                          {
+                              title: `${data.repository.name} ♦ Merge request`,
+                              text: `I detected a merge request from ${data.user.name} on branch ${data.object_attributes.target_branch} to branch ${data.object_attributes.source_branch} of ${data.repository.name}.`,
+                              title_link: data.object_attributes.url,
+                              color: "#6600CC"
+                          },
+                          {
+                              title: "Description",
+                              text: data.object_attributes.description,
+                              color: "#999966"
+                          }
+                      ]
+                  } else if (data.object_attributes.action === "merge") {
+                      message.attachments = [{
+                          title: `${data.repository.name} ♦ Merge request finished`,
+                          text: `The merge request from ${data.user.name} on branch ${data.object_attributes.target_branch} to branch ${data.object_attributes.source_branch} of ${data.repository.name} was closed.`,
+                          title_link: data.object_attributes.url,
+                          color: "#00DD00"
+                      }, {
+                          title: "Description",
+                          text: data.object_attributes.description,
+                          color: "#999966"
+                      }]
+                  } else {
+                      overseer.log("github", "Event not supported:" + data.object_attributes.action)
+                      // Ignore other events.
+                      return;
+                  }
               } else {
                   message.title = `${data.object_kind} event detected on ${data.project.name || "a"} repository.`;
               }
@@ -255,7 +290,6 @@ let commands = {
                           }
                      });
                   }).catch(err => {
-                      console.log(err);
                      return resolve({
                          message: {
                             title: "Git ♦ Could not get hooks.",
@@ -293,6 +327,16 @@ let commands = {
   */
   function handleGitCreate({ entities: { 'repository': repository = {}}, data }) {
     return githubCommand({ phrase: `attach ${repository[0]}`, data });
+  }
+  /**
+    Handler for intent github-list-git-hooks (list-git-webhook).
+  
+    Params :
+    --------
+      entities (Object)
+  */
+  function handleListHookIntent({ entities, data }) {
+    return githubCommand({ phrase: 'list', data });
   }
   /* </SKILL LOGIC> */
   

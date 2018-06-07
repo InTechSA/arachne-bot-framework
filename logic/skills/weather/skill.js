@@ -57,6 +57,7 @@ const request = require('request');
 const token = require('./secret').token;
 const weatherApi = `http://api.openweathermap.org/data/2.5/weather?APPID=${token}&lang=fr&units=metric`;
 const weatherIcon = 'http://openweathermap.org/img/w/';
+const overseer = require('../../overseer');
 
 function getWeather({ phrase }) {
   return new Promise((resolve, reject) => {
@@ -78,7 +79,7 @@ function getWeather({ phrase }) {
       try {
         res = JSON.parse(res.body);   
       } catch (e) {
-          console.log(e);
+          overseer.log("weather", e);
           return resolve({
              message: {
                  title: "Could not load weather.",

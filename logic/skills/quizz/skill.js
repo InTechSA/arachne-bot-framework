@@ -107,7 +107,7 @@ let commands = {
                         }
                     });
                     } catch(e) {
-                        console.log(e);
+                        overseer.log("quizz", e);
                         return resolve({message: {text:"Error in the skill :("}});
                     }
               } else {
@@ -133,7 +133,7 @@ let commands = {
               }
           });
       } else if(["abort", "skip"].includes(phrase)) {
-          console.log(thread.getData("attemps"));
+          overseer.log("quizz", thread.getData("attemps"));
           return resolve({
               message: {
                   title: "Aborting",
@@ -141,7 +141,7 @@ let commands = {
               }
           });
       } else {
-        console.log(thread.getData("attemps"));
+        overseer.log("quizz", thread.getData("attemps"));
         thread.setData("attemps", (thread.getData("attemps") || 0) + 1);
         return resolve({
             message: {
