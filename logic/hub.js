@@ -18,7 +18,7 @@ function handleIntent(intentName, entities = {}, data = {}) {
 
       for (let entity of intent.expected_entities) {
         if (!Object.keys(entities).includes(entity)) {
-          return resolve({ success: false, message: { text: `I understand the intent is ${intentName}, but I'm missing some entities. I expect : ${intent.expected_entities.join(", ")}.` }});
+          return resolve({ success: false, message: { text: ConfigurationManager.loadedConfiguration.noentitiesfound.replace('[IntentName]',intentName).replace('[Entities]',intent.expected_entities.join(", ")) }});
         }
       }
 
@@ -38,7 +38,7 @@ function handleIntent(intentName, entities = {}, data = {}) {
       });
     } else {
       logger.warn(`Intent "\x1b[4m${intentName}\x1b[0m" is not handled.`);
-      return resolve({ success: true, message: { text: `I can't handle your intention, yet I think it is *${intentName}*. Maybe it was disabled :/` }});
+      return resolve({ success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfoundnlp.replace('[IntentName]',intentName) }});
     }
   })
 }
@@ -71,7 +71,7 @@ function handleCommand(commandName, phrase = "", data = {}) {
         return reject(err);
       });
     } else {
-      return resolve({ success: true, message: { text: `I can't handle your command because I don't know it. Maybe it was disabled :/ If not, you can teach me by adding new skills!` }});
+      return resolve({ success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfound }});
     }
   })
 }

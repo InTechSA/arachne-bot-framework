@@ -930,13 +930,7 @@ $("#save-skill").click(function () {
         console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
-          notifyUser({
-            title: "Skill pushed!",
-            message: `Your new skill ${skilljson.name} is now running!`,
-            type: "success",
-            delay: 5
-          });
-          window.location.href = "/dashboard/skills";
+          window.location.href = "/dashboard/skills/"+skill.name+"/edit?newSkill=true";
         } else {
           notifyUser({
             title: `Can't push ${skilljson.name}`,
@@ -1100,6 +1094,28 @@ function deleteLogs() {
 $('#logsModal').on('shown.bs.modal', (e) => {
   $("#logsForSkill").scrollTop($("#logsForSkill").prop('scrollHeight'));
 });
+
+$.urlParam = function(name){
+  var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+  if (results==null){
+     return null;
+  }
+  else{
+     return decodeURI(results[1]) || 0;
+  }
+}
+
+if($.urlParam('newSkill')) {
+  let editedSkillData = $('#edited-skill-data');
+  let skillName = editedSkillData.data('skill-name');
+  window.history.pushState("", "", "/dashboard/skills/"+skillName+"/edit");
+  notifyUser({
+    title: "Skill pushed!",
+    message: `Your new skill ${skillName} is now running!`,
+    type: "success",
+    delay: 5
+  });
+}
 
 //
 //////////////////////////////////////////////////////////////////////////////////////

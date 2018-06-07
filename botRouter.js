@@ -2,6 +2,8 @@
 const express = require('express');
 let hub = require('./logic/hub');
 const logger = new (require('./logic/components/Logger'))();
+const configurationComponent = require('./logic/components/ConfigurationManager');
+const ConfigurationManager = new configurationComponent.ConfigurationManager();
 
 // Bot endpoints middleware
 function checkConnectorToken(req, res, next) {
@@ -61,11 +63,11 @@ module.exports = function(io) {
         return res.json({ success: response.success, message: response.message, source: req.body.phrase });
       }).catch((error) => {
         logger.error(error)
-        return res.json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: req.body.phrase });
+        return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errorintent }, source: req.body.phrase });
       })
     }).catch((error) => {
       logger.error(error);
-      return res.json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: req.body.phrase });
+      return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errornlp }, source: req.body.phrase });
     });
   })
 
@@ -93,7 +95,7 @@ module.exports = function(io) {
       return res.json({ success: response.success, message: response.message, source: command });
     }).catch((error) => {
       logger.error(error);
-      return res.json({ success: false, message: { text: 'Unkown error while handling command.' }, source: command });
+      return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errorcommand }, source: command });
     });
   });
 
@@ -124,7 +126,7 @@ module.exports = function(io) {
     hub.ThreadManager.handleThread(threadId, phrase, req.body.data || {}).then((response) => {
       return res.json({ success: true, message: response.message, source: phrase, thread_id: threadId });
     }).catch((error) => {
-      return res.json({ success: false, message: { text: 'Unkown error while handling conversation in thread.' }, source: phrase, thread_id: threadId });
+      return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errorthread }, source: phrase, thread_id: threadId });
     });
   });
 

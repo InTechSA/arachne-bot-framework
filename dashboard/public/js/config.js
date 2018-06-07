@@ -7,8 +7,8 @@ function editField(button) {
         success: (json) => {
             $('#edit-modal .modal-title').text('Edit ' + field);
             $('#edit-modal .field-title').text(field);
-            $('#edit-modal #edit-field').attr('placeholder', json[field]);
-            $('#edit-modal #edit-field').val(json[field]);
+            $('#edit-modal #edit-field').attr('placeholder', json.value);
+            $('#edit-modal #edit-field').val(json.value);
             $('#edit-modal').modal('show');     
         },
         error: (error) => {
@@ -29,12 +29,14 @@ $("#edit-form").submit(event => {
     $.ajax({
         method: "PUT",
         baseUrl: base_url,
-        url: '/configuration/'+field+'/'+value,
+        url: '/configuration/'+field,
+        data: {
+            value: value
+        },
         success: (json) => {
             $('#' + field + " .current").text(value);
             $('#edit-modal').modal('hide');
             setTimeout(() => {
-                console.log("adad")
                 $("#reload-alert").show();
             }, 500);
         },

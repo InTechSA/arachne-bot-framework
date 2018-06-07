@@ -51,7 +51,7 @@ module.exports.get = function() {
  * @returns {Promise<>} A promise to the deletion success.
  */
 module.exports.delete = function(name) {
-    storageController.clear_storage_for_skill(name)
+    return storageController.clear_storage_for_skill(name)
         .then(hookController.purge_for_skill(name))
         .then(() => {
             return Skill.findOneAndRemove({ name });
