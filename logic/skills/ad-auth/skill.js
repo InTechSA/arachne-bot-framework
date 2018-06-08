@@ -49,6 +49,8 @@ exports.interactions = interactions;
 var token_AD = null;
 var token_expiration = null;
 const request = require('request');
+const overseer = require('../../overseer');
+
 /**
  * Get a New Token from AD and store the new token in r2d2's brain and the expiration date of the new token
  * @param next the next method that will be executed if the method run wihtout error
@@ -81,10 +83,10 @@ function refreshAccessToken(next) {
 function getToken({phrase}) {
   return new Promise((resolve, reject) => {
     if(!token_AD && token_expiration<=Date.now()){ // Le token est null ou il a expiré
-      console.log("Token null or expired, refreshing it ... ");
+      overseer.log("ad-auth", "Token null or expired, refreshing it ... ");
       refreshAccessToken((err,res)=>{
         if(err || res.statusCode !== 201){
-          console.log("Error :  "+res.statusCode+" when refreshing token, please contact administrator");
+          overseer.log("ad-auth", "Error :  "+res.statusCode+" when refreshing token, please contact administrator");
           token_AD = null;
           return reject("Error :  "+res.statusCode+" when refreshing token, please contact administrator");
         }
@@ -93,7 +95,7 @@ function getToken({phrase}) {
           token_AD = responseToken.accessToken;
           token_expiration = responseToken.expiresAt *1000;
         }
-        console.log("Sending token ... ");
+        overseer.log("ad-auth", "Sending token ... ");
         return resolve({
           message: {
             title: "Unauthorized",
@@ -105,7 +107,7 @@ function getToken({phrase}) {
       });
     }
     else{
-      console.log("Token valid, sending token ... ");
+      overseer.log("ad-auth", "Token valid, sending token ... ");
       return resolve({
         message: {
           title: "Unauthorized",

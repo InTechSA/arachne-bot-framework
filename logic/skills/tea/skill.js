@@ -132,7 +132,7 @@ let commands = {
                                   image_url: image
                               }]
                           }
-                      }, {deleteHook: true}).catch((err) => console.log(err));
+                      }, {deleteHook: true}).catch((err) => overseer.log("tea", err));
                   });
                   return resolve({
                       message: {

@@ -1254,7 +1254,7 @@ const help = {
               return {
                 message: {
                   title: 'Invalid answer',
-                  text: 'It must be yes or no.'
+                  text: 'It must be yes or no.',
                   interactive: true
                 }
               }
