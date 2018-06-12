@@ -80,8 +80,8 @@ overseer.StorageManager.getItem("alarms", "alarms").then((alarms) => {
                 alarms = storage.filter((a) => a.hook !== alarm.hook);
               }
       
-              overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => console.log(err));
-            }).catch((err) => console.log(err));
+              overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => overseer.log("alarms", err));
+            }).catch((err) => overseer.log("alarms", err));
           }
         });
       });
@@ -90,9 +90,9 @@ overseer.StorageManager.getItem("alarms", "alarms").then((alarms) => {
     }
   }
   
-  overseer.StorageManager.storeItem("alarms", "alarms", alarmsToKeep).then().catch((err) => console.log(err));
+  overseer.StorageManager.storeItem("alarms", "alarms", alarmsToKeep).then().catch((err) => overseer.log("alarms", err));
 }).catch((err) => {
-  console.log(err);
+  overseer.log("alarms", err)
 });
 
 /**
@@ -122,7 +122,7 @@ function alarmHandler({ phrase, data }) {
       }
       time.setHours(hours, minutes, 0, 0);
     } catch(e) {
-      console.log(e);
+      overseer.log("alarms", e)
       // Invalid time format.
       return resolve({
         message: {
@@ -181,8 +181,8 @@ function handleConfirmation(thread, { phrase, data }) {
                 alarms = storage.filter((a) => a.hook !== hook._id);
               }
       
-              overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => console.log(err));
-            }).catch((err) => console.log(err));
+              overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => overseer.log("alarms", err));
+            }).catch((err) => overseer.log("alarms", err));
           }
         });
       });
@@ -194,8 +194,8 @@ function handleConfirmation(thread, { phrase, data }) {
 
         alarms.push({ date: time, hook: hook._id, text });
 
-        overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => console.log(err));
-      }).catch((err) => console.log(err));
+        overseer.StorageManager.storeItem("alarms", "alarms", alarms).then().catch((err) => overseer.log("alarms", err));
+      }).catch((err) => overseer.log("alarms", err));
       return resolve({
           message: {
               title: "Alarm ",
@@ -205,7 +205,7 @@ function handleConfirmation(thread, { phrase, data }) {
           }
       });
     }).catch((err) => {
-      console.log(err);
+      overseer.log("alarms", err);
       return reject(err);
     });
   });

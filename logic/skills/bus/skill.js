@@ -44,7 +44,7 @@ exports.dependencies = dependencies;
   You must implements the functions listed as "execute" and "handle" handler, or your skill will not load.
 */
 /* <SKILL LOGIC> */
-
+const overseer = require('../../overseer');
 const request = require('request');
 /**
   Handler for command bus (!bus).
@@ -73,6 +73,7 @@ function busHandler({phrase}) {
             messages += "> Bus d'après : \n";
             messages += "> Heure de départ prévue "+result.Departure[1].time+"\n";
             // We return the response
+            overseer.log("bus","Request to bus api succeeded");
             return resolve({ message: { text: messages } });
           } catch(e) {
             console.log("Erreur : "+e);
@@ -81,7 +82,6 @@ function busHandler({phrase}) {
         });
     });
 }
-
 /**
   Handler for intent bus-bus (bus).
 
@@ -89,7 +89,7 @@ function busHandler({phrase}) {
   --------
     entities (Object)
 */
-function handleBus({ data, phrase }) {
+function handleBus({ entities, data, phrase }) {
   return busHandler({ phrase });
 }
 /* </SKILL LOGIC> */

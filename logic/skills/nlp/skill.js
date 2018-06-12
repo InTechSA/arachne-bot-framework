@@ -49,11 +49,11 @@ exports.interactions = interactions;
 /* <SKILL LOGIC> */
 const secret = require('./secret');
 const request = require('request');
+const overseer = require('../../overseer');
 
 function analyzeText({ phrase = "" }) {
   return new Promise((resolve, reject) => {
-
-    console.log(`> [INFO] {nlp} - Analyze "${phrase}".`);
+    overseer.log('nlp', `> [INFO] {nlp} - Analyze "${phrase}".`);
     request({
         url: "https://nlu-api.intech-lab.com/nlp/parse/"+secret.nlu_id,
         method: "POST",
@@ -64,7 +64,7 @@ function analyzeText({ phrase = "" }) {
         json: true
     }, (err,res,body) => {
         if(err) {
-            console.log('> [ERROR] Error contacting the nlu API '+err);
+            overseer.log("nlp", '> [ERROR] Error contacting the nlu API '+err);
             return resolve({message : {text: 'Error contacting the nlu API '+err}});
         }
         let analyzed = { };
