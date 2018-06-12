@@ -1254,7 +1254,7 @@ const help = {
               return {
                 message: {
                   title: 'Invalid answer',
-                  text: 'It must be yes or no.'
+                  text: 'It must be yes or no.',
                   interactive: true
                 }
               }
@@ -1269,7 +1269,7 @@ const help = {
           thread: {
             source: question,
             data: [
-              ['question': question]
+              ['question', question]
             ],
             handler: "noYesHandler",
             duration: 30,
@@ -1329,13 +1329,13 @@ const help = {
         const client = phrase;
         return axios({
           method: "GET",
-          url: "https://brokkr.orochi.io/clients/$\{client\}/apps,
+          url: "https://brokkr.orochi.io/clients/$\{client}/apps",
           data: { app_token: token },
           timeout: 5000
         }).then(res => {
           let text = "";
           res.data.content.forEach(app => {
-             text += \`- *$\{app.name}*: _$\{app.status}_\n\`
+             text += \`- *$\{app.name}*: _$\{app.status}_\`;
           });
           return resolve({
               message: {
@@ -1351,7 +1351,7 @@ const help = {
                 text: 'The Brokkr service is not accessible.'
             }
           });
-        })
+        });
       </code>
       <p>Don't forget to catch errors, you should always return a message to the user.</p>
     `.trim()
@@ -1364,7 +1364,7 @@ const help = {
         overseer.PipeManager.create("hello", "helloPipeHandler").then(pipe => {
           // Pipe created :)
           // Pipe is an object that contain its identifier.
-          // The url will be https://thebrainurl/{skillName}/{identifier}
+          // The url will be https://thebrainurl/pipes/{skillName}/{identifier}
         });
       </code>
       <p>You need to create a handler for your pipe.</p>
@@ -1374,7 +1374,7 @@ const help = {
             Will be called by the brain when the url is called with a POST request,
             data will by the body, and headers will contain the request headers (if any).
           */
-        })
+        }
       </code>
       <p>Declare your pipe in the <strong>pipes</strong> skill object.</p>
       <code style="white-space: pre-wrap;">
@@ -1402,7 +1402,7 @@ const help = {
                 hook: hook
             }
           });
-        }
+        });
       </code>
       <p>Most adapters will validate immediatly the hook, but some may ask the user. Once your hook is valid, it will be executable with:</p>
       <code style="white-space: pre-wrap;">
@@ -1423,7 +1423,7 @@ const help = {
       <p>You may need to keep data event if the brain reload, like hooks id, alarms, or some other things. To do so, use the StorageManage from the brain:</p>
       <code style="white-space: pre-wrap;">
         const hooks = [];
-        hookes.push(...);
+        hooks.push(...);
         overseer.StorageManager.storeItem("hello", "hooks", hooks).then(() => {
           // Object stored!
         }).catch(err => overseer.log("hello", err));
@@ -1431,7 +1431,7 @@ const help = {
       <p>To retrieve data:</p>
       <code style="white-space: pre-wrap;">
         const hooks = [];
-        hookes.push(...);
+        hooks.push(...);
         overseer.StorageManager.getItem("hello", "hooks").then((hooks) => {
           // Object retrieved!
         }).catch(err => overseer.log("hello", err));
