@@ -345,9 +345,9 @@ $('#new-role-form').submit(e => {
                 <tr data-role="${response.role.name}">
                     <th scope='row'>${response.role.name}</th>
                     <td>
-                        <i class="text-success action ml-1 fas fa-users" title="See members" onClick="seeRoleUsers(this)" data-role=role.name></i>
-                        <i class="text-primary action ml-1 fas fa-eye" title="Manage role" onClick="manageRole(this)" data-role=role.name></i>
-                        <i class="text-danger action ml-1 fas fa-trash-alt" title="Delete role" onClick="deleteRole(this)" data-role=role.name></i>
+                        <i class="text-success action ml-1 fas fa-users" title="See members" onClick="seeRoleUsers(this)" data-role="${response.role.name}"></i>
+                        <i class="text-primary action ml-1 fas fa-eye" title="Manage role" onClick="manageRole(this)" data-role="${response.role.name}"></i>
+                        <i class="text-danger action ml-1 fas fa-trash-alt" title="Delete role" onClick="deleteRole(this)" data-role="${response.role.name}"></i>
                     </td>
                 </tr>
             `);
