@@ -315,7 +315,7 @@ exports.delete_user = (user_name, fromAdmin = false) => {
           return reject(error);
         }
   
-        return resolve(User.deleteOne({ user_name: user_name.toLowerCase }));
+        return resolve(User.deleteOne({ user_name: user_name.toLowerCase() }));
       });
     });
   });
