@@ -25,6 +25,9 @@ const PipeSchema = new Schema({
   },
   secret: {
       type: String
+  },
+  hookID: {
+      type: Schema.Types.ObjectId
   }
 });
 

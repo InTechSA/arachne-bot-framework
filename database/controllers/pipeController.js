@@ -1,7 +1,7 @@
 'use strict';
 var Pipe = require("../models/pipeModel");
 
-module.exports.create = (skill, handler, secret = null) => {
+module.exports.create = (skill, handler, secret = null, hookID = null) => {
     return Promise.resolve().then(() => {
         if (!skill || !handler) {
             // Skill name and handler are required.
@@ -12,6 +12,10 @@ module.exports.create = (skill, handler, secret = null) => {
         
         if (secret) {
             pipe.secret = secret;
+        }
+
+        if(hookID) {
+            pipe.hookID = hookID;
         }
 
         return pipe.save();

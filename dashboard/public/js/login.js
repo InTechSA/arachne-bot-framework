@@ -5,7 +5,10 @@ $("#signin-form").submit((event) => {
   let keepLoggedIn = $("#signin-form #remember").is(":checked");
 
   $("#signin-form #input-password").val('');
-
+  notifyUser({
+    title: "Loading ...",
+    message: ""
+  });
   if (userName.length > 0 && password.length > 0) {
     $.ajax({
       method: "POST",
