@@ -31,7 +31,17 @@ module.exports.hasPerm = (permission) => {
       error.no_token = true;
       return next(error);
     }
-    Hub.UserManager.userHasPermission(req.decoded.user.id, permission).then((hasPerm) => {
+    Hub.UserManager.userHasPermission(req.decoded.user.id, permission).then(hasPerm => {
+      if (hasPerm) {
+        return hasPerm;
+      }
+      // Search for permission in users's role.
+      return Hub.PermissionManager.getRolesWithPermission(permission).then(roles => {
+        return Hub.UserManager.userRolesByName(req.decoded.user.user_name).then(userRoles => {
+          return userRoles.filter(role => roles.includes(role)).length >= 1;
+        });
+      });
+    }).then((hasPerm) => {
       if (hasPerm) {
         return next();
       }

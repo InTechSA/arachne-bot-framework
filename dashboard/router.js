@@ -208,14 +208,11 @@ module.exports = function(io) {
   // Manage Users
 
   router.get('/users', hasPerm("SEE_USERS"), (req, res, next) => {
-    const roles = [{ name: "admin" }, { name: "guest" }];
-    const default_role = "guest";
-    hub.UserManager.getAll().then(users => {
+    Promise.all([hub.UserManager.getAll(), hub.PermissionManager.getRoles()]).then(([users, roles]) => {
       return res.render("users", {
         title: 'Manage Users',
         nav_link: 'nav-users',
         botname: hub.ConfigurationManager.loadedConfiguration.botname,
-        default_role,
         permissions: hub.PermissionManager.permissions,
         users,
         roles

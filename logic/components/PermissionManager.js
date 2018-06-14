@@ -150,7 +150,7 @@ exports.PermissionManager = class PermissionManager {
             "RELOAD_BRAIN": {
               "description": "Reload the brain."
             },
-            "SEE_CONFIGURATION": {
+            "CONFIGURE_BRAIN": {
               "description": "Access brain configuration"
             }
         }
@@ -160,12 +160,28 @@ exports.PermissionManager = class PermissionManager {
         return this.roleController.get_roles();
     }
 
+    getRolesWithPermission(permission) {
+      return this.roleController.search_by_permission(permission);
+    }
+
     getRole(role) {
         return this.roleController.get_role(role);
     }
 
+    getDefaultRole() {
+      return this.roleController.get_default_role();
+    }
+
+    setDefaultRole(name) {
+      return this.roleController.set_default_role(name);
+    }
+
     createRole(name, permissions) {
         return this.roleController.create_role(name, permissions);
+    }
+
+    updateRolePermissions(name, permissions) {
+        return this.roleController.update_role_permissions(name, permissions);
     }
 
     deleteRole(name) {
