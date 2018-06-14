@@ -85,6 +85,7 @@ $("#new-user-form").submit((event) => {
 
 function deleteUser(button) {
     const user = $(button).data('user');
+    $(`#delete-modal .modal-alert`).empty();
     $("#delete-modal .modal-title").text(`Delete ${user}?`)
     $("#delete-modal .modal-text").text(`Wow! Do you really want to delete the user ${user}?`)
     $("#delete-modal .confirm").click(() => {
@@ -361,6 +362,7 @@ $('#new-role-form').submit(e => {
 
 function deleteRole(button) {
     const role = $(button).data('role');
+    $(`#delete-modal .modal-alert`).empty();
     $("#delete-modal .modal-title").text(`Delete ${role}?`)
     $("#delete-modal .modal-text").text(`Wow! Do you really want to delete the role ${role}?`)
     $("#delete-modal .confirm").click(() => {

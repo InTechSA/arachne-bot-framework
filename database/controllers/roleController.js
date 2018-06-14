@@ -95,3 +95,9 @@ module.exports.delete_role = function(name) {
         return Role.remove({ name });
     });
 };
+
+module.exports.search_by_permission = (permission) => {
+    return Role.find({ permissions: permission }).then(roles => {
+        return roles.map(role => role.name);
+    });
+}

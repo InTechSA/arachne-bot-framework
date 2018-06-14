@@ -160,6 +160,10 @@ exports.PermissionManager = class PermissionManager {
         return this.roleController.get_roles();
     }
 
+    getRolesWithPermission(permission) {
+      return this.roleController.search_by_permission(permission);
+    }
+
     getRole(role) {
         return this.roleController.get_role(role);
     }
