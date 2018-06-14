@@ -865,7 +865,7 @@ module.exports = function (io) {
       return res.json({
         success: true,
         message: "Role created.",
-        roles: { name: role.name, permissions: role.permissions }
+        role: { name: role.name, permissions: role.permissions }
       });
     }).catch(next);
   });

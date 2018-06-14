@@ -82,12 +82,34 @@ block content
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-success(type='submit' form="user-permissions-form") Save
 
+    #new-role-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='new-role-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#new-role-modal-label.modal-title New role
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    .modal-alert
+                    form#new-role-form
+                        .form-group
+                            label(for="new-role-name") Role Name
+                            input.form-control#new-role-name(type="text" placeholder="Guest" required)
+                        .form-group
+                            each perm, permName in permissions
+                                .form-check.permission
+                                    input.form-check-input(type="checkbox" value=permName id=permName)
+                                    label.form-check-label(for=perName)= perm.description
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+                    button.btn.btn-success(type='submit' form="new-role-form") Add
+
     h1 Users
     p These users have access to the brain. You may configure their permissions and roles here.
 
     p 
         | By default, new users will be granted the role : 
-        strong=default_role || "guest"
+        strong=(roles.find(role => role.default) || "guest")
         |  (
         a(href="#" onClick="modifyBaseRole()") Modify
         | ).
@@ -143,10 +165,10 @@ block content
                 tbody.collapse#role-list-collapse
                     if roles
                         each role in roles
-                            tr
+                            tr(data-role=role.name)
                                 th(scope='row')=role.name
                                 td
-                                    i.text-success.action.ml-.fas.fa-users(title="See members" onClick="seeRoleUsers(this)" data-role=role.name)
+                                    i.text-success.action.ml-1.fas.fa-users(title="See members" onClick="seeRoleUsers(this)" data-role=role.name)
                                     i.text-primary.action.ml-1.fas.fa-eye(title="Manage role" onClick="manageRole(this)" data-role=role.name)
                                     i.text-danger.action.ml-1.fas.fa-trash-alt(title="Delete role" onClick="deleteRole(this)" data-role=role.name)
         

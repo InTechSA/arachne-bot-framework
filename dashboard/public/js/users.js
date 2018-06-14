@@ -268,8 +268,6 @@ $("#user-permissions-form").submit(event => {
     // Get checked permissions.
     let permissions = [...$("#user-permissions-form .form-check input:checked").map((i, el) => $(el).val())];
 
-    console.log(permissions);
-
     // Push them to API.
     $.ajax({
         method: "PUT",
@@ -322,19 +320,83 @@ $("#user-list-collapse").on('shown.bs.collapse', () => {
 //////////////////////////////////
 // ROLES
 function addRole() {
-    notifyUser({
-        title: "Not implemented",
-        message: "You can't create roles yet.",
-        type: "warning"
-    });
+    $('#new-role-modal').modal('show');
 }
 
+$('#new-role-form').submit(e => {
+    e.preventDefault();
+
+    const name = $('#new-role-form #new-role-name').val();
+    // Get checked permissions.
+    let permissions = [...$("#new-role-form .form-check input:checked").map((i, el) => $(el).val())];
+
+    $.ajax({
+        method: "PUT",
+        baseUrl: base_url,
+        url: "/roles",
+        data: {
+            role: {
+                name,
+                permissions
+            }
+        },
+        success: (response) => {
+            $('#role-list-collapse').append(`
+                <tr data-role="${response.role.name}">
+                    <th scope='row'>${response.role.name}</th>
+                    <td>
+                        <i class="text-success action ml-1 fas fa-users" title="See members" onClick="seeRoleUsers(this)" data-role=role.name></i>
+                        <i class="text-primary action ml-1 fas fa-eye" title="Manage role" onClick="manageRole(this)" data-role=role.name></i>
+                        <i class="text-danger action ml-1 fas fa-trash-alt" title="Delete role" onClick="deleteRole(this)" data-role=role.name></i>
+                    </td>
+                </tr>
+            `);
+            $('#new-role-modal').modal('hide');
+        },
+        error: (err) => {
+            displayModalAlert("#new-role-modal", { title: "Can't create role", message: err.responseJSON.message || "An error occured." });
+        }
+    })
+});
+
 function deleteRole(button) {
-    notifyUser({
-        title: "Not implemented",
-        message: "You can't delete roles yet.",
-        type: "warning"
+    const role = $(button).data('role');
+    $("#delete-modal .modal-title").text(`Delete ${role}?`)
+    $("#delete-modal .modal-text").text(`Wow! Do you really want to delete the role ${role}?`)
+    $("#delete-modal .confirm").click(() => {
+        $.ajax({
+            method: "DELETE",
+            baseUrl: base_url,
+            url: `/roles/${role}`,
+            dataType: "json",
+            success: function(json) {
+              if (json.success) {
+                $("#delete-modal").modal('hide');
+                $("#role-list-collapse").find(`[data-role='${role}']`).remove();
+                notifyUser({
+                  title: "role deleted",
+                  message: `Deleted ${role}`,
+                  type: "success",
+                  delay: 5
+                });
+              } else {
+                if (json.errors || json.message) {
+                    return displayModalAlert("#delete-modal", {
+                        title: json.errors[0].title || "Error.",
+                        message: json.errors[0].message || json.message ||"Could not delete role."
+                    });
+                }
+              }
+            },
+            error: function(err) {
+                return displayModalAlert("#delete-modal", {
+                    title: "Could not delete user.",
+                    message: err.responseJSON.message || "Server or Network error."
+                });
+            }
+          });
     });
+    $("#delete-modal").modal('show');
 }
 
 function manageRole(button) {
