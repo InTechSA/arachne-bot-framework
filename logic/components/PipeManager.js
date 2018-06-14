@@ -5,9 +5,10 @@ const logger = new (require('./../../logic/components/Logger'))();
  * Manager for Web Pipes. Pipes allow skills to receieve events from external services via POST HTTP request to the brain.
  */
 module.exports.PipeManager = class {
-    constructor(SkillManager, pipeController) {
+    constructor(SkillManager, hookManager, pipeController) {
         this.pipeController = pipeController || require('../../database/controllers/pipeController');
         this.SkillManager = SkillManager;
+        this.hookManager = hookManager;
         this.codes = {
             EXISTING_PIPE: 1,
             NO_PIPE: 404
@@ -17,8 +18,23 @@ module.exports.PipeManager = class {
     /**
      * Instanciate a new pipe for a skill.
      */
-    create(skill, handler, secret = null) {
-        return this.pipeController.create(skill, handler, secret);
+    create(skill, handler, secret = null, hook = null) {
+        return this.pipeController.create(skill, handler, secret, hook);
+    }
+
+     /**
+     * Instanciate a new pipe and a new hook for a skill.
+     */
+    createWithHook(skill, handler, secret = null) {
+        return this.hookManager.create(skill).then(hook => {
+            return this.pipeController.create(skill, handler, secret, hook._id).then(pipe => {
+                pipe.hook = hook;
+                return pipe;
+            });
+        }).catch((err) => {
+            logger.error(err);
+            throw err;
+        });
     }
 
     /**
@@ -61,9 +77,10 @@ module.exports.PipeManager = class {
                     error.code = this.codes.NO_PIPE;
                     throw error;
                 }
+                
                 // Execute pipe's skill handler if activated.
                 logger.info(`Transmitting pipe ${identifier} for skill ${skillName}`);
-                return skill.pipes[pipe.handler].transmit(identifier, { data, headers });
+                return skill.pipes[pipe.handler].transmit(identifier, { hookID: pipe.hookID, data, headers });
             });
         });
     }
