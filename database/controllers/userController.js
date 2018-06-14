@@ -440,24 +440,52 @@ exports.sign_in = function(username, password) {
         url: process.env.AUTH_SERVICE_ROUTE.trim(),
         data
       }).then(response => {
-        // Auth is a success. Find local user.
-        User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
-          if (err) {
-            logger.error(err);
-            return reject({ message: "Could not find user." });
-          } else if (user) {
-            let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
-            return resolve({ message: "User signed in.", token });
-          } else {
-            create_user({ user_name: username }).then(user => {
-              let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user.id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
-              return resolve({ message: "User created and signed in.", token, user });
-            }).catch(err => {
-              logger.error(err);
-              return reject({ message: "Auth service approved the connexion, but the brain was unable to create a new user associated." });
+        // Verify token with public key if any.
+        if (process.env.AUTH_SERVICE_KEY) {
+          jwt.verify(response.data.accessToken, Buffer.from(process.env.AUTH_SERVICE_KEY.trim().replace(/\\r\\n/g, "\r\n")), (err, decoded) => {
+            if (err || !decoded) {
+              console.log(err);
+              return reject({ message: "Invalid authentication." });
+            }
+            // Auth is a success. Find local user.
+            User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
+              if (err) {
+                logger.error(err);
+                return reject({ message: "Could not find user." });
+              } else if (user) {
+                let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+                return resolve({ message: "User signed in.", token });
+              } else {
+                create_user({ user_name: username }).then(user => {
+                  let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user.id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+                  return resolve({ message: "User created and signed in.", token, user });
+                }).catch(err => {
+                  logger.error(err);
+                  return reject({ message: "Auth service approved the connexion, but the brain was unable to create a new user associated." });
+                });
+              }
             });
-          }
-        });
+          });
+        } else {
+          // Auth is a success. Find local user.
+          User.findOne({ user_name: username.toLowerCase() }, function(err, user) {
+            if (err) {
+              logger.error(err);
+              return reject({ message: "Could not find user." });
+            } else if (user) {
+              let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user._id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+              return resolve({ message: "User signed in.", token });
+            } else {
+              create_user({ user_name: username }).then(user => {
+                let token = jwt.sign({ user: { user_name: user.user_name.toLowerCase(), id: user.id, roles: user.roles }}, secret.secret, { expiresIn: '1d' });
+                return resolve({ message: "User created and signed in.", token, user });
+              }).catch(err => {
+                logger.error(err);
+                return reject({ message: "Auth service approved the connexion, but the brain was unable to create a new user associated." });
+              });
+            }
+          });
+        }
       }).catch(err => {
         let error;
         if (err.response && err.response.data) {
