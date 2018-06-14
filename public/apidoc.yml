@@ -453,7 +453,7 @@ paths:
                     items:
                       type: string
                     example: [admin, guest]
-    put:
+    post:
       summary: Create role
       operationId: createRole
       description: Requires MANAGE_ROLES
@@ -542,6 +542,56 @@ paths:
                         items:
                           type: string
                         example: [SEE_USERS, SEE_SKILLS]
+    put:
+      summary: Update role
+      operationId: updateRole
+      description: Requires MANAGE_ROLES
+      tags:
+        - permissions
+      requestBody:
+        description: Role to update. Permissions may be empty.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: guest
+                    permissions:
+                      type: string
+                      example: [SEE_SKILLS, SEE_USERS]
+                  required:
+                    - name
+              required: role
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Role updated."
+                  role:
+                    type: object
+                    properties:
+                      name: 
+                        type: string
+                        example: guest
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example: [SEE_USERS, SEE_SKILLS]
     delete:
       summary: Delete role.
       operationId: deleteRole
@@ -562,23 +612,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  /roles/{rolename}/permissions:
-    get:
-      summary: Get permissions of role.
-      tags:
-        - permissions
-    post:
-      summary: Replace permissions of role.
-      tags:
-        - permissions
-    put:
-      summary: Grant permissions to role.
-      tags:
-        - permissions
-    delete:
-      summary: Revoke permissions of role.
-      tags:
-        - permissions
 
   /me:
     get:

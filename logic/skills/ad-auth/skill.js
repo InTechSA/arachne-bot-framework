@@ -80,9 +80,9 @@ function refreshAccessToken(next) {
   --------
     phrase: String
 */
-function getToken({phrase}) {
+function getToken({ phrase }) {
   return new Promise((resolve, reject) => {
-    if(!token_AD && token_expiration<=Date.now()){ // Le token est null ou il a expiré
+    if(!token_AD || token_expiration<=Date.now()){ // Le token est null ou il a expiré
       overseer.log("ad-auth", "Token null or expired, refreshing it ... ");
       refreshAccessToken((err,res)=>{
         if(err || res.statusCode !== 201){

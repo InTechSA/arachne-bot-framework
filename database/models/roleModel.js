@@ -10,6 +10,10 @@ const RoleSchema = new Schema({
   permissions: {
       type: [String],
       default: []
+  },
+  default: {
+      type: Boolean,
+      default: false
   }
 });
 
