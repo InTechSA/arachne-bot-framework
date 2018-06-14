@@ -257,12 +257,24 @@ function create_user(user) {
             return reject(err);
           }
 
-          let new_user = new User({ user_name: user.user_name.toLowerCase(), password: hash });
-          new_user.save((err) => {
+          // Get default role.
+          Role.findOne({ default: true }, (err, role) => {
             if (err) {
               return reject(err);
             }
-            return resolve({ id: new_user._id, user_name: new_user.user_name, roles: new_user.roles });
+            
+            let new_user = new User({ user_name: user.user_name.toLowerCase(), password: hash });
+            
+            if (role) {
+              new_user.roles = [role.name];
+            }
+
+            new_user.save((err) => {
+              if (err) {
+                return reject(err);
+              }
+              return resolve({ id: new_user._id, user_name: new_user.user_name, roles: new_user.roles });
+            })
           })
         });
       }

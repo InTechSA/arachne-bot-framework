@@ -101,3 +101,23 @@ module.exports.search_by_permission = (permission) => {
         return roles.map(role => role.name);
     });
 }
+
+module.exports.get_default_role = () => {
+    return Role.findOne({ default: true });
+}
+
+module.exports.set_default_role = (name) => {
+    return Role.findOne({ name }).then(role => {
+        if (!role) {
+            const error = new Error("Role not found.");
+            error.code = 404;
+            throw error;
+        }
+        
+        // Update current role.
+        return Role.findOneAndUpdate({ default: true }, { $set: { default: false }}).then(() => {
+            role.default = true;
+            return role.save();
+        });
+    });
+}

@@ -1,10 +1,47 @@
 function modifyBaseRole() {
-    notifyUser({
-        title: "Not implemented",
-        message: "You can't modify the default role yet.",
-        type: "warning"
+    $.ajax({
+        method: "GET",
+        baseUrl: base_url,
+        url: `/roles`,
+        success: (json) => {
+            $('#default-role-modal select').empty();
+            json.roles.forEach(role => {
+                $('#default-role-modal select').append($('<option>', {
+                    value: role,
+                    text: role,
+                    selected: role == json.default_role
+                }));
+            });
+            $('#default-role-modal').modal("show");
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not get roles.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
     });
 }
+
+$('#default-role-form').submit(e => {
+    e.preventDefault();
+
+    const role = $('#default-role-select').val();
+    
+    $.ajax({
+        method: "POST",
+        baseUrl: base_url,
+        url: `/roles/default/` + role,
+        success: (json) => {
+            $('#default-role-modal').modal("hide");
+        },
+        error: (error) => {
+            displayModalAlert('#default-role-modal', { title: "Can's set default role.", message: error.responseJSON ? error.responseJSON.message : "An error occured" });
+        }
+    });
+});
 
 //////////////////////////////////
 // USERS

@@ -168,6 +168,14 @@ exports.PermissionManager = class PermissionManager {
         return this.roleController.get_role(role);
     }
 
+    getDefaultRole() {
+      return this.roleController.get_default_role();
+    }
+
+    setDefaultRole(name) {
+      return this.roleController.set_default_role(name);
+    }
+
     createRole(name, permissions) {
         return this.roleController.create_role(name, permissions);
     }

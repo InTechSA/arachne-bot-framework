@@ -845,7 +845,8 @@ module.exports = function (io) {
       return res.json({
         success: true,
         message: "List of roles.",
-        roles: roles.map(role => role.name)
+        roles: roles.map(role => role.name),
+        default_role: roles.filter(role => role.default).map(role => role.name)[0]
       });
     }).catch(next);
   });
@@ -867,6 +868,17 @@ module.exports = function (io) {
         message: "Role created.",
         role: { name: role.name, permissions: role.permissions }
       });
+    }).catch(next);
+  });
+
+  // Set default role
+  router.post('/roles/default/:role', hasPerm('MANAGE_ROLES'), (req, res, next) => {
+    hub.PermissionManager.setDefaultRole(req.params.role).then((role) => {
+      return res.json({
+        success: true,
+        message: "Defaut role set.",
+        role: { name: role.name, permissions: role.permissions }
+      })
     }).catch(next);
   });
 
