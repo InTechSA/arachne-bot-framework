@@ -331,7 +331,7 @@ $('#new-role-form').submit(e => {
     let permissions = [...$("#new-role-form .form-check input:checked").map((i, el) => $(el).val())];
 
     $.ajax({
-        method: "PUT",
+        method: "POST",
         baseUrl: base_url,
         url: "/roles",
         data: {
@@ -356,7 +356,7 @@ $('#new-role-form').submit(e => {
         error: (err) => {
             displayModalAlert("#new-role-modal", { title: "Can't create role", message: err.responseJSON.message || "An error occured." });
         }
-    })
+    });
 });
 
 function deleteRole(button) {
@@ -400,12 +400,64 @@ function deleteRole(button) {
 }
 
 function manageRole(button) {
-    notifyUser({
-        title: "Not implemented",
-        message: "You can't manage roles yet.",
-        type: "warning"
+    // Get curret user's permissions
+    const role = $(button).data("role");
+
+    $.ajax({
+        method: "GET",
+        baseUrl: base_url,
+        url: `/roles/${role}`,
+        success: (json) => {
+            let permissions = json.role.permissions || [];
+            $("#role-permissions-form .form-check-input").map((i, el) => $(el).prop("checked", permissions.includes(el.value)));
+
+            $("#role-perms-modal .role").text(`${role}`);
+            $("#role-perms-modal").modal("show");
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not get role permissions.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
     });
 }
+
+$("#role-permissions-form").submit(event => {
+    event.preventDefault();
+
+    const role = $($('#role-perms-modal .role')[0]).text();
+
+    // Get checked permissions.
+    let permissions = [...$("#role-permissions-form .form-check input:checked").map((i, el) => $(el).val())];
+
+    // Push them to API.
+    $.ajax({
+        method: "PUT",
+        baseUrl: base_url,
+        url: `/roles/${role}`,
+        data: { role: { permissions: permissions || [] } },
+        success: (json) => {
+            $("#role-perms-modal").modal("hide");
+            notifyUser({
+                title: "Permissions of " + role + " updated.",
+                message: "",
+                type: "success",
+                delay: 2
+            });
+        },
+        error: (error) => {
+            notifyUser({
+                title: "Could not set role permissions.",
+                message: error.responseJSON ? error.responseJSON.message : "Server or network error.",
+                type: "error",
+                delay: 2
+            });
+        }
+    });
+});
 
 function collapseRoleList() {
     $("#role-list-collapse").collapse('toggle');

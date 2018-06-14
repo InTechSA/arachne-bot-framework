@@ -32,14 +32,23 @@ module.exports.create_role = function(name, permissions) {
 };
 
 module.exports.update_role_permissions = function(name, permissions) {
-    return Role.findByIdAndUpdate({ name }, { $set: { permissions: permissions }});
+    return Role.findOne({ name }).then(role => {
+        if (!role) {
+            let error = new Error("No role found.");
+            error.code = 404;
+            throw error;
+        }
+
+        role.permissions = permissions;
+        return role.save();
+    });
 };
 
 module.exports.add_permissions = (name, permissions) => {
     return Role.findOne({ name }).then(role => {
         if (!role) {
             let error = new Error("No role found.");
-            error.code = 400;
+            error.code = 404;
             throw error;
         }
         if (!role.permissions) {
@@ -55,7 +64,7 @@ module.exports.remove_permissions = (name, permissions) => {
     return Role.findOne({ name }).then(role => {
         if (!role) {
             let error = new Error("No role found.");
-            error.code = 400;
+            error.code = 404;
             throw error;
         }
         if (!role.permissions) {
@@ -76,7 +85,7 @@ module.exports.delete_role = function(name) {
     return Promise.resolve().then(() => {
         if (name == 'admin') {
             let error = new Error("Can not remove admin role.");
-            error.code = 400;
+            error.code = 404;
             throw error;
         }
 

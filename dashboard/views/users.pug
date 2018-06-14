@@ -104,6 +104,28 @@ block content
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-success(type='submit' form="new-role-form") Add
 
+    #role-perms-modal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='role-perms-modal-label' aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#role-perms-modal-label.modal-title
+                        strong.role This role
+                        |  permissions
+                    button.close(type='button' data-dismiss='modal' aria-label='Close')
+                        span(aria-hidden='true') &times;
+                .modal-body
+                    .modal-alert
+                    p Permissions of this role:
+                    form#role-permissions-form
+                        each perm, permName in permissions
+                            .form-check.permission
+                                input.form-check-input(type="checkbox" value=permName id=permName)
+                                label.form-check-label(for=perName)= perm.description
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
+                    button.btn.btn-success(type='submit' form="role-permissions-form") Save
+
+
     h1 Users
     p These users have access to the brain. You may configure their permissions and roles here.
 

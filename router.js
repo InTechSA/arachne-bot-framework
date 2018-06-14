@@ -851,7 +851,7 @@ module.exports = function (io) {
   });
 
   // Create a role
-  router.put('/roles', hasPerm('MANAGE_ROLES'), (req, res, next) => {
+  router.post('/roles', hasPerm('MANAGE_ROLES'), (req, res, next) => {
     if (!req.body.role) {
       return res.status(403).json({ success: false, message: "Missing role : { name, permissions = [] } in body." });
     }
@@ -875,8 +875,25 @@ module.exports = function (io) {
     hub.PermissionManager.getRole(req.params.role).then(role => {
       return res.json({
         success: true,
-        message: "List of roles.",
-        role: { name: role.name, permissions: role.permisions }
+        message: "Role details.",
+        role: { name: role.name, permissions: role.permissions, default: role.default }
+      });
+    }).catch(next);
+  });
+
+  // Update a role
+  router.put('/roles/:role', hasPerm('MANAGE_ROLES'), (req, res, next) => {
+    if (!req.body.role) {
+      return res.status(403).json({ success: false, message: "Missing role : { name, permissions = [] } in body." });
+    }
+    if (req.body.role.permissions && !Array.isArray(req.body.role.permissions)) {
+      return res.status(403).json({ success: false, message: "Permission must be an array of strings." });
+    }
+    hub.PermissionManager.updateRolePermissions(req.params.role, req.body.role.permissions).then(() => {
+      return res.json({
+        success: true,
+        message: "Role created.",
+        role: { name: req.body.role.name, permissions: req.body.role.permissions }
       });
     }).catch(next);
   });

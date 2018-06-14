@@ -150,7 +150,7 @@ exports.PermissionManager = class PermissionManager {
             "RELOAD_BRAIN": {
               "description": "Reload the brain."
             },
-            "SEE_CONFIGURATION": {
+            "CONFIGURE_BRAIN": {
               "description": "Access brain configuration"
             }
         }
@@ -166,6 +166,10 @@ exports.PermissionManager = class PermissionManager {
 
     createRole(name, permissions) {
         return this.roleController.create_role(name, permissions);
+    }
+
+    updateRolePermissions(name, permissions) {
+        return this.roleController.update_role_permissions(name, permissions);
     }
 
     deleteRole(name) {
