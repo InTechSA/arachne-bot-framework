@@ -148,7 +148,7 @@ block content
 
     p 
         | By default, new users will be granted the role : 
-        strong=(roles.find(role => role.default) || "guest")
+        strong=(roles.find(role => role.default.name) || "guest")
         |  (
         a(href="#" onClick="modifyBaseRole()") Modify
         | ).
