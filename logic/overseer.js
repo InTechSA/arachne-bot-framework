@@ -15,6 +15,7 @@ module.exports.HookManager = {
   codes: hub.HookManager.codes
 }
 module.exports.PipeManager = {
-  create: (skill, handler, secret = null) => hub.PipeManager.create(skill, handler, secret)
+  create: (skill, handler, secret = null) => hub.PipeManager.create(skill, handler, secret),
+  createWithHook: (skill, handler, secret = null) => hub.PipeManager.createWithHook(skill, handler, secret)
 }
 module.exports.log = (skillName, log) => hub.LogManager.log(skillName, log);
