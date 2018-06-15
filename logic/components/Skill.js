@@ -90,6 +90,7 @@ module.exports = class Skill {
      */
     handleCommand(cmd, { phrase = {}, data = {} } = {}) {
         return Promise.resolve().then(() => {
+            // Command might be activated, but not the skill. Check the skill first.
             if (!this.active) {
                 throw new Error(`Skill ${this.name} is not active.`)
             }
@@ -115,6 +116,7 @@ module.exports = class Skill {
      * @return {Promise} Promise to the response object: { message: { title, text }, response: {}}.
      */
     handleIntent(slug, { entities = {}, data = {} } = {}) {
+        // Intent might be activated, but not the skill. Check the skill first.
         return Promise.resolve().then(() => {
             if (!this.active) {
                 throw new Error(`Skill ${this.name} is not active.`)
@@ -136,7 +138,7 @@ module.exports = class Skill {
      * 
      */
     createHook() {
-        return this.manager.createHook();
+        return this.manager.createHook(this.name);
     }
 
     /** Use an existing hook.
@@ -149,8 +151,8 @@ module.exports = class Skill {
     /** Request the creation of a new pipe.
      * 
      */
-    createPipe() {
-        return this.manager.createPipe();
+    createPipe(withHook = false) {
+        return this.manager.createPipe(this.name);
     }
 
     /** Execute a command from this or another skill.

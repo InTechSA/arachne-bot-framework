@@ -6,123 +6,471 @@ const path = require('path');
 
 const skillTemplateRegex = fs.readFileSync(path.join(__dirname, "./skillCodeRegex.txt"), "utf8").trim();
 
+const Skill = require('./Skill');
+
 exports.SkillManager = class SkillManager {
   constructor(skillsDirectory) {
     this.skillController = require("./../../database/controllers/skillController");
     this.skillsDirectory = skillsDirectory;
 
     this.skills = {
-      skills: {},
-      get list() {
-        let skills = []
-        for (let skill in this.skills) {
-          skills.push(skill);
-        }
-        return skills;
-      },
-      add: function (skillName, skill) {
-        this.skills[skillName] = skill;
-      },
-      get: function (skillName) {
-        return this.skills[skillName];
-      },
-      has: function (skillName) {
-        return this.list.includes(skillName);
-      },
-      remove: function (skillName) {
-        if (this.has(skillName)) {
-          delete this.skills[skillName];
-        }
-      },
       *[Symbol.iterator]() {
-        yield* Object.entries(this.skills);
+        yield* Object.entries(this);
       }
     };
 
     this.commands = {
-      commands: {},
-      get list() {
-        let commands = []
-        for (let command in this.commands) {
-          commands.push(command);
-        }
-        return commands;
-      },
-      add: function (commandWord, command) {
-        this.commands[commandWord] = command;
-      },
-      get: function (commandWord) {
-        return this.commands[commandWord];
-      },
-      has: function (commandWord) {
-        return this.list.includes(commandWord);
-      },
-      remove: function (commandWord) {
-        if (this.has(commandWord)) {
-          delete this.commands[commandWord];
-        }
-      },
       *[Symbol.iterator]() {
-        yield* Object.entries(this.commands);
+        yield* Object.entries(this);
       }
     };
 
     this.intents = {
-      intents: {},
-      get list() {
-        let intents = []
-        for (let intent in this.intents) {
-          intents.push(intent);
-        }
-        return intents;
-      },
-      add: function (intentName, linkedSkill) {
-        this.intents[intentName] = linkedSkill;
-      },
-      get: function (intentName) {
-        return this.intents[intentName];
-      },
-      has: function (intentName) {
-        return this.list.includes(intentName);
-      },
-      remove: function (intentName) {
-        if (this.has(intentName)) {
-          delete this.intents[intentName];
-        }
-      },
       *[Symbol.iterator]() {
-        yield* Object.entries(this.intents);
+        yield* Object.entries(this);
       }
     };
 
     this.interactions = {
-      interactions: {},
-      get list() {
-        let interactions = []
-        for (let interaction in this.interactions) {
-          interactions.push(interaction);
-        }
-        return interactions;
-      },
-      add: function (interactionName, interaction) {
-        this.interactions[interactionName] = interaction;
-      },
-      get: function (interactionName) {
-        return this.interactions[interactionName];
-      },
-      has: function (interactionName) {
-        return this.list.includes(interactionName);
-      },
-      remove: function (interactionName) {
-        if (this.has(interactionName)) {
-          delete this.interactions[interactionName];
-        }
-      },
       *[Symbol.iterator]() {
-        yield* Object.entries(this.interactions);
+        yield* Object.entries(this);
       }
     };
+
+    this.pipes = {
+      *[Symbol.iterator]() {
+        yield* Object.entries(this);
+      }
+    }
   }
+
+  ////////////////////////////
+  // TODO: REFACTORED
+
+  hasSkill(name) {
+    return [...this.skills].includes(name);
+  }
+
+  /** Get a skill by name.
+   * 
+   * @param {String} name Name of the skill to get.
+   * @return {Skill} Skill found (nullable).
+   */
+  getSkill(name) {
+    return this.skills[name];
+  }
+
+  /** Validate a skill Object against other skills registered.
+   * 
+   * @param {Skil} skill Skill object to verify. Must be an instance of the Skill class.
+   */
+  validateSkill(skill) {
+    return Promise.resolve().then(() => {
+      if (!(skill instanceof Skill)) {
+        throw new Error("Attempting to validate a skill that is not an instance of the Skill class.");
+      }
+
+      if (!skill.name) {
+        throw new Error("Skill.name is not defined.");
+      }
+
+      if (this.skills[skill.name]) {
+        throw new Error(`[${skill.name}] Skill ${skill.name} already defined.`);
+      }
+      
+      //////////////////////////////////////////////////////////////////////
+      // Skill commands validity
+      if (!skill.commands) {
+        throw new Error(`[${skill.name}] Skill.commands is not defined.`);
+      }
+      
+      // Skill command word unicity.
+      Object.values(skill.commands).forEach(command => {
+        if (this.commands[command.cmd]) {
+          throw new Error(`[${skill.name}] Command ${command.cmd} already defined for skill ${this.commands[command.cmd].skill}.`);
+        }
+      });
+
+
+      //////////////////////////////////////////////////////////////////////
+      // Skill intents validity
+      if (!skill.intents) {
+        throw new Error(`[${skill.name}] Skill.intents is not defined.`);
+      }
+
+      // Skill intent slug unicity
+      Object.values(skill.intents).forEach(intent => {
+        if (this.intents[intent.slug]) {
+          throw new Error(`[${skill.name}] Intent ${intent.slug} already defined for skill ${this.intents[intent.slug].skill}.`);
+        }
+      });
+
+
+      //////////////////////////////////////////////////////////////////////
+      // Skill interactions validity
+      if (!skill.interactions) {
+        throw new Error(`[${skill.name}] Skill.interactions is not defined.`);
+      }
+
+      // Skill intent slug unicity
+      Object.values(skill.interactions).forEach(interaction => {
+        if (this.interactions[interaction.name]) {
+          throw new Error(`[${skill.name}] Interaction ${interaction.name} already defined for skill ${this.interactions[interaction.name].skill}.`);
+        }
+      });
+
+
+      //////////////////////////////////////////////////////////////////////
+      // Skill pipes validity
+      if (!skill.interactions) {
+        throw new Error(`[${skill.name}] Skill.interactions is not defined.`);
+      }
+      
+      // Skill pipe name unicity
+      Object.values(skill.pipes).forEach(pipe => {
+        if (this.pipes[pipe.name]) {
+          throw new Error(`[${skill.name}] Pipe ${pipe.name} already defined for skill ${this.pipes[pipe.name].skill}.`);
+        }
+      });
+
+
+      // Skill does not have conflicts with already loaded skills.
+
+      
+      //////////////////////////////////////////////////////////////////////
+      //
+      // TODO: Validate the skill's code, execute unit testing on functions.
+      //
+      //////////////////////////////////////////////////////////////////////
+
+      return true;
+    });
+  }
+
+  /** Create a new skill.
+   * 
+   * @param {Object} skill - The skill to create.
+   * @param {String} skill.name - The name of a skill.
+   * @param {String} skill.code - The code of a skill.
+   * @param {Array[]} secret - An array of key-value pair arrays to store secretly for this skill.
+   * @return {Promise} Promise object resolves if success, reject otherwise.
+   */
+  createSkill(skill) {
+    return new Promise((resolve, reject) => {
+
+      // TODO: Check skill definition and skill code.
+      this.validateSkillCode(skill.code).then((success, reason) => {
+        logger.info(`Adding code of skill \x1b[33m${skill.name}\x1b[0m...`);
+        logger.log(`\t... Push ${skill.name} to database...`);
+        this.skillController.create_skill(skill.name, skill.code).then((savedSkill) => {
+          logger.log(`\t... Create ${skill.name} folder...`);
+          fs.mkdir(path.join(this.skillsDirectory, `/${skill.name}`), (err) => {
+            if (err) {
+              logger.error(err);
+              return reject({ title: "Could not create folder.", message: "Could not create skill folder on server." });
+            }
+            logger.log(`\t... Create skill.js in ${skill.name} folder...`)
+            fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/skill.js`), skill.code, (err) => {
+              if (err) {
+                logger.error(err);
+                return reject({ title: "Could not create skill.js file.", message: "Could not create skill.js file on server." });
+              }
+
+              if (skill.secret) {
+                logger.log(`\t... Create secret.js in ${skill.name} folder...`)
+                fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/secret.js`), "{}", (err) => {
+                  if (err) {
+                    logger.error(err);
+                    return reject({ title: "Could not create secret.js file.", message: "Could not create secret.js file on server." });
+                  }
+                  logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
+                  return resolve();
+                });
+              } else {
+                logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
+                return resolve();
+              }
+            });
+          });
+        }).catch((err) => {
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          return reject(new Error("Could not push skill code."));
+        });
+      }).catch((err) => {
+        logger.error(err);
+        return reject({ title: "Could not validate skill code.", message: "Could not validate skill code." });
+      });
+    });
+  }
+
+  /** Add a new skill to the brain.
+   * 
+   * @param {Skill} skill Skill to add.
+   * @return {Promise} Promise to the added skill.
+   */
+  addSkill(skill) {
+    return this.validateSkill(skill).then(isValid => {
+      if (!isValid) {
+        throw new Error("skill is not valid.");
+      }
+
+      // Force status to unactive and replace current skill object.
+      skill.active = false;
+      this.skills[skill.name] = skill;
+
+      Object.values(skill.commands).forEach(command => {
+        // Command are unique by their command word cmd. Force active to false.
+        this.commands[command.cmd] = {
+          skill: skill.name,
+          active: false
+        };
+      });
+
+      Object.values(skill.commands).forEach(intent => {
+        // Intents are unique by their slug. Force active to false.
+        this.intents[intent.slug] = {
+          skill: skill.name,
+          active: false
+        };
+      });
+      
+      Object.values(skill.interactions).forEach(interaction => {
+        // Interactions are unique by their name. Force active to false.
+        this.interactions[interaction.name] = {
+          skill: skill.name,
+          active: false
+        };
+      });
+
+      Object.values(skill.pipes).forEach(pipe => {
+        // Pipes are unique by their name. Force active to false.
+        this.pipes[pipe.name] = {
+          skill: skill.name,
+          active: false
+        };
+      });
+
+      return this.getSkill(skill.name);
+    });
+  }
+
+  /** Delete a skill.
+   * 
+   * @param {String} name Name of the skill to delete.
+   * @return {Promise} Promise to the deleted skill.
+   */
+  removeSkill(name) {
+    return Promise.resolve().then(() => {
+      delete this.skills[name];
+      return true;
+    });
+  }
+
+  /** Activate a skill.
+   * This will :
+   * - Reload the skill to make sure it has the latest version in memory
+   * - Validate it.
+   * - Finally activate it. All intents, commands, pipes and interactions will be activated.
+   * 
+   * @param {String} name Name of the skill to activate.
+   * @return {Promise} Promise to the new skill status.
+   */
+  activateSkill(name) {
+    return Promise.resolve(name).then((name) => {
+        if (!this.skills[name]) {
+          throw new Error(`Skill ${name} is not defined.`);
+        }
+        return name;
+      })
+      .then((name) => this.skillController.toggle(name, true))
+      .then(() => this.reloadSkill(name))
+      .then((skill) => {
+        // Skill instanceof Skill and validated, re-added with active: false.
+        this.skills[name].active = true;
+
+        // activate all components
+        [...skill.commands].forEach(command => {
+          this.commands[command.cmd].active = true;
+        });
+
+        [...skill.intents].forEach(intent => {
+          this.intents[intent.slug].active = true;
+        });
+
+        [...skill.interactions].forEach(interaction => {
+          this.interactions[interaction.name].active = true;
+        });
+
+        [...skill.pipes].forEach(pipe => {
+          this.pipes[pipe.name].active = true;
+        });
+
+        logger.log(`\t\t... \x1b[32mactivated\x1b[0m`);
+        return true;
+      });
+  }
+
+  /** Deactivate a skill. All intents, commands, pipes and interactions will be deactivated.
+   * 
+   * @param {String} name Name of the skill to deactivate.
+   * @return {Promise} Promise to the new skill status.
+   */
+  deactivateSkill(name) {
+    return Promise.resolve(name).then((name) => {
+      if (!this.skills[name]) {
+        throw new Error(`Skill ${name} is not defined.`);
+      }
+      return name;
+    })
+    .then((name) => this.skillController.toggle(name, false))
+    .then(() => {
+      const skill = this.getSkill(skill);
+
+      // Skill instanceof Skill and validated, re-added with active: false.
+      this.skills[name].active = false;
+
+      // activate all components
+      [...skill.commands].forEach(command => {
+        this.commands[command.cmd].active = false;
+      });
+
+      [...skill.intents].forEach(intent => {
+        this.intents[intent.slug].active = false;
+      });
+
+      [...skill.interactions].forEach(interaction => {
+        this.interactions[interaction.name].active = false;
+      });
+
+      [...skill.pipes].forEach(pipe => {
+        this.pipes[pipe.name].active = false;
+      });
+
+      logger.log(`\t\t... \x1b[32mdeactivated\x1b[0m`);
+      return true;
+    });
+  }
+
+  /** Activate a command.
+   * 
+   * @param {String} cmd Command word to activate.
+   * @return {Promise} Promise to the new command status.
+   */
+  activateCommand(cmd) {
+    return Promise.resolve().then(() => {
+      if (!this.commands[cmd]) {
+        throw new Error(`Command ${cmd} is not defined.`);
+      }
+
+      this.commands[cmd].active = true;
+      return true;
+    });
+  }
+
+  /** Deactivate a command.
+   * 
+   * @param {String} cmd Command word to deactivate.
+   * @return {Promise} Promise to the new command status.
+   */
+  deactivateCommand(cmd) {
+    return Promise.resolve().then(() => {
+      if (!this.commands[cmd]) {
+        throw new Error(`Command ${cmd} is not defined.`);
+      }
+
+      this.commands[cmd].active = false;
+      return false;
+    });
+  }
+
+  /** Activate an intent.
+   * 
+   * @param {String} slug Intent slug to activate.
+   * @return {Promise} Promise to the new intent status.
+   */
+  activateIntent(slug) {
+    return Promise.resolve().then(() => {
+      if (!this.intents[slug]) {
+          throw new Error(`Intent ${slug} is not defined.`);
+      }
+
+      this.intents[slug].active = true;
+      return true;
+    });
+  }
+
+  /** Deactivate an intent.
+   * 
+   * @param {String} slug Intent slug to deactivate.
+   * @return {Promise} Promise to the new intent status.
+   */
+  deactivateIntent(slug) {
+    return Promise.resolve().then(() => {
+      if (!this.intents[slug]) {
+        throw new Error(`Intent ${slug} is not defined.`);
+      }
+
+      this.intents[slug].active = false;
+      return false;
+    });
+  }
+
+  /** Activate a pipe.
+   * 
+   * @param {String} name Pipe name to activate.
+   * @return {Promise} Promise to the new pipe status.
+   */
+  activatePipe(name) {
+    //////////////////////////////////////////////////////////////////////
+    //
+    // TODO: activation of pipes.
+    //
+    //////////////////////////////////////////////////////////////////////
+    return Promise.resolve().then(() => {
+      throw new Error("Pipes can't be activated, because they can't be deactivated.");
+    });
+  }
+
+  /** Deactivate a pipe.
+   * 
+   * @param {String} nam Pipe name to deactivate.
+   * @return {Promise} Promise to the new pipe status.
+   */
+  deactivatePipe(name) {
+    //////////////////////////////////////////////////////////////////////
+    //
+    // TODO: deactivation of pipes.
+    //
+    //////////////////////////////////////////////////////////////////////
+    return Promise.resolve().then(() => {
+      throw new Error("Pipes can't be deactivated.");
+    });
+  }
+
+  /** Activate an interaction.
+   * 
+   * @param {String} name Interaction name to activate.
+   * @return {Promise} Promise to the new interaction status.
+   */
+  activateInteraction(name) {
+    return Promise.resolve().then(() => {
+      throw new Error("Interact can't be activated, because they can't be deactivated.");
+    });
+  }
+
+  /** Deactivate an interaction.
+   * 
+   * @param {String} nam Interactionipe name to deactivate.
+   * @return {Promise} Promise to the new interaction status.
+   */
+  deactivateInteraction(name) {
+    return Promise.resolve().then(() => {
+      throw new Error("Interact can't be deactivated.");
+    });
+  }
+  
+  // TODO: TO REFACTOR
+  ////////////////////////////
 
   /**
    *  Reload a specific skill. (Remove it, reload it, add it).
@@ -394,60 +742,6 @@ exports.SkillManager = class SkillManager {
   }
 
   /**
-   * Activate a skill after reloading it..
-   * @param {String} skillName The name of the skill to activate + reload.
-   * @return {Promise} Promise object resolve if success, reject otherwise.
-   */
-  activateSkill(skillName) {
-    return new Promise((resolve, reject) => {
-      this.skillController.toggle(skillName, true)
-        .then(() => {
-          return this.reloadSkill(skillName)
-        })
-        .then(() => {
-          this.skills.get(skillName).active = true;
-          let skill = this.skills.get(skillName);
-          for (let intentName in skill.intents) {
-            skill.intents[intentName].active = true;
-          }
-          for (let commandName in skill.commands) {
-            skill.commands[commandName].active = true;
-          }
-          for (let interactionName in skill.interactions) {
-            skill.interactions[interactionName].active = true;
-          }
-          logger.log(`\t\t... \x1b[32mactivated\x1b[0m`);
-          return resolve();
-        })
-        .catch(err => { reject(err) });
-    });
-  }
-
-  /**
-   * Deactivate a skill.
-   * @param {String} skillName The name of the skill to deactivate.
-   * @return {Promise} Promise object resolve if success, reject otherwise.
-   */
-  deactivateSkill(skillName) {
-    return new Promise((resolve, reject) => {
-      this.skillController.toggle(skillName, false).then(() => {
-        this.skills.get(skillName).active = false;
-        let skill = this.skills.get(skillName);
-        for (let intentName in skill.intents) {
-          skill.intents[intentName].active = false;
-        }
-        for (let commandName in skill.commands) {
-          skill.commands[commandName].active = false;
-        }
-        for (let interactionName in skill.interactions) {
-          skill.interactions[interactionName].active = false;
-        }
-        return resolve();
-      }).catch(err => reject(err));
-    });
-  }
-
-  /**
    * Get a skill's code.
    * @param {String} skillName - The name of the skill to get code of.
    * @return {Promise} Promise object represents the skill's code.
@@ -533,62 +827,6 @@ exports.SkillManager = class SkillManager {
   }
 
   /**
-   * Add a new skill.
-   * @param {Object} skill - The skill to add.
-   * @param {String} skill.name - The name of a skill.
-   * @param {String} skill.code - The code of a skill.
-   * @param {Array[]} secret - An array of key-value pair arrays to store secretly for this skill.
-   * @return {Promise} Promise object resolves if success, reject otherwise.
-   */
-  addSkill(skill) {
-    return new Promise((resolve, reject) => {
-
-      // TODO: Check skill definition and skill code.
-      this.validateSkillCode(skill.code).then((success, reason) => {
-        logger.info(`Adding code of skill \x1b[33m${skill.name}\x1b[0m...`);
-        logger.log(`\t... Push ${skill.name} to database...`);
-        this.skillController.create_skill(skill.name, skill.code).then((savedSkill) => {
-          logger.log(`\t... Create ${skill.name} folder...`);
-          fs.mkdir(path.join(this.skillsDirectory, `/${skill.name}`), (err) => {
-            if (err) {
-              logger.error(err);
-              return reject({ title: "Could not create folder.", message: "Could not create skill folder on server." });
-            }
-            logger.log(`\t... Create skill.js in ${skill.name} folder...`)
-            fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/skill.js`), skill.code, (err) => {
-              if (err) {
-                logger.error(err);
-                return reject({ title: "Could not create skill.js file.", message: "Could not create skill.js file on server." });
-              }
-
-              if (skill.secret) {
-                logger.log(`\t... Create secret.js in ${skill.name} folder...`)
-                fs.writeFile(path.join(this.skillsDirectory, `/${skill.name}/secret.js`), "{}", (err) => {
-                  if (err) {
-                    logger.error(err);
-                    return reject({ title: "Could not create secret.js file.", message: "Could not create secret.js file on server." });
-                  }
-                  logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
-                  return resolve();
-                });
-              } else {
-                logger.info(`Skill \x1b[33m${skill.name}\x1b[0m successfully added to folder.`);
-                return resolve();
-              }
-            });
-          });
-        }).catch((err) => {
-          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
-          return reject(new Error("Could not push skill code."));
-        });
-      }).catch((err) => {
-        logger.error(err);
-        return reject({ title: "Could not validate skill code.", message: "Could not validate skill code." });
-      });
-    });
-  }
-
-  /**
    * Remove a skill.
    * @param {String} skillName - The name of the skill to remove.
    * @return {Promise} Promise object resolves if success, reject otherwise.
@@ -647,39 +885,6 @@ exports.SkillManager = class SkillManager {
     });
   }
 
-  /**
-   * List all skills.
-   * @return {Promise} Promise object represents the list of skills.
-   */
-  getSkills() {
-    return new Promise((resolve, reject) => {
-      return resolve(this.skills.skills);
-    });
-  }
-
-  /**
-   * Check if the skill exists.
-   * @param {String} skillName - The name of the skill to check.
-   * @return {Boolean} true of false depending on skill's existence.
-   */
-  hasSkill(skillName) {
-    return this.skills.has(skillName);
-  }
-
-  /**
-   * Get a specific skill.
-   * @param {String} skillName - The name of the skill to get.
-   * @return {Promise} Promise object represents the skill.
-   */
-  getSkill(skillName) {
-    return new Promise((resolve, reject) => {
-      if (this.skills.has(skillName)) {
-        return resolve(this.skills.get(skillName));
-      } else {
-        return resolve(null);
-      }
-    });
-  }
 
   /**
    * Delete everything in a folder (recursive, including the folder).
