@@ -4,8 +4,7 @@ const logger = new (require('./components/Logger'))();
 
 /**
  * Handle an intent. Find the related skill and call it.
- * @param
- {String} intentName The name of the intent (slug given by nlp service provider).
+ * @param {String} intentName The name of the intent (slug given by nlp service provider).
  * @param {Object} [entities={}] - Entities returned by the nlp service provider (if any).
  * @param {Object} [data={}] - Data sent by the connector to the brain.
  * @return {Promise} Promise object represents the answer of the skill (message to send back to connector, optional data...)
