@@ -130,6 +130,16 @@ module.exports = function(io) {
     });
   });
 
+  router.get('/pipes/:skill/:identifier', (req, res) => {
+    logger.info(`Checking at pipe ${req.params.identifier} for skill ${req.params.skill}...`);
+    hub.PipeManager.find(req.params.skill, req.params.identifier).then(() => {
+        return res.status(200).send("OK");
+    }).catch((err) => {
+      logger.error(err);
+      return res.sendStatus(404);
+    });
+  });
+
   router.post('/pipes/:skill/:identifier', (req, res) => {
     logger.info(`Checking at pipe ${req.params.identifier} for skill ${req.params.skill}...`);
     hub.handlePipe(req.params.skill, req.params.identifier, req.body, req.headers).then(() => {
