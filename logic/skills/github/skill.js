@@ -92,7 +92,7 @@ module.exports = (skill) => {
                                 }
                             };
                         }
-                        return skill.getItem("github", "hooks").then((hooks) => {
+                        return skill.getItem("hooks").then((hooks) => {
                             let hookIndex = hooks.findIndex(hook => hook.channel == data.channel && hook.name == hookName);
                             if (hookIndex < 0) {
                                 return {
@@ -105,7 +105,7 @@ module.exports = (skill) => {
 
                             return skill.removeHook(hooks[hookIndex].id).then(() => {
                                 hooks.splice(hookIndex, 1);
-                                return skill.storeItem("github", "hooks", hooks).then(() => {
+                                return skill.storeItem("hooks", hooks).then(() => {
                                     return {
                                         message: {
                                             title: "Git ♦ Hook deleted.",
@@ -116,7 +116,7 @@ module.exports = (skill) => {
                             });
                         });
                     case "list":
-                        return skill.getItem("github", "hooks").then((hooks) => {
+                        return skill.getItem("hooks").then((hooks) => {
                             const found = hooks.filter(hook => hook.channel == data.channel);
                             return {
                                 message: {
@@ -162,7 +162,7 @@ module.exports = (skill) => {
         return skill.handleCommand("git", { phrase: `list`, data });
     });
 
-    skill.addPipe("hookHandler", ({ hookId, data, headers }) => {
+    skill.addPipe("hookHandler", (identifier, { hookId, data, headers }) => {
         return Promise.resolve().then(() => {
             let message = {};
             if (data.object_kind) {
@@ -241,8 +241,12 @@ module.exports = (skill) => {
             } else {
                 message.title = 'Bip bip, activity detected on a repository!';
             }
+            return message;
         }).then(message => {
-            return skill.useHook(hookId, message);
+            if (message != {}) {
+                return skill.useHook(hookId, { message });   
+            }
+            return;
         });
     });
 
