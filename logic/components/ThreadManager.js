@@ -2,9 +2,9 @@
 const logger = new (require("./../components/Logger"))();
 
 exports.ThreadManager = class ThreadManager {
-  constructor(interactions) {
+  constructor(SkillManager) {
     this.threadController = require("./../../database/controllers/threadController");
-    this.interactions = interactions;
+    this.SkillManager = SkillManager;
   }
 
   /**
@@ -44,31 +44,31 @@ exports.ThreadManager = class ThreadManager {
    * @param {Object} [data={}] - Data sent by the connector to the brain.
    * @return {Promise} Promise object represents the answer of the skill (message to send back to connector, optional data...)
    */
-  handleThread(threadId, phrase, data = {}) {
-    return new Promise((resolve, reject) => {
-      this.threadController.get_thread(threadId).then((thread) => {
-        logger.info(`Handling interaction "\x1b[4m${thread.handler}\x1b[0m"`)
+  handleThread(threadId, phrase = "", data = {}) {
+    return Promise.resolve().then(() => {
+      logger.info(`Received thread response for thread "\x1b[4m${threadId}\x1b[0m"`);
 
-        if (this.interactions.has(thread.handler) && this.interactions.get(thread.handler).active) {
-          this.interactions.get(thread.handler).interact(thread, { phrase, data }).then((res) => {
-            if (!res.message.interactive) {
+      return this.threadController.get_thread(threadId);
+    })
+      .then((thread) => {
+        logger.info(`Handling interaction "\x1b[4m${thread.handler}\x1b[0m"`);
+
+        return this.SkillManager.handleInteraction(thread.handler, thread, { phrase, data })
+          .then(response => {
+            if (!response.message.interactive) {
               logger.info("Closing the thread because no interactive parameter ");
-              this.closeThread(threadId).then(() => {
-                return resolve(res);
+
+              return this.closeThread(threadId).then(() => {
+                return response;
               }).catch((err) => {
                 logger.error("Could not close thread " + threadId + " error : " + err);
+                return response;
               });
             } else {
-              res.message.thread = { id: thread._id, duration: thread.duration };
-              return resolve(res);
+              response.message.thread = { id: thread._id, duration: thread.duration };
+              return response;
             }
           });
-        } else {
-          return reject({ message: "Can not execute this interaction" });
-        }
-      }).catch((error) => {
-        return reject(error);
       });
-    });
   }
 }

@@ -4,43 +4,35 @@ const logger = new (require('./components/Logger'))();
 
 /**
  * Handle an intent. Find the related skill and call it.
- * @param
- {String} intentName The name of the intent (slug given by nlp service provider).
+ * @param {String} intentName The name of the intent (slug given by nlp service provider).
  * @param {Object} [entities={}] - Entities returned by the nlp service provider (if any).
  * @param {Object} [data={}] - Data sent by the connector to the brain.
  * @return {Promise} Promise object represents the answer of the skill (message to send back to connector, optional data...)
  */
 function handleIntent(intentName, entities = {}, data = {}) {
-  return new Promise((resolve, reject) => {
-    logger.info(`Handling intent "\x1b[4m${intentName}\x1b[0m"`);
-    if (SkillManager.intents.has(intentName) && SkillManager.intents.get(intentName).active) {
-      let intent = SkillManager.intents.get(intentName);
+  return Promise.resolve()
+    .then(() => {
+      logger.info(`Handling intent "\x1b[4m${intentName}\x1b[0m"`);
 
-      for (let entity of intent.expected_entities) {
-        if (!Object.keys(entities).includes(entity)) {
-          return resolve({ success: false, message: { text: ConfigurationManager.loadedConfiguration.noentitiesfound.replace('[IntentName]',intentName).replace('[Entities]',intent.expected_entities.join(", ")) }});
-        }
+      return SkillManager.handleIntent(intentName, entities, data)
+    })
+    .then(response => {
+      if (response.message.interactive) {
+        return ThreadManager.addThread(response.message.thread).then((thread) => {
+          response.message.thread.duration = thread.duration;
+          response.message.thread.id = thread._id;
+
+          return { success: true, message: response.message, response: response };
+        });
+      } else {
+        return { success: true, message: response.message, response: response };
       }
-
-      intent.handle({ entities, data }).then((response) => {
-        if (response.message.interactive) {
-          ThreadManager.addThread(response.message.thread).then((thread) => {
-            response.message.thread.duration = thread.duration;
-            response.message.thread.id = thread._id;
-
-            return resolve({ success: true, message: response.message, response: response });
-          });
-        } else {
-          return resolve({ success: true, message: response.message, response: response });
-        }
-      }).catch((err) => {
-        return reject(err);
-      });
-    } else {
+    })
+    .catch(err => {
+      console.log(err);
       logger.warn(`Intent "\x1b[4m${intentName}\x1b[0m" is not handled.`);
-      return resolve({ success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfoundnlp.replace('[IntentName]',intentName) }});
-    }
-  })
+      return { success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfoundnlp.replace('[IntentName]', intentName) } };
+    });
 }
 
 /**
@@ -51,29 +43,26 @@ function handleIntent(intentName, entities = {}, data = {}) {
  * @return {Promise} Promise object represents the answer of the skill (message to send back to connector, optional data...)
  */
 function handleCommand(commandName, phrase = "", data = {}) {
-  return new Promise((resolve, reject) => {
-    logger.info(`Handling command "\x1b[4m${commandName}\x1b[0m"`)
+  return Promise.resolve().then(() => {
+    logger.info(`Handling command "\x1b[4m${commandName}\x1b[0m"`);
 
-    if (SkillManager.commands.has(commandName) && SkillManager.commands.get(commandName).active) {
-      let command = SkillManager.commands.get(commandName);
-      command.execute({ phrase, data }).then((response) => {
-        if (response.message.interactive) {
-          ThreadManager.addThread(response.message.thread).then((thread) => {
-            response.message.thread.duration = thread.duration;
-            response.message.thread.id = thread._id;
-
-            return resolve({ success: true, message: response.message, response: response });
-          });
-        } else {
-          return resolve({ success: true, message: response.message, response: response });
-        }
-      }).catch((err) => {
-        return reject(err);
-      });
-    } else {
-      return resolve({ success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfound }});
-    }
+    return SkillManager.handleCommand(commandName, phrase, data);
   })
+    .then(response => {
+      if (response.message.interactive) {
+        return ThreadManager.addThread(response.message.thread).then((thread) => {
+          response.message.thread.duration = thread.duration;
+          response.message.thread.id = thread._id;
+
+          return { success: true, message: response.message, response: response };
+        });
+      } else {
+        return { success: true, message: response.message, response: response };
+      }
+    })
+    .catch(err => {
+      return { success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfound } };
+    });
 }
 
 function handlePipe(skill, identifier, data = {}, headers = {}) {
@@ -93,19 +82,14 @@ function handlePipe(skill, identifier, data = {}, headers = {}) {
  * @return {Promise} promise object that resolves if success.
  */
 function reloadBrain() {
-  return new Promise((resolve, reject) => {
-    ConfigurationManager.reload().then(() => {
-      SkillManager.loadSkillsFromFolder();
-      return resolve();
-    }).catch((e) => {
-      return reject(e);
-    });
+  return ConfigurationManager.reload().then(() => {
+    return SkillManager.loadSkillsFromFolder();
   });
 }
 
 // Create a new SkillManager
 const skillComponent = require('./components/SkillManager');
-const SkillManager = new skillComponent.SkillManager(path.join(__dirname, "./skills"));
+const SkillManager = new skillComponent.SkillManager(this, path.join(__dirname, "./skills"));
 
 // Create and export a new ConnectorManager.
 const connectorComponent = require('./components/ConnectorManager');
@@ -114,7 +98,7 @@ exports.ConnectorManager = ConnectorManager;
 
 // Create and export a new ThreadManager
 const threadComponent = require('./components/ThreadManager');
-let ThreadManager = new threadComponent.ThreadManager(SkillManager.interactions);
+let ThreadManager = new threadComponent.ThreadManager(SkillManager);
 exports.ThreadManager = ThreadManager;
 
 // Create and export a new StorageManager
@@ -157,7 +141,7 @@ exports.loadSkill = (skillName) => SkillManager.loadSkill(skillName);
 exports.reloadSkill = (skillName) => SkillManager.reloadSkill(skillName);
 exports.getSkillCode = (skillName) => SkillManager.getSkillCode(skillName);
 exports.saveSkillCode = (skillName, code) => SkillManager.saveSkillCode(skillName, code);
-exports.addSkill = (skill) => SkillManager.addSkill(skill);
+exports.createSkill = (skill) => SkillManager.createSkill(skill);
 exports.deleteSkill = (skillName) => SkillManager.deleteSkill(skillName);
 exports.getSkills = () => SkillManager.getSkills();
 exports.getSkillSecret = (skillName) => SkillManager.getSkillSecret(skillName);
@@ -174,4 +158,4 @@ ConfigurationManager.reload().then(() => {
   .catch(err => {
     logger.error(err);
     logger.error(`\x1b[31mFailed to load skills.\x1b[0m`);
-});
+  });

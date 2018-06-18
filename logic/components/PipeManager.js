@@ -80,7 +80,7 @@ module.exports.PipeManager = class {
                 
                 // Execute pipe's skill handler if activated.
                 logger.info(`Transmitting pipe ${identifier} for skill ${skillName}`);
-                return skill.pipes[pipe.handler].transmit(identifier, { hookID: pipe.hookID, data, headers });
+                return skill.pipes[pipe.handler].handler(identifier, { hookId: pipe.hookID, data, headers });
             });
         });
     }
