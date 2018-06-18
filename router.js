@@ -178,25 +178,22 @@ module.exports = function (io) {
      * @apiSuccess {String} message Message from api.
      * @apiSuccess {Skill} skills List of available skills.
      */
-    router.get('/skills', hasPerm('SEE_SKILLS'), (req, res) => {
+    router.get('/skills', hasPerm('SEE_SKILLS'), (req, res, next) => {
       hub.getSkills().then((skills) => {
-        let skillsToReturn = JSON.parse(JSON.stringify(skills));
-
-        // Be sure to send handle and execute names instead of function object
-        for (let skill in skills) {
-          for (let intentName in skillsToReturn[skill].intents) {
-            skillsToReturn[skill].intents[intentName].handle = `${skills[skill].intents[intentName].handle.name}`;
-          }
-          for (let commandName in skillsToReturn[skill].commands) {
-            skillsToReturn[skill].commands[commandName].execute = `${skills[skill].commands[commandName].execute.name}`;
-          }
-          for (let interactionName in skillsToReturn[skill].interactions) {
-            skillsToReturn[skill].interactions[interactionName].interact = `${skills[skill].interactions[interactionName].interact.name}`;
-          }
-        }
-
-        return res.json({ success: true, message: 'Got list of bot skills.', skills: skillsToReturn });
-      });
+        return res.json({
+          success: true,
+          message: 'Got list of bot skills.',
+          skills: skills.map(skill => {
+            return {
+              name: skill.name,
+              commands: skill.commands,
+              intents: skill.intents,
+              pipes: skill.pipes,
+              interactions: skill.interactions
+            }
+          })
+        });
+      }).catch(next);
     });
 
   // Add a new skill
@@ -226,7 +223,7 @@ module.exports = function (io) {
       skill.secret = req.body.skill_secret;
     }
 
-    hub.addSkill(skill).then(() => {
+    hub.createSkill(skill).then(() => {
       hub.loadSkill(skill.name).then(() => {
         return res.json({ success: true, message: "Skill added and loaded." });
       }).catch((err) => {
@@ -408,14 +405,23 @@ module.exports = function (io) {
     // TODO: move activation/deactivation in a function exposed by hub!
     if (hub.hasSkill(req.params.skill)) {
       if (req.params.status === "on") {
-        hub.activateSkill(req.params.skill).then(() => {
-          return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
+        hub.activateSkill(req.params.skill).then((skill) => {
+          if (skill.active) {
+            return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
+          } else {
+            return res.json({ success: false, message: `Skill ${req.params.skill} could not be activated.`, active: false });
+          }
         }).catch((err) => {
+          console.log(err);
           return res.json({ success: false, message: "Could not activate skill." });
         });
       } else if (req.params.status === "off") {
-        hub.deactivateSkill(req.params.skill);
-        return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
+        hub.deactivateSkill(req.params.skill).then((skill) => {
+          return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
+        }).catch(err => {
+          console.log(err);
+          return res.json({ success: false, message: "Could not deactivated skill."})
+        });
       } else {
         return res.json({ success: false, message: `Wrong status code : on or off.` });
       }

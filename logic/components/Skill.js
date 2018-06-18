@@ -99,10 +99,6 @@ module.exports = class Skill {
                 throw new Error(`Command ${cmd} is not defined.`);
             }
 
-            if (!this.commands[cmd].active) {
-                throw new Error(`Command ${cmd} is not active.`);
-            }
-
             return this.commands[cmd].handler({ phrase, data });
         });
     }
@@ -126,10 +122,6 @@ module.exports = class Skill {
                 throw new Error(`Intent ${slug} is not defined.`);
             }
 
-            if (!this.intents[slug].active) {
-                throw new Error(`Intent ${slug} is not active.`);
-            }
-
             return this.intents[slug].handler({ entities, data });
         });
     }
@@ -137,22 +129,33 @@ module.exports = class Skill {
     /** Request the creation of a new hook.
      * 
      */
-    createHook() {
-        return this.manager.createHook(this.name);
+    createHook(messageOnDelete) {
+        return this.manager.createHook(messageOnDelete);
+    }
+
+    /** Remove a hook.
+     * 
+     */
+    removeHook(hookId) {
+        return this.manager.removeHook(hookId);
     }
 
     /** Use an existing hook.
      * 
      */
-    useHook() {
-        return this.manager.useHook();
+    useHook(hookId, message, options) {
+        return this.manager.useHook(hookId, message, options);
     }
 
     /** Request the creation of a new pipe.
      * 
      */
-    createPipe(withHook = false) {
-        return this.manager.createPipe(this.name);
+    createPipe(handler, { secret = null, withHook = false} = {}) {
+        if (withHook) {
+            return this.manager.createPipeWithHook(handler, secret);
+        } else {
+            return this.manager.createPipe(handler, secret);
+        }
     }
 
     /** Execute a command from this or another skill.
@@ -164,5 +167,30 @@ module.exports = class Skill {
      */
     execute(cmd, { phrase = {}, data = {} } = {}) {
         return this.manager.handleCommand(cmd, { phrase, data });
-    } 
+    }
+
+    /** Log something for this skill.
+     * 
+     * @param {Object} log May be a string.
+     */
+    log(log) {
+        return this.manager.log(log);
+    }
+
+    /** Get a storage.
+     * 
+     * @param {String} key 
+     */
+    getItem(key) {
+        return this.manager.getItem(key);
+    }
+
+    /** Store an item.
+     * 
+     * @param {String} key
+     * @param {Object} item
+     */
+    storeItem(key, item) {
+        return this.manager.storeItem(key, item);
+    }
 }

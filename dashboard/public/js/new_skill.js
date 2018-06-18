@@ -982,28 +982,30 @@ $.ajax({
         skill.name = editedSkillData.data('skill-name');
         skill.code = editedSkillData.data('skill-code');
 
+        const skillFound = skills.find(el => el.name === skill.name);
+
         // Retrieve skill intents and commands
-        for (let intentName in skills[skill.name].intents) {
-          let intent = skills[skill.name].intents[intentName];
+        for (let intentName in skillFound.intents) {
+          let intent = skillFound.intents[intentName];
           intent.name = intentName;
           skill.intents[intentName] = intent;
         }
 
-        for (let commandName in skills[skill.name].commands) {
-          let command = skills[skill.name].commands[commandName];
+        for (let commandName in skillFound.commands) {
+          let command = skillFound.commands[commandName];
           command.name = commandName;
           console.log(command);
           skill.commands[commandName] = command;
         }
 
-        for (let interactionName in skills[skill.name].interactions) {
-          let interaction = skills[skill.name].interactions[interactionName];
+        for (let interactionName in skillFound.interactions) {
+          let interaction = skillFound.interactions[interactionName];
           interaction.name = interactionName;
           console.log(interaction);
           skill.interactions[interactionName] = interaction;
         }
 
-        skill.dependencies = skills[skill.name].dependencies;
+        skill.dependencies = skillFound.dependencies;
 
         $('#skill-generate').hide();
         $('#skill-toolbox').show();

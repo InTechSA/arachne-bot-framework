@@ -9,37 +9,71 @@ const skillTemplateRegex = fs.readFileSync(path.join(__dirname, "./skillCodeRege
 const Skill = require('./Skill');
 
 exports.SkillManager = class SkillManager {
-  constructor(skillsDirectory) {
+  constructor(hub, skillsDirectory) {
+    this.hub = hub;
+
     this.skillController = require("./../../database/controllers/skillController");
     this.skillsDirectory = skillsDirectory;
 
     this.skills = {
       *[Symbol.iterator]() {
-        yield* Object.entries(this);
+        yield* Object.values(this);
       }
     };
 
     this.commands = {
       *[Symbol.iterator]() {
-        yield* Object.entries(this);
+        yield* Object.values(this);
       }
     };
 
     this.intents = {
       *[Symbol.iterator]() {
-        yield* Object.entries(this);
+        yield* Object.values(this);
       }
     };
 
     this.interactions = {
       *[Symbol.iterator]() {
-        yield* Object.entries(this);
+        yield* Object.values(this);
       }
     };
 
     this.pipes = {
       *[Symbol.iterator]() {
-        yield* Object.entries(this);
+        yield* Object.values(this);
+      }
+    };
+  }
+
+  spawnOverseer(skillName) {
+    return {
+      getItem: (key) => {
+        return this.hub.StorageManager.getItem(skillName, key);
+      },
+      storeItem: (key, value) => {
+        return this.hub.StorageManager.storeItem(skillName, key, value);
+      },
+      createHook: (messageOnDelete) => {
+        return this.hub.HookManager.create(skillName, messageOnDelete);
+      },
+      removeHook: (hookId) => {
+        return this.hub.HookManager.remove(hookId);
+      },
+      useHook: (hookId, message, options) => {
+        return this.hub.HookManager.execute(hookId, message, options);
+      },
+      createPipe: (handler, secret) => {
+        return this.hub.PipeManager.create(skillName, handler, secret);
+      },
+      createPipeWithHook: (handler, secret) => {
+        return this.hub.PipeManager.createWithHook(skillName, handler, secret);
+      },
+      handleCommand: (cmd, { phrase, data }) => {
+        return this.hub.handleCommand(cmd, { phrase, data });
+      },
+      log: (log) => {
+        return this.hub.LogManager.log(skillName, log);
       }
     }
   }
@@ -48,7 +82,7 @@ exports.SkillManager = class SkillManager {
   // TODO: REFACTORED
 
   hasSkill(name) {
-    return [...this.skills].includes(name);
+    return Object.keys(this.skills).includes(name);
   }
 
   /** Get a skill by name.
@@ -57,7 +91,22 @@ exports.SkillManager = class SkillManager {
    * @return {Skill} Skill found (nullable).
    */
   getSkill(name) {
-    return this.skills[name];
+    return Promise.resolve().then(() => {
+      if (!this.skills[name]) {
+        const error = new Error("Sill not found");
+        error.code = 404;
+        throw error;
+      }
+      return this.skills[name];
+    });
+  }
+
+  /** Get list of skills.
+   * 
+   * @return {Promise} Promise to list of skills.
+   */
+  getSkills() {
+    return Promise.resolve([...this.skills]);
   }
 
   /** Validate a skill Object against other skills registered.
@@ -77,13 +126,13 @@ exports.SkillManager = class SkillManager {
       if (this.skills[skill.name]) {
         throw new Error(`[${skill.name}] Skill ${skill.name} already defined.`);
       }
-      
+
       //////////////////////////////////////////////////////////////////////
       // Skill commands validity
       if (!skill.commands) {
         throw new Error(`[${skill.name}] Skill.commands is not defined.`);
       }
-      
+
       // Skill command word unicity.
       Object.values(skill.commands).forEach(command => {
         if (this.commands[command.cmd]) {
@@ -125,7 +174,7 @@ exports.SkillManager = class SkillManager {
       if (!skill.interactions) {
         throw new Error(`[${skill.name}] Skill.interactions is not defined.`);
       }
-      
+
       // Skill pipe name unicity
       Object.values(skill.pipes).forEach(pipe => {
         if (this.pipes[pipe.name]) {
@@ -136,7 +185,7 @@ exports.SkillManager = class SkillManager {
 
       // Skill does not have conflicts with already loaded skills.
 
-      
+
       //////////////////////////////////////////////////////////////////////
       //
       // TODO: Validate the skill's code, execute unit testing on functions.
@@ -221,22 +270,25 @@ exports.SkillManager = class SkillManager {
       Object.values(skill.commands).forEach(command => {
         // Command are unique by their command word cmd. Force active to false.
         this.commands[command.cmd] = {
+          cmd: command.cmd,
           skill: skill.name,
           active: false
         };
       });
 
-      Object.values(skill.commands).forEach(intent => {
+      Object.values(skill.intents).forEach(intent => {
         // Intents are unique by their slug. Force active to false.
         this.intents[intent.slug] = {
+          slug: intent.slug,
           skill: skill.name,
           active: false
         };
       });
-      
+
       Object.values(skill.interactions).forEach(interaction => {
         // Interactions are unique by their name. Force active to false.
         this.interactions[interaction.name] = {
+          name: interaction.name,
           skill: skill.name,
           active: false
         };
@@ -245,6 +297,7 @@ exports.SkillManager = class SkillManager {
       Object.values(skill.pipes).forEach(pipe => {
         // Pipes are unique by their name. Force active to false.
         this.pipes[pipe.name] = {
+          name: pipe.name,
           skill: skill.name,
           active: false
         };
@@ -254,16 +307,79 @@ exports.SkillManager = class SkillManager {
     });
   }
 
-  /** Delete a skill.
+  /** Remove a skill from brain's memory (will not delete if from Database).
    * 
    * @param {String} name Name of the skill to delete.
    * @return {Promise} Promise to the deleted skill.
    */
   removeSkill(name) {
     return Promise.resolve().then(() => {
+      if (!this.skills[name]) {
+        return true;
+      }
+
+      logger.log(`\tRemoving skill \x1b[33m${name}\x1b[0m...`);
       delete this.skills[name];
+
+      logger.log(`\tRemoving linked Commands...`);
+      [...this.commands].forEach(command => {
+        if (command.skill === name) {
+          delete this.commands[command.cmd];
+        }
+      });
+
+      logger.log(`\tRemoving associated Intents...`);
+      [...this.intents].forEach(intent => {
+        if (intent.skill === name) {
+          delete this.intents[intent.slug];
+        }
+      });
+
+      logger.log(`\tRemoving linked Interactions...`);
+      [...this.interactions].forEach(interaction => {
+        if (interaction.skill === name) {
+          delete this.interactions[interaction.name];
+        }
+      });
+
+      logger.log(`\tRemoving linked Pipes...`);
+      [...this.pipes].forEach(pipe => {
+        if (pipe.skill === name) {
+          delete this.pipes[pipe.name];
+        }
+      });
+
+      logger.info('Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
+      delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/skill`))];
+      if (fs.existsSync(path.join(this.skillsDirectory, `/${name}/secret`))) {
+        delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/secret`))];
+      }
+
+      logger.info(`Skill \x1b[33m${name}\x1b[0m successfully removed.`);
       return true;
     });
+  }
+
+  /**
+   * Delete a skill from brain's memory and from database.
+   * @param {String} skillName - The name of the skill to remove.
+   * @return {Promise} Promise object resolves if success, reject otherwise.
+   */
+  deleteSkill(name) {
+    return this.removeSkill(name)
+      .then(() => {
+        logger.info(`Removing skill \x1b[33m${name}\x1b[0m from database...`);
+        return this.skillController.delete(name);
+      })
+      .then(() => {
+        try {
+          this.deleteFolderRecursive(path.join(this.skillsDirectory, "/" + name));
+          logger.info(`Successfully removed folder ${"/skills/" + name}`);
+          return;
+        } catch (err) {
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+        }
+      });
   }
 
   /** Activate a skill.
@@ -277,36 +393,20 @@ exports.SkillManager = class SkillManager {
    */
   activateSkill(name) {
     return Promise.resolve(name).then((name) => {
-        if (!this.skills[name]) {
-          throw new Error(`Skill ${name} is not defined.`);
-        }
-        return name;
-      })
+      if (!this.skills[name]) {
+        throw new Error(`Skill ${name} is not defined.`);
+      }
+      return name;
+    })
       .then((name) => this.skillController.toggle(name, true))
       .then(() => this.reloadSkill(name))
       .then((skill) => {
-        // Skill instanceof Skill and validated, re-added with active: false.
-        this.skills[name].active = true;
-
-        // activate all components
-        [...skill.commands].forEach(command => {
-          this.commands[command.cmd].active = true;
-        });
-
-        [...skill.intents].forEach(intent => {
-          this.intents[intent.slug].active = true;
-        });
-
-        [...skill.interactions].forEach(interaction => {
-          this.interactions[interaction.name].active = true;
-        });
-
-        [...skill.pipes].forEach(pipe => {
-          this.pipes[pipe.name].active = true;
-        });
-
-        logger.log(`\t\t... \x1b[32mactivated\x1b[0m`);
-        return true;
+        if (skill.active) {
+          logger.log(`\t\t... \x1b[32mactivated\x1b[0m`);
+        } else {
+          logger.log(`\t\t... \x1b[31mnot activated !\x1b[0m`)
+        }
+        return skill;
       });
   }
 
@@ -322,33 +422,11 @@ exports.SkillManager = class SkillManager {
       }
       return name;
     })
-    .then((name) => this.skillController.toggle(name, false))
-    .then(() => {
-      const skill = this.getSkill(skill);
-
-      // Skill instanceof Skill and validated, re-added with active: false.
-      this.skills[name].active = false;
-
-      // activate all components
-      [...skill.commands].forEach(command => {
-        this.commands[command.cmd].active = false;
+      .then((name) => this.skillController.toggle(name, false))
+      .then(() => {
+        logger.log(`\t\t... \x1b[32mdeactivated\x1b[0m`);
+        return true;
       });
-
-      [...skill.intents].forEach(intent => {
-        this.intents[intent.slug].active = false;
-      });
-
-      [...skill.interactions].forEach(interaction => {
-        this.interactions[interaction.name].active = false;
-      });
-
-      [...skill.pipes].forEach(pipe => {
-        this.pipes[pipe.name].active = false;
-      });
-
-      logger.log(`\t\t... \x1b[32mdeactivated\x1b[0m`);
-      return true;
-    });
   }
 
   /** Activate a command.
@@ -383,6 +461,19 @@ exports.SkillManager = class SkillManager {
     });
   }
 
+  hasCommand(cmd) {
+    if (!this.commands[cmd] || !this.commands[cmd].active) {
+      // command is unactive or undefined.
+      return false;
+    }
+    if (!this.skills[this.commands[cmd].skill] || !this.skills[this.commands[cmd].skill].active) {
+      // command skill is undefined or inactive.
+      return false;
+    }
+
+    return true;
+  }
+
   /** Activate an intent.
    * 
    * @param {String} slug Intent slug to activate.
@@ -391,7 +482,7 @@ exports.SkillManager = class SkillManager {
   activateIntent(slug) {
     return Promise.resolve().then(() => {
       if (!this.intents[slug]) {
-          throw new Error(`Intent ${slug} is not defined.`);
+        throw new Error(`Intent ${slug} is not defined.`);
       }
 
       this.intents[slug].active = true;
@@ -413,6 +504,20 @@ exports.SkillManager = class SkillManager {
       this.intents[slug].active = false;
       return false;
     });
+  }
+
+  hasIntent(slug) {
+    if (!this.intents[slug] || !this.intents[slug].active) {
+      // Intent is unactive or undefined.
+      return false;
+    }
+
+    if (!this.skills[this.intents[slug].skill] || !this.skills[this.intents[slug].skill].active) {
+      // Intent skill is undefined or inactive.
+      return false;
+    }
+
+    return true;
   }
 
   /** Activate a pipe.
@@ -468,174 +573,123 @@ exports.SkillManager = class SkillManager {
       throw new Error("Interact can't be deactivated.");
     });
   }
-  
-  // TODO: TO REFACTOR
-  ////////////////////////////
 
-  /**
-   *  Reload a specific skill. (Remove it, reload it, add it).
-   * @param {String} skillName The name of the skill to reload.
-   * @return {Promise} Promise object resolve if success, reject otherwise.
+  /** Load a skill from folder.
+   * 
+   * @param {String} name Name of the skill to load (folder name).
+   * @return {Promise} Promise to Skill object resolve if success, reject otherwise.
    */
-  reloadSkill(skillName) {
-    return new Promise((resolve, reject) => {
-      if (this.skills.has(skillName)) {
+  loadSkill(name) {
+    return this.removeSkill(name).then(() => {
+      return this.skillController.is_active(name);
+    })
+      .then(status => {
+        logger.log(`Loading skill \x1b[33m${name}\x1b[0m...`);
+
+        // Clear require cache for this skill.
+        delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/skill`))];
+        if (fs.existsSync(path.join(this.skillsDirectory, `/${name}/secret`))) {
+          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/secret`))];
+        }
+
+        const overseer = this.spawnOverseer(name);
+        let skill = new Skill(name, overseer);
         try {
-          logger.info(`Reloading skill \x1b[33m${skillName}\x1b[0m...`);
+          require(path.join(this.skillsDirectory, `/${name}/skill`))(skill);
+          // Activate skill if it was already active.
+          return this.addSkill(skill).then(skill => {
+            if (status) {
+              this.skills[name].active = true;
 
-          logger.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
-          logger.log(`\tRemoving associated Intents...`);
-          let skill = this.skills.get(skillName);
-          if (skill.intents) {
-            for (let intent in skill.intents) {
-              logger.log("\t\tRemoving " + intent);
-              this.intents.remove(skill.intents[intent].slug);
+              // activate all components
+              Object.values(skill.commands).forEach(command => {
+                this.commands[command.cmd].active = true;
+              });
+
+              Object.values(skill.intents).forEach(intent => {
+                this.intents[intent.slug].active = true;
+              });
+
+              Object.values(skill.interactions).forEach(interaction => {
+                this.interactions[interaction.name].active = true;
+              });
+
+              Object.values(skill.pipes).forEach(pipe => {
+                this.pipes[pipe.name].active = true;
+              });
+
+              return skill;
             }
-          }
-
-          logger.log(`\tRemoving linked Commands...`);
-          if (skill.commands) {
-            for (let command in skill.commands) {
-              logger.log("\t\tRemoving " + command);
-              this.commands.remove(command);
-            }
-          }
-
-          logger.log(`\tRemoving linked Interactions...`);
-          if (skill.interactions) {
-            for (let interaction in skill.interactions) {
-              logger.log("\t\tRemoving " + interaction);
-              this.interactions.remove(interaction);
-            }
-          }
-
-          logger.log(`\tRemoving skill...`);
-          this.skills.remove(skillName);
-          logger.info(`Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
-
-          logger.info('Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
-          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
-          if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
-            delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
-          }
-
-          this.loadSkill(skillName).then(() => {
-            return resolve()
-          }).catch((err) => {
-            logger.error(err);
-            return reject();
+            return skill;
           });
         } catch (e) {
-          logger.error(e.stack);
-          return reject();
+          // Could not require the skill. Reset the skill to an empty one and add it to the brain.
+          logger.error(`"${name}" could not be required. Replaced by an empty skill.\x1b[0m`);
+          skill = new Skill(name, overseer);
+          return this.addSkill(skill);
         }
-      } else {
-        reject();
-      }
-    });
+      })
+      .then((skill) => {
+        logger.log(`"${name}" successfully loaded ${skill.active ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
+        return skill;
+      })
+      .catch((err) => {
+        logger.error(`"${name}" could not load!\x1b[0m`);
+        logger.error(err);
+        throw err;
+      });
   }
 
-  /**
-   * Load skill from /logic/skills folder.
-   * @param {String} skillName The name of the skill to load.
-   * @return {Promise} Promise object resolve if success, reject otherwise.
+  /** Reload a skill.
+   * 
+   * @param {String} name Name of the skill to reload.
+   * @return {Promise} Promise to Skill object resolve if success, reject otherwise.
    */
-  loadSkill(skillName) {
-    return this.skillController.is_active(skillName).then(status => {
-      logger.log(`\tLoading skill \x1b[33m${skillName}\x1b[0m...`);
-      delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
-      if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
-        delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
-      }
-      this.skills.add(skillName, {});
-      this.skills.get(skillName).active = false;
-      let skill = require(path.join(this.skillsDirectory, `/${skillName}/skill`));
-      this.skills.add(skillName, skill);
-
-      for (let intentName in skill.intents) {
-        let intent = skill.intents[intentName];
-        intent.active = status;
-        this.intents.add(intent.slug, intent);
-      }
-
-      for (let commandName in skill.commands) {
-        let command = skill.commands[commandName];
-        command.active = status;
-        this.commands.add(command.cmd, command);
-      }
-
-      for (let interactionName in skill.interactions) {
-        let interaction = skill.interactions[interactionName];
-        interaction.active = status;
-        this.interactions.add(interaction.name, interaction);
-      }
-
-      this.skills.get(skillName).active = status;
-      logger.log(`\t..."${skillName}" successfully loaded`);
-      logger.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`)
-      return status;
-    }).catch((err) => {
-      logger.error(`\x1b[31m\t..."${skillName}" could not load!\x1b[0m`);
-      logger.error(err);
-      throw err;
-    });
+  reloadSkill(name) {
+    return this.loadSkill(name);
   }
 
-  /**
-   * Load skills from /logic/skills folder.
+  /** Load skills from /logic/skills folder by names.
    * Store commands and intents into memory : skills, commands and intents.
+   * 
    * @param {String[]} skillsToLoad The names of skills to load.
    */
   loadSkills(skillsToLoad) {
-    logger.info(`Loading skills...`);
-    let loaders = [];
-    for (let skillName of skillsToLoad) {
-      this.skills.add(skillName, {});
-      loaders.push(
-        this.skillController.is_active(skillName).then(status => {
-          logger.log(`\tLoading skill "${skillName}"...`);
-          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
-          if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret`))) {
-            delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
-          }
-          this.skills.get(skillName).active = false;
-          let skill = require(path.join(this.skillsDirectory, `/${skillName}/skill`));
-          this.skills.add(skillName, skill);
+    return Promise.resolve().then(() => {
+      logger.info(`Loading skills...`);
 
-          for (let intentName in skill.intents) {
-            let intent = skill.intents[intentName];
-            intent.active = status;
-            this.intents.add(intent.slug, intent);
-          }
+      const loaders = [];
+      skillsToLoad.forEach((name) => {
+        loaders.push(() => {
+          return this.loadSkill(name);
+        });
+      });
 
-          for (let commandName in skill.commands) {
-            let command = skill.commands[commandName];
-            command.active = status;
-            this.commands.add(command.cmd, command);
-          }
-
-          for (let interactionName in skill.interactions) {
-            let interaction = skill.interactions[interactionName];
-            interaction.active = status;
-            this.interactions.add(interaction.name, interaction);
-          }
-
-        this.skills.get(skillName).active = status;
-        logger.log(`\t..."${skillName}" successfully loaded`);
-        logger.log(`\t\t... ${status ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
-      }).catch(err => {
-        logger.error(`\x1b[31m\t..."${skillName}" could not load!\x1b[0m`);
-        logger.log(err);
-      })
-    );
-    }
-
-    Promise.all(loaders).then(() => {
-      logger.log("               ");
-      logger.info(`Loaded Skills: ${this.skills.list.join(", ")}`);
-      logger.info(`Plugged Intents: ${this.intents.list.join(", ")}`);
-      logger.info(`Available Commands: ${this.commands.list.join(", ")}`);
-    })
+      return loaders.reduce((chain, current) => {
+        return chain.then((results) => {
+          return current(results).then(res => results).catch(e => {
+            results.push(e);
+            return results;
+          });
+        });
+      }, Promise.resolve([])).then(errors => {
+        if (errors.length >= 1) {
+          let message = `> [ERROR] Could not load all skills...\n`;
+          message += errors.map(error => "\t..." + error.message).join("\n");
+          message += `\n... These skills were not loaded.`
+          logger.error(message);
+        }
+      }).then(() => {
+        logger.info(`Completed load of skills.`);
+        logger.log("               ");
+        logger.info(`Loaded Skills: ${[...this.skills].map(skill => skill.name).join(", ")}`);
+        logger.info(`Available Commands: ${[...this.commands].map(command => command.cmd).join(", ")}`);
+        logger.info(`Plugged Intents: ${[...this.intents].map(intent => intent.slug).join(", ")}`);
+        logger.info(`Handled Interactions: ${[...this.interactions].map(interaction => interaction.name).join(", ")}`);
+        logger.info(`Opened Pipes: ${[...this.pipes].map(pipe => pipe.name).join(", ")}`);
+        return;
+      });
+    });
   }
 
   /**
@@ -647,6 +701,24 @@ exports.SkillManager = class SkillManager {
     return fs.readdirSync(srcpath).filter(function (file) {
       return fs.statSync(path.join(srcpath, file)).isDirectory();
     });
+  }
+
+  /**
+   * Delete everything in a folder (recursive, including the folder).
+   * @param {String} path - folder to remove.
+   */
+  deleteFolderRecursive(path) {
+    if (fs.existsSync(path)) {
+      fs.readdirSync(path).forEach(function (file, index) {
+        var curPath = path + "/" + file;
+        if (fs.lstatSync(curPath).isDirectory()) { // recurse
+          this.deleteFolderRecursive(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(path);
+    }
   }
 
   /**
@@ -688,57 +760,49 @@ exports.SkillManager = class SkillManager {
   /**
    * Load skills from skills folder (on bot start).
    * And save skills that are only in the local folders but not in the DB ( with their secret );
+   * @returns {Promise}
    */
   loadSkillsFromFolder() {
-    let skillsFolders;
-    try {
+    return Promise.resolve().then(() => {
+      let skillsFolders;
       logger.info(` Loading skills directory: "\x1b[4m${"/skills"}\x1b[0m"...`);
       skillsFolders = this.getDirectories(this.skillsDirectory)
       logger.info(` Skills folders found: \x1b[33m${skillsFolders.join(", ")}\x1b[0m.`);
-      this.skillController.get().then((skills_db) => {
+      return this.skillController.get().then(skills_db => {
         const skillsNameInDb = skills_db.map((skill => skill.name));
         const skillsToPersist = skillsFolders.filter(skillName => !skillsNameInDb.includes(skillName));
-        const loaders = skillsToPersist.map((skill) => {
+        const loaders = skillsToPersist.map(skill => {
           return Promise.resolve().then(() => {
-              return new Promise((resolve, reject) => {
-                logger.log(`\t... Persist skill ${skill} in database...`);
-                // Extract the skill code
-                const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
-                // Extract the secret ( if it exist )
-                var secret = {};
-                if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
-                  secret = require(this.skillsDirectory + "/" + skill + "/secret");
-                }
-                return resolve(this.skillController.create_skill(skill, skill_code, secret).then(() => {
-                  logger.log(`\t... Persisted skill ${skill} in database...`);
-                }));
-              });
-          });
+            logger.log(`\t... Persist skill ${skill} in database...`);
+
+            // Extract the skill code
+            const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
+            // Extract the secret ( if it exist )
+            var secret = {};
+            if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
+              secret = require(this.skillsDirectory + "/" + skill + "/secret");
+            }
+
+            return this.skillController.create_skill(skill, skill_code, secret).then(() => {
+              logger.log(`\t... Persisted skill ${skill} in database...`);
+            });
+          })
         });
 
         logger.info(`Persist local skills in database...`);
-        
-        Promise.all(loaders).then(() => {
-          if(loaders.length > 0) {
+
+        return Promise.all(loaders).then(() => {
+          if (loaders.length > 0) {
             logger.info("Inserted successfully new skills  " + skillsToPersist.join(',') + " from local to the database");
           } else {
             logger.info("No local skills to persist.");
           }
-          /**
-            Load skills on module require (bot start).
-          */
-          let skillsToLoad = skillsFolders;
 
-          this.loadSkills(skillsToLoad);
-        }).catch((err) => {
-          logger.error(" Error inserting new skill from local dir to the database : " + err);
+          // Load skills on module require (bot start).
+          return this.loadSkills(skillsFolders);
         });
-      }).catch((err) => {
-        logger.error(" Error retrieiving the skills from the database : " + err);
       });
-    } catch (e) {
-      logger.error(e.stack);
-    }
+    });
   }
 
   /**
@@ -748,7 +812,7 @@ exports.SkillManager = class SkillManager {
    */
   getSkillCode(skillName) {
     return new Promise((resolve, reject) => {
-      if (this.skills.has(skillName)) {
+      if (this.skills[skillName]) {
         fs.readFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), 'utf8', (err, data) => {
           if (err) {
             logger.error(err.stack);
@@ -764,7 +828,7 @@ exports.SkillManager = class SkillManager {
   }
 
   /**
-   * Save a skill's code before saving it.
+   * Validate a skill's code before saving it.
    * @param {String} code - The code of the skill to validate.
    * @return {Promise} Promise object (true, null) if validated, (false, string reason) otherwise.
    */
@@ -778,6 +842,82 @@ exports.SkillManager = class SkillManager {
       }
 
       return resolve(true, null);
+    });
+  }
+
+  /**
+   * Get secrets for a skill.
+   * @param {String} skillName - The name of the skill to get secret of.
+   * @return {Promise} Promise to the secret array of key-value pair.
+   */
+  getSkillSecret(skillName) {
+    return new Promise((resolve, reject) => {
+      if (this.skills[skillName]) {
+        if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret.js`))) {
+          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
+          const secrets = require(path.join(this.skillsDirectory, `/${skillName}/secret`));
+          let secret = [];
+          for (let [key, value] of Object.entries(secrets)) {
+            secret.push([key, value]);
+          }
+          return resolve(secret);
+        } else {
+          return resolve([]);
+        }
+      } else {
+        return resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Update a skill's secrets.
+   * 
+   * @param {String} skillName - The name of the skill to update secret of.
+   * @param {Array} secrets - Key-value apir array.
+   */
+  updateSkillSecret(name, secrets) {
+    return new Promise((resolve, reject) => {
+      if (this.skills[name]) {
+        let secret = {};
+        for (let [key, value] of secrets) {
+          if (key.length > 0) {
+            // Don't retain empty keys.
+            secret[key] = value;
+          }
+        }
+
+        logger.info(`Saving secret of skill \x1b[33m${name}\x1b[0m...`);
+        logger.log(`\t... Push ${name} secret to database...`);
+        this.skillController.save_secret(name, secret).then(skill => {
+          let filePath = path.join(this.skillsDirectory, `/${name}/secret.js`);
+          // Using stream is the recommended method to edit files with potentiel concurrency.
+          let stream = fs.createWriteStream(filePath);
+          stream.on("error", (error) => {
+            logger.error(error);
+            return reject();
+          });
+          stream.on("finish", () => {
+            logger.log(`\t... Reload skill.`);
+
+            delete require.cache[require.resolve(filePath)];
+            this.reloadSkill(name).then(() => {
+              return resolve();
+            }).catch((err) => {
+              logger.error(err);
+              return reject();
+            });
+          });
+          stream.write(`module.exports = ${JSON.stringify(secret)};`, 'utf8');
+          stream.end();
+        }).catch(err => {
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          return reject(new Error("Could not push skill code."));
+        });
+
+      } else {
+        return reject({ code: 404, message: "No skill named " + name });
+      }
     });
   }
 
@@ -826,157 +966,23 @@ exports.SkillManager = class SkillManager {
     });
   }
 
-  /**
-   * Remove a skill.
-   * @param {String} skillName - The name of the skill to remove.
-   * @return {Promise} Promise object resolves if success, reject otherwise.
-   */
-  deleteSkill(skillName) {
-    return new Promise((resolve, reject) => {
-      logger.info(`Deleting skill \x1b[33m${skillName}\x1b[0m...`);
-
-      logger.log(`\tRemoving skill \x1b[33m${skillName}\x1b[0m...`);
-      logger.log(`\tRemoving associated Intents...`);
-      let skill = this.skills.get(skillName);
-      if (skill.intents) {
-        for (let intent in skill.intents) {
-          logger.log("\t\tRemoving " + intent);
-          this.intents.remove(skill.intents[intent].slug);
-        }
+  handleCommand(cmd, phrase = "", data = {}) {
+    return Promise.resolve().then(() => {
+      if (!this.hasCommand(cmd)) {
+        throw new Error("Command is not active or undefined.");
       }
-
-      logger.log(`\tRemoving linked Commands...`);
-      if (skill.commands) {
-        for (let command in skill.commands) {
-          logger.log("\t\tRemoving " + command);
-          this.commands.remove(command);
-        }
-      }
-
-      logger.log(`\tRemoving linked interactions...`);
-      if (skill.interactions) {
-        for (let interaction in skill.interactions) {
-          logger.log("\t\tRemoving " + interaction);
-          this.interactions.remove(interaction);
-        }
-      }
-
-      logger.log(`\tRemoving skill...`);
-      this.skills.remove(skillName);
-      logger.info(`Skill \x1b[33m${skillName}\x1b[0m successfully removed.`);
-
-      logger.info(`Clearing cache for skill \x1b[33m${skillName}\x1b[0m`);
-      delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/skill`))];
-
-      logger.info(`Removing skill \x1b[33m${skillName}\x1b[0m from database...`);
-      this.skillController.delete(skillName).then(() => {
-        logger.info(`Removing files for skill \x1b[33m${skillName}\x1b[0m...`);
-        try {
-          this.deleteFolderRecursive(path.join(this.skillsDirectory, "/" + skillName));
-          logger.info(`Successfully removed folder ${"/skills/" + skillName}`);
-          return resolve();
-        } catch (e) {
-          return reject({ message: "Could not delete folder " + "/skills/" + skillName });
-        }
-      }).catch(err => {
-        logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
-        return reject(new Error("Could not delete skill."));
-      })
+  
+      return this.skills[this.commands[cmd].skill].commands[cmd].handler({ phrase, data });
     });
   }
 
-
-  /**
-   * Delete everything in a folder (recursive, including the folder).
-   * @param {String} path - folder to remove.
-   */
-  deleteFolderRecursive(path) {
-    if (fs.existsSync(path)) {
-      fs.readdirSync(path).forEach(function (file, index) {
-        var curPath = path + "/" + file;
-        if (fs.lstatSync(curPath).isDirectory()) { // recurse
-          this.deleteFolderRecursive(curPath);
-        } else { // delete file
-          fs.unlinkSync(curPath);
-        }
-      });
-      fs.rmdirSync(path);
-    }
-  }
-
-  /**
-   * Get secrets for a skill.
-   * @param {String} skillName - The name of the skill to get secret of.
-   * @return {Promise} Promise to the secret array of key-value pair.
-   */
-  getSkillSecret(skillName) {
-    return new Promise((resolve, reject) => {
-      if (this.skills.has(skillName)) {
-        if (fs.existsSync(path.join(this.skillsDirectory, `/${skillName}/secret.js`))) {
-          delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${skillName}/secret`))];
-          const secrets = require(path.join(this.skillsDirectory, `/${skillName}/secret`));
-          let secret = [];
-          for (let [key, value] of Object.entries(secrets)) {
-            secret.push([key, value]);
-          }
-          return resolve(secret);
-        } else {
-          return resolve([]);
-        }
-      } else {
-        return resolve(null);
+  handleIntent(slug, entities = {}, data = {}) {
+    return Promise.resolve().then(() => {
+      if (!this.hasIntent(slug)) {
+        throw new Error("Intent is not active or undefined.");
       }
-    });
-  }
-
-  /**
-   * Update a skill's secrets.
-   * 
-   * @param {String} skillName - The name of the skill to update secret of.
-   * @param {Array} secrets - Key-value apir array.
-   */
-  updateSkillSecret(skillName, secrets) {
-    return new Promise((resolve, reject) => {
-      if (this.skills.has(skillName)) {
-        let secret = {};
-        for (let [key, value] of secrets) {
-          if (key.length > 0) {
-            // Don't retain empty keys.
-            secret[key] = value;
-          }
-        }
-
-        logger.info(`Saving secret of skill \x1b[33m${skillName}\x1b[0m...`);
-        logger.log(`\t... Push ${skillName} secret to database...`);
-        this.skillController.save_secret(skillName, secret).then(skill => {
-          let filePath = path.join(this.skillsDirectory, `/${skillName}/secret.js`);
-          // Using stream is the recommended method to edit files with potentiel concurrency.
-          let stream = fs.createWriteStream(filePath);
-          stream.on("error", (error) => {
-            logger.error(error);
-            return reject();
-          });
-          stream.on("finish", () => {
-            logger.log(`\t... Reload skill.`);
-
-            delete require.cache[require.resolve(filePath)];
-            this.reloadSkill(skillName).then(() => {
-              return resolve();
-            }).catch((err) => {
-              logger.error(err);
-              return reject();
-            });
-          });
-          stream.write(`module.exports = ${JSON.stringify(secret)};`, 'utf8');
-          stream.end();
-        }).catch(err => {
-          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
-          return reject(new Error("Could not push skill code."));
-        });
-
-      } else {
-        return reject({ code: 404, message: "No skill named " + skillName });
-      }
+  
+      return this.skills[this.intents[slug].skill].intents[slug].handler({ entities, data });
     });
   }
 }
