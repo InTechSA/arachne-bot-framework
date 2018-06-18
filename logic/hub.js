@@ -98,7 +98,7 @@ exports.ConnectorManager = ConnectorManager;
 
 // Create and export a new ThreadManager
 const threadComponent = require('./components/ThreadManager');
-let ThreadManager = new threadComponent.ThreadManager(SkillManager.interactions);
+let ThreadManager = new threadComponent.ThreadManager(SkillManager);
 exports.ThreadManager = ThreadManager;
 
 // Create and export a new StorageManager

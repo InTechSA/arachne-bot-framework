@@ -574,6 +574,24 @@ exports.SkillManager = class SkillManager {
     });
   }
 
+  /** Is the interaction active ?
+   * 
+   * @param {String} name Name of the interaction.
+   */
+  hasInteraction(name) {
+    if (!this.interactions[name] || !this.interactions[name].active) {
+      // Interaction is unactive or undefined.
+      return false;
+    }
+
+    if (!this.skills[this.interactions[name].skill] || !this.skills[this.interactions[name].skill].active) {
+      // Interaction skill is undefined or inactive.
+      return false;
+    }
+
+    return true;
+  }
+
   /** Load a skill from folder.
    * 
    * @param {String} name Name of the skill to load (folder name).
@@ -983,6 +1001,16 @@ exports.SkillManager = class SkillManager {
       }
   
       return this.skills[this.intents[slug].skill].intents[slug].handler({ entities, data });
+    });
+  }
+
+  handleInteraction(name, thread, { phrase, data } = {}) {
+    return Promise.resolve().then(() => {
+      if (!this.hasInteraction(name)) {
+        throw new Error("Interaction is not active or undefined.");
+      }
+
+      return this.skills[this.interactions[name].skill].interactions[name].handler(thread, { phrase, data });
     });
   }
 }

@@ -1165,14 +1165,14 @@ const help = {
     title: 'How to add a new command to a skill?',
     content: `
       <p>To create a new command, you can use the helper button in the left pannel "Add Command".</p>
-      <p>To manually add the command, first create a handler for the command:</p>
+      <p>To manually add the command, call the <code>addCommand</code> method of the skill:</p>
       <code style="white-space: pre-wrap;">
-        function helloHandler({ phrase = "", data }) {
+        skill.addCommand("hello", "say-hello", ({ phrase, data }) => {
           return Promise.resolve().then(() => {
             /*
               Your code should go there. When you are ready to send the message, use the following return statement:
             */
-            logger.log('helloSkill', "A user requested the hello command.");
+            skill.log("A user requested the hello command.");
             return {
               message: {
                 title: 'Hello, world!',
@@ -1180,55 +1180,33 @@ const help = {
               }
             };
           });
-        }
+        });
       </code>
       <p>Don't forget the Promise or your skill will not work! Don't hesitate to return custom error messages instead of throwing errors.</p>
-      <p>You then need to declare the command in the <code>commands</code> object of the skill:</p>
-      <code style="white-space: pre-wrap;">
-        let commands = {
-          say-hello : {
-            cmd: 'hello',
-            execute: helloHandler,
-            expected_args: []
-          }
-        };
-      </code>
-      <p>The <code>cmd</code> property is the word the user will type to call the command: <code>!hello</code>.</p>
+      <p>The first parameter <code>cmd</code> is the word the user will type to call the command: <code>!hello</code>.</p>
     `.trim()
   },
   'intents': {
     title: 'How to add a new nlp intent to a skill?',
     content: `
       <p>Skill may be linked to natural language intents, you can use the helper button in the left pannel "Add Intent".</p>
-      <p>To manually add the intent, first create a handler for the intent:</p>
+      <p>To manually add the intent, call the <code>addIntent(slug, name, handler)</code> method of the skill:</p>
       <code style="white-space: pre-wrap;">
-        function weatherIntentHandler({ entities: { location: location = "" }, phrase = "", data }) {
+        skill.addIntent("weather", "get-weather", { entities: { location: location = "" }, phrase = "", data }) => {
           return Promise.resolve().then(() => {
             /*
               Your code should go there. You may return a message object, but usually, you will call a command handler
               that is the command-mode equivalent of the user's intent, usually by creating a "phrase" with the entities.
             */
             const phrase = location[0];
-            logger.log('weatherSkill', "Calling the getWeatherHandler command for " + phrase);
-            return getWeatherHandler({ phrase, data });
+            skill.log("Calling the getWeatherHandler command for " + phrase);
+            return skill.handleCommand("weather", ({ phrase, data });
           });
-        }
+        });
       </code>
       <p>Entities are arrays of values found in the initial user's phrase.</p>
-      <p>You then need to declare the indent in the <code>intents</code> object of the skill:</p>
-      <code style="white-space: pre-wrap;">
-        let intents = {
-          'get-weather': {
-            slug: 'weather',
-            handle: weatherIntentHandler,
-            expected_entities: ['location']
-          }
-        };
-      </code>
       <p>
-        The <code>slug</code> property is the exact name of the intent recognized by your NLU processing service (forced to lowercase).
-        <br>
-        Your handler will not be called if some entities are missing, and will only receive the listed entities.
+        The first paramater <code>slug</code> is the exact name of the intent recognized by your NLU processing service (forced to lowercase).
       </p>
     `.trim()
   },
@@ -1236,9 +1214,9 @@ const help = {
     title: 'How to create a conversation with the user?',
     content: `
       <p>To create a conversation flow, you can use the helper button in the left pannel "Add interaction".</p>
-      <p>To manually add the conversation flow, first create a handler for the interaction:</p>
+      <p>To manually add the conversation flow, call the <code>addInteraction(name, handler)</code> method of the skill:</p>
       <code style="white-space: pre-wrap;">
-        function noYesHandler(thread, { phrase, data }) {
+        skill.addInteraction("noYesHandler", (thread, { phrase, data }) => {
           return Promise.resolve().then(() => {
             /*
               The thread object, given by the brain, allow the skill to getData('key') and setData('key', value) in
@@ -1262,7 +1240,7 @@ const help = {
               }
             }
           });
-        }
+        });
       </code>
       <p>To enter in interactive mode, simply add <code>interactive: true</code> in the returned message object. The brain will continue the current thread. To create a new one, add a <code>thread</code> object in addition to the <code>interactive: true</code>:</p>
       <code style="white-space: pre-wrap;">
@@ -1281,15 +1259,6 @@ const help = {
           text: question
         }
       </code>
-      <p>Finally, add the conversation handler to the <code>interactions<code> declaration of the skill:</p>
-      <code style="white-space: pre-wrap;">
-        let interactions = {
-          'no-yes': {
-            name: "no-yes",
-            interact: noYesHandler
-          }
-        };
-      </code>
     `.trim(),
   },
   'secrets': {
@@ -1305,7 +1274,7 @@ const help = {
       <p>You may need to call another skill from within yours (like getting a one-use token for an external API that is used by several skills). You can use the <strong>Use another skill</strong> helper in the left pannel.</p>
       <p>To add the interaction manually, call the following code from within your function handler:</p>
       <code style="white-space: pre-wrap;">
-        return overseer.handleCommand('get-ad-token').then(response => {
+        skill.execute("hello", { phrase, data }).then(response => {
           // The response is the response given by the skill, containing the message and eventually additionnal data.
           // Do something with the token, which will eventually return a message object.
           return { message: {} };
@@ -1339,20 +1308,20 @@ const help = {
           res.data.content.forEach(app => {
              text += \`- *$\{app.name}*: _$\{app.status}_\`;
           });
-          return resolve({
+          return {
               message: {
                   title: \`Applications on $\{phrase}\`,
                   private: true,
                   text
               }
-          });
+          };
         }).catch(err => {
-          return resolve({
+          return {
             message: {
                 title: 'Could not get applications list.',
                 text: 'The Brokkr service is not accessible.'
             }
-          });
+          };
         });
       </code>
       <p>Don't forget to catch errors, you should always return a message to the user.</p>
@@ -1363,29 +1332,24 @@ const help = {
     content: `
       <p>You may need to wait for external API calls, like a github integration or another webhook. You can request a Pipe that will call your skill when to hook is received:</p>
       <code style="white-space: pre-wrap;">
-        overseer.PipeManager.create("hello", "helloPipeHandler").then(pipe => {
+        skill.createPipe("helloPipeHandler", { withHook: true }).then(pipe => {
           // Pipe created :)
           // Pipe is an object that contain its identifier.
           // The url will be https://thebrainurl/pipes/{skillName}/{identifier}
+          // Using withHook: true will populate the pipe with a hook object
+          // That can be used to contact the adapter.
         });
       </code>
       <p>You need to create a handler for your pipe.</p>
       <code style="white-space: pre-wrap;">
-        function pipeHandler(pipeIdentifier, { data, headers }) {
+        skill.addPipe("helloPipeHandler", (pipeIdentifier, { data, headers, hookId }) => {
           /*
             Will be called by the brain when the url is called with a POST request,
             data will by the body, and headers will contain the request headers (if any).
+            If te pipe was created with withHook: true, hookId will be defined.
           */
-        }
-      </code>
-      <p>Declare your pipe in the <strong>pipes</strong> skill object.</p>
-      <code style="white-space: pre-wrap;">
-        let pipes = {
-          'helloPipeHandler': {
-              name: 'helloPipeHandler',
-              transmit: pipeHandler
-          }
-        };
+          return skill.useHook(hookId, message, options);
+        });
       </code>
       <p>If you need to send back a message to a user or a channel, you must use <strong>hooks</strong> (see the appropriate help section).</p>
     `.trim()
@@ -1395,7 +1359,7 @@ const help = {
     content: `
       <p>For security reasons, skills can't send messages to a channel without authorization. You need the request a hook to the brain and wait for the Adapter to confirm it.</p>
       <code style="white-space: pre-wrap;">
-        overseer.HookManager.create("hello").then((hook) => {
+        skill.createHook().then(hook => {
           return resolve({
             message: {
                 title: "Hook request",
@@ -1408,9 +1372,7 @@ const help = {
       </code>
       <p>Most adapters will validate immediatly the hook, but some may ask the user. Once your hook is valid, it will be executable with:</p>
       <code style="white-space: pre-wrap;">
-        return overseer.HookManager.execute(hook.id, {
-          message
-        }, { deleteHook: false });
+        return skill.useHook(hookId, { message }, { deleteHook: false });
       </code>
       <p>
         The second argument being the skill's response with the message. Set deleteHook to true to delete the hook after execution.
@@ -1422,21 +1384,21 @@ const help = {
   'storage': {
     title: 'How to store persistent data?',
     content: `
-      <p>You may need to keep data event if the brain reload, like hooks id, alarms, or some other things. To do so, use the StorageManage from the brain:</p>
+      <p>You may need to keep data event if the brain reload, like hooks id, alarms, or some other things. To do so, use the getItem and storeItem methodes from the skill:</p>
       <code style="white-space: pre-wrap;">
         const hooks = [];
         hooks.push(...);
-        overseer.StorageManager.storeItem("hello", "hooks", hooks).then(() => {
+        skill.storeItem("hooks", hooks).then(() => {
           // Object stored!
-        }).catch(err => overseer.log("hello", err));
+        }).catch(err => skill.log(err));
       </code>
       <p>To retrieve data:</p>
       <code style="white-space: pre-wrap;">
         const hooks = [];
         hooks.push(...);
-        overseer.StorageManager.getItem("hello", "hooks").then((hooks) => {
+        skill.getItem("hooks").then((hooks) => {
           // Object retrieved!
-        }).catch(err => overseer.log("hello", err));
+        }).catch(err => skill.log(err));
       </code>
     `.trim()
   }
