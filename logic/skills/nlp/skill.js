@@ -20,9 +20,9 @@ module.exports = (skill) => {
                 },
                 json: true
             }, (err,res,body) => {
-                if(err) {
-                    skill.log('> [ERROR] Error contacting the nlu API '+err);
-                    return resolve({message : {text: 'Error contacting the nlu API '+err}});
+                if(err || res.statusCode !== 200) {
+                    skill.log('> [ERROR] Error contacting the nlu API ' + (err || res.statusCode));
+                    return resolve({message : {text: 'Error contacting the nlu API '}});
                 }
                 let analyzed = { };
                 try {
@@ -38,7 +38,6 @@ module.exports = (skill) => {
                       analyzed.message = {
                         text: analyzed.intent ? `I think your intent is *${analyzed.intent}*.` : `I did'nt found any intent in this sentence.`
                       };
-
                       return resolve(analyzed);
                 } catch(e) {
                     return reject(e);

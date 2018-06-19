@@ -4,62 +4,16 @@
   DATE : 30/03/2018
 */
 
-/*
-  You should not modify this part unless you know what you're doing.
-*/
-// Defining the skill
-// Commands the skill can execute.
-/* <SKILL COMMANDS> */
-let commands = {
-  'itinary': {
-    cmd: "itinary",
-    execute: itinaryHandler
-  }
-};
-/* </SKILL COMMANDS> */
-
-// intents the skill understands.
-/* <SKILL INTENTS> */
-let intents = {
-  'itinary-get-itinary': {
-    slug: "get-itinary",
-    handle: handleItinary,
-    expected_entities: ["location"]
-  }
-};
-/* </SKILL INTENTS> */
-
-// dependencies of the skill.
-/* <SKILL DEPENDENCIES> */
-let dependencies = ["request"];
-/* </SKILL DEPENDENCIES> */
-
-// Exposing the skill definition.
-exports.commands = commands;
-exports.intents = intents;
-exports.dependencies = dependencies;
-
-/*
-  Skill logic begins here.
-  You must implements the functions listed as "execute" and "handle" handler, or your skill will not load.
-*/
-/* <SKILL LOGIC> */
-
-const request = require('request');
+const axios = require('axios');
+// The google api_key used for the request !!Link to my personnal account for the moment!!!
 const GOOGLE_API_KEY = require('./secret').google_api_key;
 const overseer = require('../../overseer');
 
-/**
-  Handler for command itinary (!itinary).
+module.exports = (skill) => {
 
-  Params :
-  --------
-    phrase: String
-*/
-function itinaryHandler({phrase}) {
-  return new Promise((resolve, reject) => {
-    // The google api_key used for the request !!Link to my personnal account for the moment!!!
-    overseer.log("itinary", "Itinary");
+skill.addCommand("itinary","itinary",({phrase, data})  => {
+  return Promise.resolve().then(() => {
+    
     // Split the request to have the origin of the itinary and the destination
         var req = phrase.split("->");
         var des,ori,messages;
@@ -71,7 +25,7 @@ function itinaryHandler({phrase}) {
             // If the oriign is not specified, it will be Intech
             ori = "Intech%20S.A.,Luxembourg";
         }
-        if(des == "help"){
+        if(des === "help"){
           // If the destionation is help, then print the help
             messages = "> Help of the itinary command : \n";
             messages += "> To do an itinary starting from Intech and going to a destination type : !itinary your_destination\n";
@@ -122,19 +76,12 @@ function itinaryHandler({phrase}) {
             });
         }
   });
-}
-/**
-  Handler for intent itinary-get-itinary (get-itinary).
+});
 
-  Params :
-  --------
-    entities (Object)
-*/
 function handleItinary({ entities: { 'location': location = {}}, data }) {
     overseer.log("itinary", location);
     let phrase = location.length >= 2 ? location[0] + "->" + location[1] : location[0]
     return itinaryHandler({ phrase, data });
 }
-/* </SKILL LOGIC> */
 
-// You may define other logic function unexposed here. Try to keep the skill code slim.
+}

@@ -93,7 +93,7 @@ exports.SkillManager = class SkillManager {
   getSkill(name) {
     return Promise.resolve().then(() => {
       if (!this.skills[name]) {
-        const error = new Error("Sill not found");
+        const error = new Error("Skill not found");
         error.code = 404;
         throw error;
       }
