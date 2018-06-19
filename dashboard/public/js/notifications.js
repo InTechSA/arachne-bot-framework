@@ -1,3 +1,5 @@
+const synth = window.speechSynthesis;
+
 function notifyUser({ title = "Notification", message = "Here is a notification for you, user!", type = "info", seconds = 10 } = {}) {
   let alertClass;
   switch (type) {
@@ -39,8 +41,20 @@ function notifyUser({ title = "Notification", message = "Here is a notification 
       }, delay)
     }
   }, 500);
+
+  if (synth && UNLIMITEDPOWER) {
+    const utter = new SpeechSynthesisUtterance(message);
+    utter.pitch = 1.2;
+    utter.rate = 1.2;
+    const voice = synth.getVoices().find(voice => voice.lang === "en-US");
+    if (voice) {
+      utter.voice = voice;
+      synth.speak(utter);
+    }
+  }
+
   return notificationId;
-};
+}
 
 function dismissNotification(notificationId) {
   if ($('#notification-' + notificationId)) {
