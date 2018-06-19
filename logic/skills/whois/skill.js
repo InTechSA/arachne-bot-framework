@@ -190,6 +190,8 @@ module.exports = (skill) => {
                 }
             }); 
         });
+    }, {
+        description: "To know who is someone with his trigram or username"
     });
 
     skill.addIntent("whois", "whois", ({ entities: { 'trigram': trigram = {} }, data }) => {

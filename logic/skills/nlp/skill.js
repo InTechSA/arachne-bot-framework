@@ -44,5 +44,7 @@ module.exports = (skill) => {
                 }
             });
           });
+    },{
+        description: "nlu of the bot"
     });
 }
