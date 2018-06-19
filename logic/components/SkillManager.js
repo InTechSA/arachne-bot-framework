@@ -1027,10 +1027,9 @@ exports.SkillManager = class SkillManager {
 
   getHelpBySkills() {
     return Promise.resolve([...this.skills].map(skill => {
-      return {
+      const help = {
         name: skill.name,
         active: skill.active,
-        description: skill.description,
         commands: Object.values(skill.commands).map(command => {
           return {
             name: command.name,
@@ -1039,6 +1038,10 @@ exports.SkillManager = class SkillManager {
           };
         })
       };
+      if (skill.description && skill.description.length > 0) {
+        help.description = skill.description;
+      }
+      return help;
     }));
   }
 }

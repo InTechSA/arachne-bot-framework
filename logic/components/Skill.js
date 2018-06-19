@@ -106,7 +106,7 @@ module.exports = class Skill {
         return Promise.resolve().then(() => {
             // Command might be activated, but not the skill. Check the skill first.
             if (!this.active) {
-                throw new Error(`Skill ${this.name} is not active.`)
+                throw new Error(`Skill ${this.name} is not active.`);
             }
 
             if (!this.commands[cmd]) {
@@ -129,7 +129,7 @@ module.exports = class Skill {
         // Intent might be activated, but not the skill. Check the skill first.
         return Promise.resolve().then(() => {
             if (!this.active) {
-                throw new Error(`Skill ${this.name} is not active.`)
+                throw new Error(`Skill ${this.name} is not active.`);
             }
 
             if (!this.intents[slug]) {
@@ -164,7 +164,7 @@ module.exports = class Skill {
     /** Request the creation of a new pipe.
      * 
      */
-    createPipe(handler, { secret = null, withHook = false} = {}) {
+    createPipe(handler, { secret = null, withHook = false } = {}) {
         if (withHook) {
             return this.manager.createPipeWithHook(handler, secret);
         } else {
