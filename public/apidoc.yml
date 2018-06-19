@@ -22,7 +22,17 @@ paths:
               schema:
                 type: string
                 format: binary
-  
+  /apidoc:
+    get:
+      summary: Get the OpenAPI UI.
+      operationId: apiDocUI
+      tags:
+        - admin
+      security: []
+      responses:
+        "200":
+          description: OpenAPI UI.
+
   /setup:
     get:
       summary: Setup admin user.
@@ -622,6 +632,85 @@ paths:
       tags:
         - me
 
+  /help/skills:
+    get:
+      summary: Get Help manual by skills.
+      operationId: helpBySkills
+      description: List commands for each skills.
+      tags:
+        - help
+      responses:
+        "200":
+          description: Help for skills.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Help for skills.
+                  skills:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Brokkr
+                        description:
+                          type: string
+                          example: Simplifies the access to git projects and application management by the strengh of natural langage.
+                        commands:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                example: brokkr
+                              cmd:
+                                type: string
+                                example: brokkr
+                              description:
+                                type: string
+                                example: Main command for Brokkr.
+                              subcommands:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    cmd:
+                                      type: string
+                                      example: mr
+                                    description:
+                                      type: string
+                                      example: Access and list Merge Requests.
+                                    parameters:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: client
+                                          description:
+                                            type: string
+                                            example: Client where to fetch merge-requests.
+                              parameters:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: client
+                                    description:
+                                      type: string
+                                      example: Client where to fetch merge-requests.
+
   /reload:
     post:
       summary: Reload the brain.
@@ -1023,8 +1112,7 @@ paths:
       responses:
         '200':
           description: Delete of logs.
-    
-
+  
   /connectors:
     get:
       summary: Get list of connectors.

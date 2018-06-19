@@ -5,6 +5,8 @@
 */
 
 module.exports = (skill) => {
+    skill.setDescription("Listen to git events on a channel.");
+    
     function helpMessage() {
         return {
             title: "GIT ♦ Help",
@@ -12,7 +14,10 @@ module.exports = (skill) => {
         }
     }
 
-    skill.addCommand("git", "git", ({ phrase, data }) => {
+    skill.addCommand(
+        "git",
+        "git",
+        ({ phrase, data }) => {
         return Promise.resolve().then(() => {
             const args = phrase.split(" ");
             if (args.length > 0) {
@@ -144,7 +149,62 @@ module.exports = (skill) => {
                 };
             }
         });
-    });
+    },
+        {
+            description: "Entrypoint of the Git skill.",
+            subcommands: [
+                {
+                    name: "create-webhook",
+                    cmd: "attach",
+                    description: "Attach a new webhook in this channel.",
+                    parameters: [
+                        {
+                            position: 0,
+                            name: "repository",
+                            description: "Name of the webhook to create.",
+                            example: "arachne-bot"
+                        }
+                    ],
+                    examples: [
+                        {
+                            phrase: "git attach arachne",
+                            action: "Create a new webhook named arachne"
+                        }
+                    ]
+                },
+                {
+                    name: "remove-webhook",
+                    cmd: "detach",
+                    description: "Detach a webhook from this channel.",
+                    parameters: [
+                        {
+                            position: 0,
+                            name: "name",
+                            description: "Name of the webhook to remove.",
+                            example: "arachne-bot"
+                        }
+                    ],
+                    examples: [
+                        {
+                            phrase: "git detact arachne",
+                            action: "Delete the webhook named arachne. You should also delete it from gitlab."
+                        }
+                    ]
+                },
+                {
+                    name: "list-webhook",
+                    cmd: "list",
+                    description: "List webhook in this channel.",
+                    examples: [
+                        {
+                            phrase: "git list",
+                            action: "List the webhooks in this channel."
+                        }
+                    ]
+                }
+            ]
+        }
+    );
 
     skill.addIntent("create-git-webhook", "create-git-webhook", ({ entities: { repository: repository = [] }, data }) => {
         if (repository.length === 0) {

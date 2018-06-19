@@ -3,11 +3,18 @@ module.exports = class Skill {
         this.manager = manager;
 
         this.name = name;
+        this.description = "";
 
         this.commands = {};
         this.intents = {};
         this.interactions = {};
         this.pipes = {};
+    }
+
+    setDescription(description) {
+        if (typeof description === "string") {
+            this.description = description;
+        }
     }
 
     //////////////////////////////////////////////////////
@@ -18,15 +25,22 @@ module.exports = class Skill {
      * @param {String} cmd Command word typed by the user.
      * @param {String} name Name of the command to be displayed.
      * @param {Function} handler Function to be called with { phrase, data } as parameters.
+     * @param {Object} help Help definition for this command (see documentation).
      */
-    addCommand(cmd, name, handler) {
+    addCommand(cmd, name, handler, help) {
         if (Object.keys(this.commands).includes(cmd)) {
-            throw new Error("Command word is already defined for skill.");
+            throw new Error(`Command word \x1b[31m${cmd}\x1b[0m is already defined for skill.`);
         }
+
+        if (!help || !help.description) {
+            throw new Error(`Help definition of command \x1b[31m${cmd}\x1b[0m is missing. You should at least give a \x1b[4mdescription\x1b[0m field for this command.`)
+        }
+
         this.commands[cmd] = {
             name,
             cmd,
-            handler
+            handler,
+            help
         }
     }
 
@@ -38,7 +52,7 @@ module.exports = class Skill {
      */
     addIntent(slug, name, handler) {
         if (Object.keys(this.intents).includes(slug)) {
-            throw new Error("Intent slug is already handled for this skill.");
+            throw new Error(`Intent slug \x1b[31m${slug}\x1b[0m is already handled for this skill.`);
         }
         this.intents[slug] = {
             name,
@@ -54,7 +68,7 @@ module.exports = class Skill {
      */
     addInteraction(name, handler) {
         if (this.interactions[name]) {
-            throw new Error(`Interaction ${name} already defined for skill ${this.name}.`);
+            throw new Error(`Interaction \x1b[31m${name}\x1b[0m already defined for skill ${this.name}.`);
         }
         this.interactions[name] = {
             name,
@@ -69,7 +83,7 @@ module.exports = class Skill {
      */
     addPipe(name, handler) {
         if (this.pipes[name]) {
-            throw new Error(`Pipe ${name} already defined for skill ${this.name}.`);
+            throw new Error(`Pipe \x1b[31m${name}\x1b[0m already defined for skill ${this.name}.`);
         }
         this.pipes[name] = {
             name,
