@@ -5,8 +5,8 @@
 */
 
 module.exports = (skill) => {
-    const secret = require('./secret');
-    const request = require('request');
+    const secret = skill.getSecret();
+    const request = skill.loadModule('request');
 
     skill.addCommand("analyze", "analyze", ({ phrase, data }) => {
         return new Promise((resolve, reject) => {
@@ -44,7 +44,5 @@ module.exports = (skill) => {
                 }
             });
           });
-    },{
-        description: "nlu of the bot"
-    });
+    }, { description: "Extract the intention of a sentence." });
 }

@@ -140,6 +140,14 @@ module.exports = class Skill {
         });
     }
 
+    loadModule(mod) {
+        return this.manager.requireModule(mod);
+    }
+
+    getSecret() {
+        return this.manager.requireSecret();
+    }
+
     /** Request the creation of a new hook.
      * 
      */

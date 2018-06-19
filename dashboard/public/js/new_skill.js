@@ -662,6 +662,10 @@ const help = {
     content: `
       <p>You should store secret variables, like api tokens and api credentials, in the secret object of a skill. The secret will not be displayed in skill's code.</p>
       <p>To edit the secrets of a skill, use the <strong>Configure Secret</strong> handler in the left pannel.</p>
+      <p>You can require the secret with the <code>skill.getSecret()<code> method.</p>
+      <code style="white-space: pre-wrap;">
+        const secret = skill.getSecret();
+      </code>
     `.trim()
   },
   'skills': {
@@ -684,6 +688,17 @@ const help = {
         });
       </code>
       <p>Don't forget to catch the error! You should always return something to the user. Following the Promise chain pattern is good practise, but you may find more easy to <code>return new Promise((resolve, reject) => {})</code>.</p>
+    `.trim()
+  },
+  'modules': {
+    title: 'How to require node modules?',
+    content: `
+      <p>Skills may only require a restricted list of node modules. If you need more, you should probably consider creating an external microservice and connecting it to the brain using <a href="#" onClick="displayHelp('pipes')">Pipes</a></p>
+      <p>To require a module, use the <code>skill.loadModule(module)</code> method.</p>
+      <code style="white-space: pre-wrap;">
+        const request = skill.loadModule("request");
+      </code>
+      <p><em>If you attempt to require an unallowed module, you will be warned by the brain whe you try to save or activate the skill.</em></p>
     `.trim()
   },
   'requests': {

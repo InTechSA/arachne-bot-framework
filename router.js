@@ -350,7 +350,7 @@ module.exports = function (io) {
       hub.saveSkillCode(req.params.skill, req.body.code).then(() => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.` })
       }).catch((err) => {
-        return res.json({ success: false, message: `Could not save code of Skill ${req.params.skill}.` })
+        return res.json({ success: false, message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." }); // eslint-disable-line no-control-regex
       });
     } else {
       return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
@@ -431,7 +431,7 @@ module.exports = function (io) {
         hub.activateSkill(req.params.skill).then((skill) => {
           return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
         }).catch((err) => {
-          return res.json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." });// eslint-disable-line no-control-regex
+          return res.json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." }); // eslint-disable-line no-control-regex
         });
       } else if (req.params.status === "off") {
         hub.deactivateSkill(req.params.skill).then((skill) => {
