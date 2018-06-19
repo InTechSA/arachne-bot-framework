@@ -23,6 +23,13 @@ function skillToggle(skillButton) {
               .toggleClass("text-danger");
             $(skillButton).attr('title', 'Deactivate skill');
             $(skillButton).attr('aria-label', 'Deactivate skill');
+
+            notifyUser({
+              title: "Skill activated",
+              message: skill + " was successfully activated",
+              type: "success",
+              delay: 2
+            });
           } else {
             $(skillButton).attr('data-active', false);
             $(skillButton).data('active', false);
@@ -35,6 +42,13 @@ function skillToggle(skillButton) {
               .toggleClass("text-success");
             $(skillButton).attr('title', 'Activate skill');
             $(skillButton).attr('aria-label', 'Activate skill');
+
+            notifyUser({
+              title: "Skill deactivated",
+              message: skill + " was successfully deactivated",
+              type: "success",
+              delay: 2
+            });
           }
         } else {
           notifyUser({
