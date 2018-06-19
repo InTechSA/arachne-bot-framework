@@ -444,12 +444,14 @@ function displayHelp(topic) {
       }).join("\n")
       + '</div>');
     $("#help-modal").modal('show');
+    return;
   }
 
   // get topic content
   const content = help[topic];
   if (!content) {
     console.warn("> Requested an unkown topic: " + topic);
+    displayHelp();
     return;
   }
   $("#help-modal .modal-title").text(content.title);
@@ -465,7 +467,7 @@ const help = {
     title: 'How to add a new command to a skill?',
     content: `
       <p>To create a new command, you can use the helper button in the left pannel "Add Command".</p>
-      <p>To manually add the command, call the <code>addCommand</code> method of the skill:</p>
+      <p>To manually add the command, call the <code>addCommand(cmd, name, handler, help)</code> method of the skill:</p>
       <code style="white-space: pre-wrap;">
         skill.addCommand("hello", "say-hello", ({ phrase, data }) => {
           return Promise.resolve().then(() => {
@@ -480,10 +482,104 @@ const help = {
               }
             };
           });
+        }, {
+          description: "Make the bot say hello."
         });
       </code>
       <p>Don't forget the Promise or your skill will not work! Don't hesitate to return custom error messages instead of throwing errors.</p>
       <p>The first parameter <code>cmd</code> is the word the user will type to call the command: <code>!hello</code>.</p>
+      <p>The last parameter <code>help</code> is required, and must at least define a description. See the <a href="#" onClick="displayHelp('help')">create help</a> section.</p>
+    `.trim()
+  },
+  'help': {
+    title: 'How to create a great manual ?',
+    content: `
+      <p>You are required to define a manual for each of your skill's commands. It is declared as the fourth parameter of the <code>addCommand()</code> function.</p>
+      <p>The help must at least contains a <strong>description</strong> field for the command. But may contain other elements. The <strong>examples</strong> field should be considered first after the description.</p>
+      <p><em>Let's consider a skill that can display text in red or in green : !say red [text] and !say green [text]</em></p>
+      <code style="white-space: pre-wrap;">
+        {
+          description: "Say something with colours!",
+          parameters: [
+            {
+              position: 0,
+              name: "color",
+              description: "red or green."
+              example: "red"
+            },
+            {
+              position: 1,
+              name: "color",
+              description: "The text to display.",
+              example: "What a text!"
+            }
+          ],
+          examples: [
+            {
+              phrase: "say red Hello my friend!",
+              action: "Display 'Hello my friend!' in red."
+            }
+          ]
+        }
+      </code>
+      <p>You may also define subcommands.</p>
+      <p><em>Let's consider a skill that can attach, detach, and list webhooks in a channel.</em></p>
+      <code style="white-space: pre-wrap;">
+        {
+          description: "Entrypoint of the Git skill.",
+          subcommands: [
+              {
+                  name: "create-webhook",
+                  cmd: "attach",
+                  description: "Attach a new webhook in this channel.",
+                  parameters: [
+                      {
+                          position: 0,
+                          name: "repository",
+                          description: "Name of the webhook to create.",
+                          example: "arachne-bot"
+                      }
+                  ],
+                  examples: [
+                      {
+                          phrase: "git attach arachne",
+                          action: "Create a new webhook named arachne"
+                      }
+                  ]
+              },
+              {
+                  name: "remove-webhook",
+                  cmd: "detach",
+                  description: "Detach a webhook from this channel.",
+                  parameters: [
+                      {
+                          position: 0,
+                          name: "name",
+                          description: "Name of the webhook to remove.",
+                          example: "arachne-bot"
+                      }
+                  ],
+                  examples: [
+                      {
+                          phrase: "git detact arachne",
+                          action: "Delete the webhook named arachne. You should also delete it from gitlab."
+                      }
+                  ]
+              },
+              {
+                  name: "list-webhook",
+                  cmd: "list",
+                  description: "List webhook in this channel.",
+                  examples: [
+                      {
+                          phrase: "git list",
+                          action: "List the webhooks in this channel."
+                      }
+                  ]
+              }
+          ]
+        }
+      </code>
     `.trim()
   },
   'intents': {

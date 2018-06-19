@@ -84,6 +84,27 @@ module.exports = function (io) {
   //
   ///////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////////////////////////////////
+  // HELP
+
+  /**
+   * @api {get} /help/skills Get help for skills.
+   * @apiName HelpSkills
+   * @apiGroup Help
+   */
+  router.get('/help/skills', (req, res, next) => {
+    hub.getHelpBySkills().then(help => {
+      return res.json({
+        success: true,
+        message: "Help manual by skills.",
+        skills: help
+      });
+    });
+  });
+
+  //
+  /////////////////////////////////////////////////////
+
   ///////////////////////////////////////////////////////////////////////////////
   // Setup for admin account. Will be ignored if there is at least one user in the database.
 
@@ -144,7 +165,6 @@ module.exports = function (io) {
 
   // MIDDLEWARE FOR BOT ADMIN AUTH
   const authMiddleware = require('./middlewares/auth');
-  const hasRole = authMiddleware.hasRole;
   const hasPerm = authMiddleware.hasPerm;
 
   router.use(authMiddleware.isAuthed());
@@ -166,35 +186,38 @@ module.exports = function (io) {
       logger.error(err.stack);
       return res.json({ success: false, message: "An unkown error occured while reloading brain." });
     });
-  }),
+  });
 
-    // list skills
-    /**
-     * @api {get} /skills List skills avaible.
-     * @apiName ListSkills
-     * @apiGroup Skills
-     *
-     * @apiSuccess {Boolean} success Success of operation.
-     * @apiSuccess {String} message Message from api.
-     * @apiSuccess {Skill} skills List of available skills.
-     */
-    router.get('/skills', hasPerm('SEE_SKILLS'), (req, res, next) => {
-      hub.getSkills().then((skills) => {
-        return res.json({
-          success: true,
-          message: 'Got list of bot skills.',
-          skills: skills.map(skill => {
-            return {
-              name: skill.name,
-              commands: skill.commands,
-              intents: skill.intents,
-              pipes: skill.pipes,
-              interactions: skill.interactions
-            }
-          })
-        });
-      }).catch(next);
-    });
+  /////////////////////////////////////////////////////
+  // SKILLS
+
+  // list skills
+  /**
+   * @api {get} /skills List skills avaible.
+   * @apiName ListSkills
+   * @apiGroup Skills
+   *
+   * @apiSuccess {Boolean} success Success of operation.
+   * @apiSuccess {String} message Message from api.
+   * @apiSuccess {Skill} skills List of available skills.
+   */
+  router.get('/skills', hasPerm('SEE_SKILLS'), (req, res, next) => {
+    hub.getSkills().then((skills) => {
+      return res.json({
+        success: true,
+        message: 'Got list of bot skills.',
+        skills: skills.map(skill => {
+          return {
+            name: skill.name,
+            commands: skill.commands,
+            intents: skill.intents,
+            pipes: skill.pipes,
+            interactions: skill.interactions
+          }
+        })
+      });
+    }).catch(next);
+  });
 
   // Add a new skill
   /**
@@ -406,21 +429,16 @@ module.exports = function (io) {
     if (hub.hasSkill(req.params.skill)) {
       if (req.params.status === "on") {
         hub.activateSkill(req.params.skill).then((skill) => {
-          if (skill.active) {
-            return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
-          } else {
-            return res.json({ success: false, message: `Skill ${req.params.skill} could not be activated.`, active: false });
-          }
+          return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
         }).catch((err) => {
-          console.log(err);
-          return res.json({ success: false, message: "Could not activate skill." });
+          return res.json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." });// eslint-disable-line no-control-regex
         });
       } else if (req.params.status === "off") {
         hub.deactivateSkill(req.params.skill).then((skill) => {
           return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
         }).catch(err => {
           console.log(err);
-          return res.json({ success: false, message: "Could not deactivated skill."})
+          return res.json({ success: false, message: "Could not deactivated skill." })
         });
       } else {
         return res.json({ success: false, message: `Wrong status code : on or off.` });
@@ -493,6 +511,9 @@ module.exports = function (io) {
       });
     }).catch(next);
   });
+
+  //
+  /////////////////////////////////////////////////////
 
   // Get list of connectors (without token)
   /**
@@ -978,10 +999,10 @@ module.exports = function (io) {
       if (configuration[field]) {
         configuration[field] = value;
         hub.ConfigurationManager.setConfiguration(configuration).then(() => {
-          return res.json({ success: true, message: `${field} updated with value ${value}`});
+          return res.json({ success: true, message: `${field} updated with value ${value}` });
         }).catch(next);
       } else {
-        return res.status(404).json({ success: false, message: `No field ${field}`});
+        return res.status(404).json({ success: false, message: `No field ${field}` });
       }
     }).catch(next);
   });

@@ -148,6 +148,7 @@ exports.getSkillSecret = (skillName) => SkillManager.getSkillSecret(skillName);
 exports.updateSkillSecret = (skillName, secret) => SkillManager.updateSkillSecret(skillName, secret);
 exports.getSkill = (skillName) => SkillManager.getSkill(skillName);
 exports.hasSkill = (skillName) => SkillManager.hasSkill(skillName);
+exports.getHelpBySkills = () => SkillManager.getHelpBySkills();
 
 exports.reloadBrain = reloadBrain;
 
