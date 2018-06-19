@@ -102,6 +102,15 @@ module.exports = function (io) {
     });
   });
 
+  router.get('/help/man', (req, res, next) => {
+    hub.getHelpBySkills().then(help => {
+      return res.render('help', {
+        title: hub.ConfigurationManager.loadedConfiguration.botname,
+        help
+      });
+    }).catch(next);
+  });
+
   //
   /////////////////////////////////////////////////////
 

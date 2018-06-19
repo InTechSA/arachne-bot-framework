@@ -1,0 +1,37 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    width: 60%;
+    margin: auto;
+}
+
+.skill {
+    border-top: 2px dashed white;
+}
+
+.command {
+    font-size: 1.1rem;
+}
+
+.command .cmd { 
+padding-left: 3rem;
+}
+
+.subcommand .cmd {
+    padding-left: 4rem;
+}
+
+.parameters {
+    padding-left: 6rem;
+    font-size: 0.8rem;
+}
+
+.examples {
+    padding-left: 6rem;
+    font-size: 0.8rem;
+}
+
+a, a:hover {
+    color: white;
+}
