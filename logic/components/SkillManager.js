@@ -349,7 +349,7 @@ exports.SkillManager = class SkillManager {
         }
       });
 
-      logger.info('Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
+      logger.info(`Clearing cache for skill \x1b[33m${name}\x1b[0m`);
       delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/skill`))];
       if (fs.existsSync(path.join(this.skillsDirectory, `/${name}/secret`))) {
         delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/secret`))];
@@ -642,10 +642,15 @@ exports.SkillManager = class SkillManager {
           });
         } catch (e) {
           // Could not require the skill. Reset the skill to an empty one and add it to the brain.
-          logger.error(`\x1b[33m${name}\x1b[0m could not be required. Replaced by an empty skill: \n${e.message}`);
+          logger.error(`\x1b[33m${name}\x1b[0m could not be required. Replaced by an empty skill.`);
 
           skill = new Skill(name, overseer);
-          return this.addSkill(skill);
+
+          // Then throw back the error to retrieve it.
+          return this.addSkill(skill).then((skill) => {
+            e.skill = skill.name;
+            throw e;
+          });
         }
       })
       .then((skill) => {
@@ -653,8 +658,7 @@ exports.SkillManager = class SkillManager {
         return skill;
       })
       .catch((err) => {
-        logger.error(`\x1b[33m${name}\x1b[0m could not load!`);
-        logger.error(err);
+        logger.error(`\x1b[33m${name}\x1b[0m could not load:\n\t${err.message}`);
         throw err;
       });
   }
@@ -694,7 +698,7 @@ exports.SkillManager = class SkillManager {
       }, Promise.resolve([])).then(errors => {
         if (errors.length >= 1) {
           let message = `> [ERROR] Could not load all skills...\n`;
-          message += errors.map(error => "\t..." + error.message).join("\n");
+          message += errors.map(error => `\t...[\x1b[33m${error.skill || "System"}\x1b[0m] - ${error.message}`).join("\n");
           message += `\n... These skills were not loaded.`
           logger.error(message);
         }

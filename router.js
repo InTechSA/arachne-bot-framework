@@ -429,14 +429,9 @@ module.exports = function (io) {
     if (hub.hasSkill(req.params.skill)) {
       if (req.params.status === "on") {
         hub.activateSkill(req.params.skill).then((skill) => {
-          if (skill.active) {
-            return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
-          } else {
-            return res.json({ success: false, message: `Skill ${req.params.skill} could not be activated.`, active: false });
-          }
+          return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
         }).catch((err) => {
-          console.log(err);
-          return res.json({ success: false, message: "Could not activate skill." });
+          return res.json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." });// eslint-disable-line no-control-regex
         });
       } else if (req.params.status === "off") {
         hub.deactivateSkill(req.params.skill).then((skill) => {
