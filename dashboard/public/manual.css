@@ -4,3 +4,11 @@ header {
     padding-bottom: 2rem;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
+
+.ui-menu li:hover {
+    color: rgb(255, 187, 0);
+    border-top: 1px solid rgb(255, 187, 0);
+    border-bottom: 1px solid rgb(255, 187, 0);
+    border-right: 4px solid rgb(255, 187, 0);
+    border-left: 4px solid rgb(255, 187, 0);
+}

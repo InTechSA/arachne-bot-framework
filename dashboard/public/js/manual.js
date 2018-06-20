@@ -6,8 +6,13 @@ window.onresize = () => {
 
 class Help {
     constructor(element) {
-        this.skills = [];
         this.element = element;
+
+
+        this.skills = [];
+        
+        // Search index: element -> { type: (command, subcommand or skill), skill if command or subcommand, command if subcommand }
+        this.index = {};
     }
 
     loadJSON(json) {
@@ -19,6 +24,76 @@ class Help {
             throw new Error("skills must be a valid JSON array.");
         }
         this.skills = skills;
+
+        skills.forEach(skill => {
+            this.index[skill.name + "-skill"] = {
+                type: "skill",
+                name: skill.name,
+                description: skill.description
+            }
+            if (skill.commands) {
+                skill.commands.forEach(command => {
+                    this.index[command.cmd + "-command"] = {
+                        type: "command",
+                        name: command.cmd,
+                        skill: skill.name,
+                        description: command.help.description
+                    }
+                    if (command.help.subcommands) {
+                        command.help.subcommands.forEach(subcommand => {
+                            this.index[subcommand.cmd + "-subcommand"] = {
+                                type: "subcommand",
+                                name: subcommand.cmd,
+                                skill: skill.name,
+                                command: command.cmd,
+                                description: subcommand.description
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        $.widget( "custom.superComplete", $.ui.autocomplete, {
+            _renderItem: (ul, item) => {
+                return $( "<li class='justify-content-beetween'>" )
+                    .attr( "data-value", item.value + "-" + this.index[item.label].type )
+                    .append( this.index[item.label].name + " (" + this.index[item.label].type + ")" )
+                    .appendTo( ul );
+            }
+        });
+
+        $("#search").val('');
+
+        $("#search").superComplete({
+            source: Object.keys(this.index),
+            delay: 0,
+            autoFocus: true,
+            select: (event, ui) => {
+                event.preventDefault();
+                
+                const item = this.index[ui.item.value]
+                $("#search").val("");
+
+                switch (item.type) {
+                    case "skill":
+                        this.displaySkillModal(item.name);
+                        break;
+                    case "command":
+                        this.displayCommandModal(item.name);
+                        break;
+                    case "subcommand":
+                        this.displayCommandModal(item.command);
+                        break;
+                    default:
+                        console.error("Unkown type of item selected.")
+                        break;
+                }
+            },
+            focus: (event, ui) => {
+                event.preventDefault();
+            }
+        });
     }
 
     display(mode) {
