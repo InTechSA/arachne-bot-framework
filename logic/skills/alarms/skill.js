@@ -109,14 +109,14 @@ module.exports = (skill) => {
             time.setHours(time.getHours()-2);
             return skill.createHook().then((hook) => {
                 schedule.scheduleJob(time, () => {
-                    overseer.HookManager.execute(hook._id, {
+                    skill.useHook(hook._id, {
                       message: {
                         title: "Alarm",
                         text: text
                       }
                     }, {deleteHook: true}).catch((err) => {
-                        if (err == overseer.HookManager.codes.NO_HOOK) {
-                            overseer.StorageManager.getItem("alarms", "alarms").then((storage) => {
+                        if (err === 'NO_HOOK') {
+                            skill.getItem("alarms", "alarms").then((storage) => {
                                 let alarms = [];
                                 if (storage) {
                                     alarms = storage.filter((a) => a.hook !== hook._id);

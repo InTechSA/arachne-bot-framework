@@ -235,7 +235,7 @@ module.exports = (skill) => {
                                     thread.setData("trigram", response.data.trigram);
                                     // Increase the step to go to the next step
                                     thread.setData("step", 1);
-                                    messageReturn = response.data.text + "  \n" + "  \n";
+                                    var messageReturn = response.data.text + "  \n" + "  \n";
                                     messageReturn += conversationTexts[1];
                                     // return the message
                                     skill.log("Returning the message : " + messageReturn);
@@ -254,7 +254,6 @@ module.exports = (skill) => {
                                     }
                                 });
                             }
-                            break;
                         case 1:
                             // Step 1 , waiting for the manager's trigrams of the user
                             var trigrams_manager = phrase.trim().replace('vacation', '').split(' ');
@@ -376,7 +375,6 @@ module.exports = (skill) => {
                                     }
                                 });
                             }
-                            break;
                         default:
                             // Normally will never enter this block but it's a security concerning the switch
                             throw "Une erreur inconnue s'est produite :(";
