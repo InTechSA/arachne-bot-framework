@@ -59,7 +59,13 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "Quizz skill"
+        description: "Start a new quizz",
+        examples: [
+            {
+                phrase: "!quizz",
+                action: "Creates a new quizz and starts interactive mode for answers."
+            }
+        ]
     });
 
     skill.addIntent("quizz", "quizz", ({ entities, data }) => {

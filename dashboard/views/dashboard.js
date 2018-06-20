@@ -109,6 +109,7 @@ $('#chat-form').submit((event) => {
           }
         },
         error: function(err) {
+          console.log(err);
           $("#chat").val('');
           currentThread = null;
           if (json = err.responseJSON) {

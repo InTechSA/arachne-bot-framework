@@ -1,0 +1,90 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+      
+    title=title
+    
+    block css
+      link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css", integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm", crossorigin="anonymous")
+      link(rel="stylesheet", href="/dashboard/static/help.css")
+    
+    script(defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous")
+    
+    block scripts
+      script(src="https://code.jquery.com/jquery-3.3.1.js", integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=", crossorigin="anonymous")
+      script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js", integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q", crossorigin="anonymous")
+      script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js", integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl", crossorigin="anonymous")
+      
+  body
+    main.container-fluid(role="main")
+        h1.h2 > I can do so many things!
+        
+        each skill in help
+            .row.skill.pt-2.justify-content-between
+                .col-sm
+                    .row
+                        .col-sm
+                            span= skill.name
+                        .col-sm
+                            span(class=skill.active ? "text-success" : "text-danger")=skill.active ? "active": "inactive"
+                .col-sm.text-right
+                    span=skill.description
+            each command in skill.commands
+                .row.command.pt-1.justify-content-between
+                    .col-sm-2.cmd
+                        strong.text-info=command.cmd
+                    .col-sm
+                        span=command.name
+                    .col-sm.text-right
+                        span=command.help.description
+                if command.help.subcommands
+                    .subcommands
+                        .row.subcommand.pt-1.justify-content-between
+                            .col-sm.cmd
+                                strong Command word
+                            .col-sm
+                                strong Name
+                            .col-sm.text-right
+                                strong Description
+                        each subcommand in command.help.subcommands
+                            .row.subcommand.pt-1.justify-content-between
+                                .col-sm.cmd
+                                    if subcommand.parameters
+                                        span.text-warning=subcommand.cmd + " "
+                                        span= subcommand.parameters.map(p => "<" + p.name + ">").join(" ")
+                                    else
+                                        span.text-warning=subcommand.cmd
+                                .col-sm
+                                    span=subcommand.name
+                                .col-sm.text-right
+                                    span=subcommand.description
+                            if subcommand.parameters
+                                .parameters
+                                    strong Parameters:
+                                    each parameter in subcommand.parameters
+                                        .row.justify-content-between
+                                            .col-sm
+                                                em=parameter.name
+                                            .col-sm
+                                                em=parameter.description
+                                            .col-sm
+                                                em=parameter.example
+                            if subcommand.examples
+                                .examples
+                                    strong Examples:
+                                    each example in subcommand.examples
+                                        .row.justify-content-between
+                                            .col-sm
+                                                em=example.phrase
+                                            .col-sm
+                                                em=example.action
+
+        h2.h3
+            a(href="#") > IMPROVE ME!
+
+    script
+      include ../public/js/js.cookie.js
+      include ../public/js/main.js
+      include ../public/js/notifications.js
