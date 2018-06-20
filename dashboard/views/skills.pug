@@ -10,27 +10,27 @@ block content
   
   .list-group
     if skills
-      each skill, skillName in skills
-        .list-group-item.flex-column.align-items-start(id="skill-"+skillName)
+      each skill in skills
+        .list-group-item.flex-column.align-items-start(id="skill-"+skill.name)
           .d-flex.w-100.justify-content-between
-            h4.mb-1.capitalized= skillName
+            h4.mb-1.capitalized= skill.name
             div
-              a.action.mb-1.text-warning(role="button" title="Reload skill" aria-label="Reload skill" data-skill=skillName onClick="reloadSkill(this)")
+              a.action.mb-1.text-warning(role="button" title="Reload skill" aria-label="Reload skill" data-skill=skill.name onClick="reloadSkill(this)")
                 i.fas.fa-sync
-              a.action.mb-1.text-muted(role="button" href="/dashboard/skills/"+skillName title="Monitor this skill" style="margin-left: 1em;" aria-label="Monitor this skill" data-skill=skillName)
+              a.action.mb-1.text-muted(role="button" href="/dashboard/skills/"+skill.name title="Monitor this skill" style="margin-left: 1em;" aria-label="Monitor this skill" data-skill=skill.name)
                 i.fas.fa-cog
-              a.action.mb-1.text-info(role="button" href="/dashboard/skills/"+skillName+"/edit" title="Edit this skill" style="margin-left: 1em;" aria-label="Edit this skill" data-skill=skillName)
+              a.action.mb-1.text-info(role="button" href="/dashboard/skills/"+skill.name+"/edit" title="Edit this skill" style="margin-left: 1em;" aria-label="Edit this skill" data-skill=skill.name)
                 i.fas.fa-edit
-              a.action.mb-1(role="button" title=( skill.active ? "Deactivate skill" : "Activate skill") style="margin-left: 1em;" aria-label=( skill.active ? "Deactivate skill" : "Activate skill") class=( skill.active ? "text-success" : "text-danger") data-skill=skillName data-active=(`${skill.active}`) onClick="skillToggle(this)")
+              a.action.mb-1(role="button" title=( skill.active ? "Deactivate skill" : "Activate skill") style="margin-left: 1em;" aria-label=( skill.active ? "Deactivate skill" : "Activate skill") class=( skill.active ? "text-success" : "text-danger") data-skill=skill.name data-active=(`${skill.active}`) onClick="skillToggle(this)")
                 if skill.active
                   i.fas.fa-toggle-on
                 else
                   i.fas.fa-toggle-off
-              a.action.mb-1.text-danger(role="button" title="Delete skill "+skillName style="margin-left: 1em;" aria-label="Delete skill "+skillName data-skill=skillName onClick="deleteSkill(this)")
+              a.action.mb-1.text-danger(role="button" title="Delete skill "+skill.name style="margin-left: 1em;" aria-label="Delete skill "+skill.name data-skill=skill.name onClick="deleteSkill(this)")
                 i.fas.fa-trash
-              a.action.displayer(role="button" title="Display skill." style="margin-left: 1em;" onClick=`toggleSkillDetail('${skillName}');`)
+              a.action.displayer(role="button" title="Display skill." style="margin-left: 1em;" onClick=`toggleSkillDetail('${skill.name}');`)
                 i.fas.fa-caret-down
-          .collapse(id="detail-"+skillName)
+          .collapse(id="detail-"+skill.name)
             h5 Intents
             if skill.intents && Object.keys(skill.intents).length > 0
               each intent, intentName in skill.intents

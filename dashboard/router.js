@@ -41,13 +41,20 @@ module.exports = function(io) {
   router.get('/', hasPerm('ACCESS_DASHBOARD'), (req, res, next) => {
     hub.ConnectorManager.getConnectorByName("Dashboard").then((connector) => {
       hub.getSkills().then((skills) => {
-        res.render('index', {
+        return res.render('index', {
           title: 'Dashboard - Bot',
           nav_link: 'nav-portal',
           message: 'Welcome to administration panel of this amazing Bot.',
           mainTitle: "Bot Brain Dashboard",
           botname: hub.ConfigurationManager.loadedConfiguration.botname,
-          skills: skills,
+          skills: skills.map(skill => {
+            return {
+              name: skill.name,
+              commands: skill.commands,
+              intents: skill.intents,
+              active: skill.active
+            }
+          }),
           connector_token: connector.token
         });
       }).catch((err) => {
@@ -61,7 +68,14 @@ module.exports = function(io) {
           message: 'Welcome to administration panel of this amazing Bot.',
           mainTitle: `${hub.ConfigurationManager.loadedConfiguration.botname} Dashboard`,
           botname: hub.ConfigurationManager.loadedConfiguration.botname,
-          skills: skills,
+          skills: skills.map(skill => {
+            return {
+              name: skill.name,
+              commands: skill.commands,
+              intents: skill.intents,
+              active: skill.active
+            }
+          }),
           connector_token: ""
         });
       }).catch((err) => {
@@ -84,7 +98,14 @@ module.exports = function(io) {
         message: 'Welcome to administration panel of this amazing Bot.',
         mainTitle: `${hub.ConfigurationManager.loadedConfiguration.botname} Dashboard`,
         botname: hub.ConfigurationManager.loadedConfiguration.botname,
-        skills: skills
+        skills: skills.map(skill => {
+          return {
+            name: skill.name,
+            commands: skill.commands,
+            intents: skill.intents,
+            active: skill.active
+          }
+        }),
       });
     });
   });
@@ -166,7 +187,6 @@ module.exports = function(io) {
               code: code,
               intents: skill.intents ? skill.intents.intents : [],
               commands: skill.commands ? skill.commands.commands : [],
-              dependencies: skill.dependencies ? skill.dependencies : [],
               active: skill.active
             }
           });

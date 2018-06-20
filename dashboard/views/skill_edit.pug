@@ -199,12 +199,6 @@ block supercontent
                 a.list-group-item.list-group-item-action.action(onClick="configureSecret()") Configure Secret
               else
                 a.list-group-item.list-group-item-action.disabled.text-muted.action(title="You must create the skill before editing its secrets.") Configure Secret
-              a.list-group-item
-              a.list-group-item.list-group-item-action.action(onClick="addIntent()") Add intent
-              a.list-group-item.list-group-item-action.action(onClick="addCommand()") Add command
-              a.list-group-item.list-group-item-action.action(onClick="addInteraction()") Add interaction
-              a.list-group-item
-              a.list-group-item.list-group-item-action.action(onClick="useSkillCommand()") Use another skill              
         .col-md-6#middle-panel
           .row.justify-content-between
             .col
@@ -226,23 +220,27 @@ block supercontent
               h5.d-none.d-lg-block How to...
               .list-group.list-group-flush#help-list
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('commands')")
-                  small add a command ?
+                  small add a command?
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('help')")
+                  small make a good manual?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('intents')")
-                  small add an intent ?
+                  small add an intent?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('threads')")
-                  small create a conversation ?
+                  small create a conversation?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('secrets')")
-                  small store secret variables ?
+                  small store secret variables?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('skills')")
-                  small use another skill ?
+                  small use another skill?
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('modules')")
+                  small require a module?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('requests')")
-                  small call an external API ?
+                  small call an external API?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('pipes')")
-                  small listen for external events ?
+                  small listen for external events?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('hooks')")
-                  small send a message to a channel ?
+                  small contact a channel?
                 a.list-group-item.list-group-item-action.action(onClick="displayHelp('storage')")
-                  small store persistent data ?
+                  small store persistent data?
               // Display modal otherwise
               h5.d-lg-none-block.action(onClick="displayHelp()", style="margin-top:20px") Display help
 
