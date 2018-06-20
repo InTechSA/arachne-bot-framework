@@ -5,8 +5,8 @@
 */
 
 module.exports = (skill) => {
-    const secret = require('./secret');
-    const request = require('request');
+    const secret = skill.getSecret();
+    const request = skill.loadModule('request');
 
     skill.addCommand("analyze", "analyze", ({ phrase, data }) => {
         return new Promise((resolve, reject) => {
@@ -25,8 +25,10 @@ module.exports = (skill) => {
                     return resolve({message : {text: 'Error contacting the nlu API '+err}});
                 }
                 let analyzed = { };
+                skill.log(body);
                 try {
                     analyzed.intent = body.data.intent ? body.data.intent.name.toLowerCase() : null;
+                    skill.log(analyzed.intent)
                       analyzed.entities = {};
                       if(body.data.entities) {
                           for (let entity of body.data.entities) {
@@ -45,5 +47,5 @@ module.exports = (skill) => {
                 }
             });
           });
-    });
+    }, { description: "Extract the intention of a sentence." });
 }

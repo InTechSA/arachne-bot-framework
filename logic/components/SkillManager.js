@@ -44,6 +44,13 @@ exports.SkillManager = class SkillManager {
         yield* Object.values(this);
       }
     };
+
+    this.allowedModules = [
+      "request",
+      "axios",
+      "jsonwebtoken",
+      "node-shedule"
+    ]
   }
 
   spawnOverseer(skillName) {
@@ -74,6 +81,15 @@ exports.SkillManager = class SkillManager {
       },
       log: (log) => {
         return this.hub.LogManager.log(skillName, log);
+      },
+      requireModule: (mod) => {
+        if (!this.allowedModules.includes(mod)) {
+          throw new Error(`Module \x1b[31m${mod}\x1b[0m is not allowed for importation.`)
+        }
+        return require(mod);
+      },
+      requireSecret: () => {
+        return require(path.join(this.skillsDirectory, `./${skillName}/secret`));
       }
     }
   }
@@ -349,7 +365,7 @@ exports.SkillManager = class SkillManager {
         }
       });
 
-      logger.info('Clearing cache for skill \x1b[33m${skillName}\x1b[0m');
+      logger.info(`Clearing cache for skill \x1b[33m${name}\x1b[0m`);
       delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/skill`))];
       if (fs.existsSync(path.join(this.skillsDirectory, `/${name}/secret`))) {
         delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/secret`))];
@@ -598,10 +614,8 @@ exports.SkillManager = class SkillManager {
    * @return {Promise} Promise to Skill object resolve if success, reject otherwise.
    */
   loadSkill(name) {
-    return this.removeSkill(name).then(() => {
-      return this.skillController.is_active(name);
-    })
-      .then(status => {
+    return this.removeSkill(name)
+      .then(() => {
         logger.log(`Loading skill \x1b[33m${name}\x1b[0m...`);
 
         // Clear require cache for this skill.
@@ -610,6 +624,26 @@ exports.SkillManager = class SkillManager {
           delete require.cache[require.resolve(path.join(this.skillsDirectory, `/${name}/secret`))];
         }
 
+        return this.validateSkillCode(fs.readFileSync(path.join(this.skillsDirectory, `/${name}/skill.js`))).then(() => {
+          return true;
+        }).catch(err => {
+          // Could not require the skill. Reset the skill to an empty one and add it to the brain.
+          logger.error(`\x1b[33m${name}\x1b[0m has an invalid code and could not be required. Replaced by an empty skill.`);
+
+          const overseer = this.spawnOverseer(name);
+          let skill = new Skill(name, overseer);
+
+          // Then throw back the error to retrieve it.
+          return this.addSkill(skill).then((skill) => {
+            err.skill = skill.name;
+            throw err;
+          });
+        });
+      })
+      .then(() => {
+        return this.skillController.is_active(name);
+      })
+      .then((status) => {
         const overseer = this.spawnOverseer(name);
         let skill = new Skill(name, overseer);
         try {
@@ -642,18 +676,23 @@ exports.SkillManager = class SkillManager {
           });
         } catch (e) {
           // Could not require the skill. Reset the skill to an empty one and add it to the brain.
-          logger.error(`"${name}" could not be required. Replaced by an empty skill.\x1b[0m`);
+          logger.error(`\x1b[33m${name}\x1b[0m could not be required. Replaced by an empty skill.`);
+
           skill = new Skill(name, overseer);
-          return this.addSkill(skill);
+
+          // Then throw back the error to retrieve it.
+          return this.addSkill(skill).then((skill) => {
+            e.skill = skill.name;
+            throw e;
+          });
         }
       })
       .then((skill) => {
-        logger.log(`"${name}" successfully loaded ${skill.active ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
+        logger.log(`\x1b[33m${name}\x1b[0m successfully loaded ${skill.active ? `And \x1b[32mactivated\x1b[0m` : `But \x1b[31mnot activated\x1b[0m`}.`);
         return skill;
       })
       .catch((err) => {
-        logger.error(`"${name}" could not load!\x1b[0m`);
-        logger.error(err);
+        logger.error(`\x1b[33m${name}\x1b[0m could not load:\n\t${err.message}`);
         throw err;
       });
   }
@@ -693,7 +732,7 @@ exports.SkillManager = class SkillManager {
       }, Promise.resolve([])).then(errors => {
         if (errors.length >= 1) {
           let message = `> [ERROR] Could not load all skills...\n`;
-          message += errors.map(error => "\t..." + error.message).join("\n");
+          message += errors.map(error => `\t...[\x1b[33m${error.skill || "System"}\x1b[0m] - ${error.message}`).join("\n");
           message += `\n... These skills were not loaded.`
           logger.error(message);
         }
@@ -851,15 +890,19 @@ exports.SkillManager = class SkillManager {
    * @return {Promise} Promise object (true, null) if validated, (false, string reason) otherwise.
    */
   validateSkillCode(code) {
-    return new Promise((resolve, reject) => {
-      // TODO: Validate skill code.
+    return Promise.resolve(code).then(code => {
+      logger.info(`Validating code of skill...`);
 
-      let [matched, name, author, date, commands, intents, interactions, dependencies, logic, ...rest] = new RegExp(skillTemplateRegex, "g").exec(code) || [null, null, null, null, null, null, null, null, null, null];
-      if (matched == null || matched.length == 0) {
-        return resolve(false, "Skill template didn't match.");
+      ////////////////////////////////////////////////
+      // TODO: WARNING: This check is unsafe.
+      ////////////////////////////////////////////////
+
+      // Skill code should not contain any requires.
+      if (code.includes("require(")) {
+        throw new Error(`The use of the '\x1b[31mrequire\x1b[0m' Symbol is strictly forbidden. Use skill.loadModule(module) or skill.getSecret() instead.`);
       }
 
-      return resolve(true, null);
+      return true;
     });
   }
 
@@ -947,49 +990,51 @@ exports.SkillManager = class SkillManager {
    */
   saveSkillCode(skillName, code) {
     return new Promise((resolve, reject) => {
-      this.validateSkillCode(code).then((success, reason) => {
-        // TODO: Validate skill code instead of TRUE...
+      this.validateSkillCode(code).then(success => {
+        logger.info(`Saving code of skill \x1b[33m${skillName}\x1b[0m...`);
+        logger.log(`\t... Push ${skillName} to database...`);
+        this.skillController.save_code(skillName, code).then((skill) => {
+          logger.log(`\t... Writing code file of ${skillName}...`);
+          fs.writeFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), code, 'utf8', (err) => {
+            if (err) {
+              logger.error(err);
+              const error = new Error("Skill persisted to database, but couldn't write it to disk.");
+              error.skill = skillName;
+              return reject(error);
+            }
 
-        if (true) { // eslint-disable-line no-constant-condition
-          logger.info(`Saving code of skill \x1b[33m${skillName}\x1b[0m...`);
-          logger.log(`\t... Push ${skillName} to database...`);
-          this.skillController.save_code(skillName, code).then((skill) => {
-            logger.log(`\t... Writing code file of ${skillName}...`);
-            fs.writeFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), code, 'utf8', (err) => {
-              if (err) {
-                logger.error(err);
-                return reject();
-              }
+            logger.log(`\t... Reload skill.`);
 
-              logger.log(`\t... Reload skill.`);
-
-              this.reloadSkill(skillName).then(() => {
-                return resolve();
-              }).catch((err) => {
-                logger.error(err);
-                return reject();
-              });
+            this.reloadSkill(skillName).then(() => {
+              return resolve();
+            }).catch((err) => {
+              const error = new Error("Skill saved, but couldn't be loaded because: " + err.message);
+              error.skill = skillName;
+              return reject(error);
             });
-          }).catch((err) => {
-            logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
-            return reject(new Error("Could not push skill code."));
           });
-        } else {
-          return reject(new Error("Skill code is not valid : " + reason || ""));
-        }
+        }).catch((err) => {
+          logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          const error = new Error("Code is valid, but couldn't save it to database.");
+          error.skill = skillName;
+          return reject(error);
+        });
       }).catch((err) => {
-        logger.error(err);
-        return reject(new Error("Skill code is not valid."));
+        err.skill = skillName;
+        return reject(err);
       });
     });
   }
+
+  /////////////////////////////////////////////////////////////
+  // HANDLERS
 
   handleCommand(cmd, phrase = "", data = {}) {
     return Promise.resolve().then(() => {
       if (!this.hasCommand(cmd)) {
         throw new Error("Command is not active or undefined.");
       }
-  
+
       return this.skills[this.commands[cmd].skill].commands[cmd].handler({ phrase, data });
     });
   }
@@ -999,7 +1044,7 @@ exports.SkillManager = class SkillManager {
       if (!this.hasIntent(slug)) {
         throw new Error("Intent is not active or undefined.");
       }
-  
+
       return this.skills[this.intents[slug].skill].intents[slug].handler({ entities, data });
     });
   }
@@ -1012,5 +1057,28 @@ exports.SkillManager = class SkillManager {
 
       return this.skills[this.interactions[name].skill].interactions[name].handler(thread, { phrase, data });
     });
+  }
+
+  /////////////////////////////////////////////////////////////
+  // HELP
+
+  getHelpBySkills() {
+    return Promise.resolve([...this.skills].map(skill => {
+      const help = {
+        name: skill.name,
+        active: skill.active,
+        commands: Object.values(skill.commands).map(command => {
+          return {
+            name: command.name,
+            cmd: command.cmd,
+            help: command.help
+          };
+        })
+      };
+      if (skill.description && skill.description.length > 0) {
+        help.description = skill.description;
+      }
+      return help;
+    }));
   }
 }

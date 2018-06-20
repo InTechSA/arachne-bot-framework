@@ -10,30 +10,53 @@ function skillToggle(skillButton) {
       dataType: 'json',
       success: function(json) {
         console.log(json);
-        if (json.active) {
-          $(skillButton).attr('data-active', true);
-          $(skillButton).data('active', true);
-          $(skillButton)
-            .find('[data-fa-i2svg]')
-            .toggleClass("fa-toggle-on")
-            .toggleClass("fa-toggle-off");
-          $(skillButton)
-            .toggleClass("text-success")
-            .toggleClass("text-danger");
-          $(skillButton).attr('title', 'Deactivate skill');
-          $(skillButton).attr('aria-label', 'Deactivate skill');
+        if (json.success) {
+          if (json.active) {
+            $(skillButton).attr('data-active', true);
+            $(skillButton).data('active', true);
+            $(skillButton)
+              .find('[data-fa-i2svg]')
+              .toggleClass("fa-toggle-on")
+              .toggleClass("fa-toggle-off");
+            $(skillButton)
+              .toggleClass("text-success")
+              .toggleClass("text-danger");
+            $(skillButton).attr('title', 'Deactivate skill');
+            $(skillButton).attr('aria-label', 'Deactivate skill');
+
+            notifyUser({
+              title: "Skill activated",
+              message: skill + " was successfully activated",
+              type: "success",
+              delay: 2
+            });
+          } else {
+            $(skillButton).attr('data-active', false);
+            $(skillButton).data('active', false);
+            $(skillButton)
+              .find('[data-fa-i2svg]')
+              .toggleClass("fa-toggle-off")
+              .toggleClass("fa-toggle-on");
+            $(skillButton)
+              .toggleClass("text-danger")
+              .toggleClass("text-success");
+            $(skillButton).attr('title', 'Activate skill');
+            $(skillButton).attr('aria-label', 'Activate skill');
+
+            notifyUser({
+              title: "Skill deactivated",
+              message: skill + " was successfully deactivated",
+              type: "success",
+              delay: 2
+            });
+          }
         } else {
-          $(skillButton).attr('data-active', false);
-          $(skillButton).data('active', false);
-          $(skillButton)
-            .find('[data-fa-i2svg]')
-            .toggleClass("fa-toggle-off")
-            .toggleClass("fa-toggle-on");
-          $(skillButton)
-            .toggleClass("text-danger")
-            .toggleClass("text-success");
-          $(skillButton).attr('title', 'Activate skill');
-          $(skillButton).attr('aria-label', 'Activate skill');
+          notifyUser({
+            title: json.message,
+            message: json.error,
+            type: "error",
+            delay: 2
+          });
         }
       },
       error: function(err) {
@@ -41,7 +64,7 @@ function skillToggle(skillButton) {
       }
     });
   }
-};
+}
 
 function toggleSkillDetail(skillName) {
   $(`#detail-${skillName}`).on('show.bs.collapse', () => {

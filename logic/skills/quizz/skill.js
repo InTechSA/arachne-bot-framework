@@ -5,7 +5,7 @@
 */
 
 module.exports = (skill) => {
-    const request = require('request');
+    const request = skill.loadModule('request');
 
     skill.addCommand("quizz", "quizz", ({ phrase, data }) => {
         return new Promise((resolve, reject) => {
@@ -62,6 +62,14 @@ module.exports = (skill) => {
                 }
             });
         });
+    }, {
+        description: "Start a new quizz",
+        examples: [
+            {
+                phrase: "!quizz",
+                action: "Creates a new quizz and starts interactive mode for answers."
+            }
+        ]
     });
 
     skill.addIntent("quizz", "quizz", ({ entities, data }) => {
