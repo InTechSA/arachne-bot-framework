@@ -102,6 +102,12 @@ module.exports = function (io) {
     });
   });
 
+  router.get('/manual', (req, res, next) => {
+    return res.render('manual', {
+      title: hub.ConfigurationManager.loadedConfiguration.botname
+    });
+  });
+
   router.get('/help/man', (req, res, next) => {
     hub.getHelpBySkills().then(help => {
       return res.render('help', {
