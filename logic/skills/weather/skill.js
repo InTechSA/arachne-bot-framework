@@ -4,12 +4,12 @@
   DATE : 17/04/2018
 */
 
-const axios = require('axios');
-const token = require('./secret').token;
-const weatherApi = `http://api.openweathermap.org/data/2.5/weather?APPID=${token}&lang=fr&units=metric`;
-const weatherIcon = 'http://openweathermap.org/img/w/';
-
 module.exports = (skill) => {
+
+    const axios = skill.loadModule('axios');
+    const token = skill.getSecret().token;
+    const weatherApi = `http://api.openweathermap.org/data/2.5/weather?APPID=${token}&lang=fr&units=metric`;
+    const weatherIcon = 'http://openweathermap.org/img/w/';
 
     skill.addCommand("weather", "weather", ({ phrase, data }) => {
         return Promise.resolve().then(() => {

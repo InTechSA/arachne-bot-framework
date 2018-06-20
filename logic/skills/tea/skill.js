@@ -5,7 +5,7 @@
 */
 
 module.exports = (skill) => {
-    const schedule = require('node-schedule');
+    const schedule = skill.loadModule('node-schedule');
 
     skill.addCommand("tea", "set-tea-alarm", ({ phrase, data }) => {
         return new Promise((resolve, reject) => {
@@ -82,6 +82,8 @@ module.exports = (skill) => {
                 });
             }
         });
+    }, {
+        description: "Tea maker"
     });
 
     skill.addIntent("tea-alarm", "set-tea-alarm", ({ entities, data }) => {

@@ -49,7 +49,7 @@ exports.SkillManager = class SkillManager {
       "request",
       "axios",
       "jsonwebtoken",
-      "node-shedule"
+      "node-schedule"
     ]
   }
 

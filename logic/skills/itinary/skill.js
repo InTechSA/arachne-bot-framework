@@ -4,11 +4,11 @@
   DATE : 30/03/2018
 */
 
-const axios = require('axios');
-// The google api_key used for the request !!Link to my personnal account for the moment!!!
-const GOOGLE_API_KEY = require('./secret').google_api_key;
-
 module.exports = (skill) => {
+    
+    const axios = skill.loadModule('axios');
+    // The google api_key used for the request !!Link to my personnal account for the moment!!!
+    const GOOGLE_API_KEY = skill.getSecret().google_api_key;
 
     skill.addCommand("itinary","itinary",({phrase, data})  => {
         return Promise.resolve().then(() => {
@@ -61,8 +61,7 @@ module.exports = (skill) => {
                                 text: "* Voila votre itinéraire : *\n"
                                 + "> Départ : "+start_address+"\n"
                                 + "> Arrivée : "+end_address+"\n"
-                                + "> Temps estimé minimum : "+route.legs[0].duration.text+"\n"
-                                + "> Temps éstimé maximum : "+route.legs[0].duration_in_traffic.text+"\n"
+                                + "> Temps éstimé : "+route.legs[0].duration_in_traffic.text+"\n"
                                 + "> Route conseillée : "+route.summary
                             }
                         });
@@ -102,4 +101,4 @@ module.exports = (skill) => {
         });
     });
 
-}
+};

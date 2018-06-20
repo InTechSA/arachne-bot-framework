@@ -3,12 +3,14 @@
   AUTHOR : Anonymous
   DATE : 03/04/2018
 */
-var token_AD = null;
-var token_expiration = null;
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
+
 
 module.exports = (skill) => {
+
+    var token_AD = null;
+    var token_expiration = null;
+    const axios = skill.loadModule('axios');
+    const jwt = skill.loadModule('jsonwebtoken');
 
     /**
      * Get a New Token from AD and store the new token in r2d2's brain and the expiration date of the new token
@@ -16,8 +18,8 @@ module.exports = (skill) => {
      * @return the next function to execute with the parameter err and the new accessToken
      */
     function refreshAccessToken() {
-        var username = require("./secret").username;
-        var password = require("./secret").password;
+        var username = skill.getSecret().username;
+        var password = skill.getSecret().password;
         return axios({
             method: 'POST',
             url: 'https://si-ad.intech.lu/authentication',
@@ -38,7 +40,7 @@ module.exports = (skill) => {
                     token_AD = null;
                     throw "Error : "+response.status+" when refreshing token, please contact administrator" ;
                 } else {
-                    //const pubKey = require("./secret").public_key;
+                    //const pubKey = skill.getSecret().public_key;
                     //jwt.verify(response.data.accessToken, Buffer.from(pubKey.replace(/\\r\\n/g, "\r\n")), (err, decoded) => {
                         //if (err) throw "Error :  " + 403 + " when refreshing token, please contact administrator.";
                         token_AD = response.data.accessToken;

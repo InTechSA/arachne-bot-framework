@@ -6,7 +6,7 @@
 
 module.exports = (skill) => {
     const ActiveDirectoryEndpoint = "http://si-ad.intech.lu";
-    const axios = require('axios');
+    const axios = skill.loadModule('axios');
 
     function parserUser(result) {
         var messages;
@@ -119,7 +119,7 @@ module.exports = (skill) => {
             endPoint = ActiveDirectoryEndpoint + '/users/' + user;
         }
         if (allUsers) {
-            endPoint = ActiveDirectoryEndpoint + '/users?cache=false&fields=';
+            endPoint = ActiveDirectoryEndpoint + '/users?cache=false&groups=collaborators&fields=';
         }
         skill.log('getUserInfos :: url : ' + endPoint);
         var options = {

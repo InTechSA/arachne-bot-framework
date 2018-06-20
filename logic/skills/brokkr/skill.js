@@ -5,8 +5,8 @@
 */
 
 module.exports = (skill) => {
-    const axios = require('axios');
-    const { app_token, brokkr_url } = require('./secret');
+    const axios = skill.loadModule('axios');
+    const { app_token, brokkr_url } = skill.getSecret();
 
     skill.addCommand('brokkr', 'brokkr', ({ phrase, data }) => {
         const [cmd, ...params] = phrase.split(" ");
@@ -50,6 +50,8 @@ module.exports = (skill) => {
                     }
                 });
         }
+    }, {
+        description: "Brokker skill"
     });
 
     skill.addIntent("list-apps", "brokkr-list-apps", ({ entities: { client: client = [] }, data }) => {

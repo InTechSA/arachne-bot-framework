@@ -4,146 +4,213 @@
   DATE : 30/04/2018
 */
 
-/*
-  You should not modify this part unless you know what you're doing.
-*/
-
-// Defining the skill
-// Commands the skill can execute.
-/* <SKILL COMMANDS> */
-let commands = {
-  'events': {
-    cmd: "events",
-    execute: eventsHandler
-  }
-};
-/* </SKILL COMMANDS> */
-
-// intents the skill understands.
-/* <SKILL INTENTS> */
-let intents = {
-  'events-events': {
-    slug: "get-events",
-    handle: nlpEvents,
-    expected_entities: []
-  }
-};
-/* </SKILL INTENTS> */
-
-// Conversation handlers of the skill.
-/* <SKILL INTERACTIONS> */
-let interactions = {
-};
-/* </SKILL INTERACTIONS> */
-
-// dependencies of the skill.
-/* <SKILL DEPENDENCIES> */
-const overseer = require('../../overseer');
-let dependencies = ["request"];
-/* </SKILL DEPENDENCIES> */
-
-// Exposing the skill definition.
-exports.commands = commands;
-exports.intents = intents;
-exports.dependencies = dependencies;
-exports.interactions = interactions;
-
-/*
-  Skill logic begins here.
-  You must implements the functions listed as "execute" and "handle" handler, or your skill will not load.
-*/
-/* <SKILL LOGIC> */
-var request = require('request');
-var url_event_micro = "http://bot-actintech.intech-lab.com";
-/**
-  Handler for command events (!events).
-
-  Params :
-  --------
-    phrase: String
-*/
-/**
- * @param {phrase (String), data (Object)} param0 the phrase entered by the user , and the datas sent by the adapter
- */
-function eventsHandler({ phrase, data }) {
-  return new Promise((resolve, reject) => {
-    /*
-      >>> YOUR CODE HERE <<<
-      resolve the handler with a formatted message object.
-    */
-    // Retrieve the parameter that the user sent with the !events command
-    var message = {};
-    var query = phrase.trim().replace('events', '').trim();
-    // if there is no query, associate it to soon
-    if (query === '') {
-      query = 'soon';
-    }
-    console.log("Retreiving token ... ");
-    // retrieve the ad token 
-    overseer.handleCommand('get-ad-token').then((response) => {
-      console.log("Retrieve Token");
-      // Build the request
-      let options = {
-        url: url_event_micro + '/getEvents/' + query,
-        headers: {
-          'Authorization': response.response.token,
-          'Accept': 'application/json'
-        },
-        timeout: 3000
+module.exports = (skill) => {
+    
+    var axios = skill.loadModule('axios');
+    var actIntechEndPoint = "https://act.intech.lu/actintech/v1";
+    var actIntechFront = "https://act.intech.lu";
+    
+    function distance(a, b){
+      if(a.length === 0) return b.length; 
+      if(b.length === 0) return a.length; 
+      var matrix = [];
+      var i;
+      for(i = 0; i <= b.length; i++){
+        matrix[i] = [i];
       }
-      // Make the request using request
-      request(options, (err, res, body) => {
-          try {
-            if (err || res.statusCode !== 200) {
-              // Error
-              if(!body) {
-                  message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
-              } else {
-                  message = JSON.parse(body);   
-              }
-            } else {
-              // No error
-              message = JSON.parse(body);
-            }
-          } catch (e) {
-              message = { text: "Une erreur est survenue lors de l'appel du microservice events :( " };
+      var j;
+      for(j = 0; j <= a.length; j++){
+        matrix[0][j] = j;
+      }
+      for(i = 1; i <= b.length; i++){
+        for(j = 1; j <= a.length; j++){
+          if(b.charAt(i-1) == a.charAt(j-1)){
+            matrix[i][j] = matrix[i-1][j-1];
+          } else {
+            matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, Math.min(matrix[i][j-1] + 1, matrix[i-1][j] + 1));
           }
-            return resolve({
-                message: message
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+    
+    function distance2(a, b) {
+        var result = 100;
+        var d;
+        var tabA = a.split(" ");
+        var tabB = b.split(" ");
+        for(var i = 0 ;i < tabA.length; i++) {
+            for(var j = 0 ;j < tabB.length; j++) {
+                d = distance(tabA[i],tabB[j]);
+                if(result > d) result = d;
+            }
+        }
+        return result;
+    }
+    
+    function searchEvents(query, results) {
+        return new Promise((resolve, reject) => {
+            results.map((result) => {
+                result.sim = distance2(query.toLowerCase(), result.description.toLowerCase());
             });
+            results.sort((a,b) => { return a.sim - b.sim });
+            return resolve(results[0]);
+        });
+    }
+    
+    function printEvent(event, soon = false) {
+        var messages = "";
+        var options = {year: 'numeric',month: 'long',day: 'numeric',hour: 'numeric',minute: 'numeric'};
+        //Get the organizers
+        messages += " *Titre* " + event.description + "\n";
+        messages += " *Résumé* " + event.summary + "\n";
+        let organizers = '';
+        if (event.organizers && event.organizers.length > 0) {
+            organizers += event.organizers[0].firstName + ' ' + event.organizers[0].lastName;
+            for (let j = 1; j < event.organizers.length; j++) {
+                organizers += ', ' + event.organizers[j].firstName + ' ' + event.organizers[j].lastName;
+            }
+        }
+        // Print the organizers
+        messages += ' *Organisé par* : ' + organizers + "\n";
+        messages += ' *Date* : ' + Intl.DateTimeFormat('EN', options).format(new Date(event.dateTime)) + "\n";
+        messages += ' *Localisation* : ' + event.place.formatted_address + "\n"; // jshint ignore:line
+        let seatPluriel = '';
+        //Get the number of seats and pint them
+        if ((event.nbSeat - event.nbRegistersAccepted) > 1) {
+            seatPluriel = 's';
+        }
+        if (event.nbSeat >= 0) {
+            messages += ' *Nombre de places* : ' + event.nbSeat + ' places dont ' + (event.nbSeat - event.nbRegistersAccepted) + ' place' + seatPluriel + ' restante' + seatPluriel + "\n";
+        } else {
+            messages += ' *Nombre de places* : illimité' + "\n";
+        }
+        var image_url = null;
+        if(event.picture) {
+            image_url = event.picture;
+        }
+        // Print the date of the begining of the subscription
+        messages += ' *Début des inscriptions* : ' + Intl.DateTimeFormat('EN', options).format(new Date(event.registrationDateStart)) + "\n";
+        // Print the end
+        messages += ' *Fin des inscriptions* : ' + Intl.DateTimeFormat('EN', options).format(new Date(event.registerDeadline)) + "\n" + "\n";
+    
+        messages += ` Plus d'informations et inscription à ce lien : [Lien](${actIntechFront + '/activity/' + event._id})` + "\n";
+        return ({ text: messages, image_url});
+    }
+    
+    function getEvents(token) {
+        return new Promise((resolve, reject) => {
+            // Build the endpoint to have the actives activities
+            let endPoint = actIntechEndPoint + '/activities?state=actif';
+            skill.log(endPoint);
+            // Do an http get call with the token ( store in res ) in the header
+            var options = {
+                url: encodeURI(endPoint),
+                headers: {
+                    'Authorization': token,
+                    'Accept': 'application/json',
+                    'user-agent': 'node-request'
+                }
+            };
+            // Build the request using request package
+            axios(options).then((response) => {
+                return resolve(response.data);
+            }).catch((err) => {
+                if(err.response.status === 404) {
+                    return reject("Je n'ai pas trouvé d'events :( ");
+                } else {
+                    return reject("Erreur d'appel au backend de ActIntech :( " + err.response.status);
+                }
+            });
+        });
+    }
+    
+    skill.addCommand("events","events",({ phrase, data }) => {
+      return Promise.resolve().then(() => {
+        // Retrieve the parameter that the user sent with the !events command
+        var query = phrase.trim().replace('events', '').trim();
+        // if there is no query, associate it to soon
+        if (query === '') {
+          query = 'all';
+        }
+        skill.log("Retreiving token ... ");
+        // retrieve the ad token 
+        return skill.execute('getToken').then((response) => {
+            const token = response.response.token;
+            switch (query) {
+                case 'all':
+                    // All case
+                    // Retrieve all the events
+                    skill.log("Retreiving all events");
+                    return getEvents(token).then((results) => {
+                        // Retrieve the informations well printed
+                        var attachments = [];
+                        skill.log(results[0]);
+                        for (var i = 0; i < results.length; i++) {
+                            attachments.push(printEvent(results[i], true));
+                        }
+                        skill.log("Printing events");
+                        return ({
+                            message: {
+                                title: "Liste des prochains Evenements",
+                                attachments: attachments
+                            }
+                        });
+                    });
+            case 'help':
+            // Help block
+            return ({
+                message: {
+                    title: "Events à venir : ",
+                    text: " HELP pour la commande events \n" + "\n"
+                     +" Cette commande permet d'obtenir la liste des événements à venir sur ActIntech. \n"
+                     + " Paramètres eventuels de la query : \n"
+                     + " *soon* , exemple : !events soon , permet d'obtenir la liste des événements ActIntech dans le mois prochain. \n"
+                     + " *all* , exemple : !events all , permet d'obtenir la liste entière des événements à venir sur ActIntech. \n"
+                     + " *[query]* , exemple : !events karting, permet d'obtenir une liste des évenements en rapport avec une query. \n"
+                }
+            });
+            default:
+                // The query block ie it will search trough the name of the events for the event that is the most related with what the user entered.
+                // Retrieve the events
+                skill.log("Retreiving all events");
+                return getEvents(token).then((results) => {
+                    // Search for the event in the events
+                    skill.log("Search for events with query "+query);
+                    return searchEvents(query, results).then((resultSearch) => {
+                        // Else print it
+                        skill.log("Find event");
+                        var attachments = [printEvent(resultSearch)];
+                        var message = {
+                            title: "Evenements lié à "+query,
+                            attachments: attachments
+                        };
+                        return({
+                            message: message
+                        });
+                    });
+                });
+            }
+        });
+      }).catch((err) => {
+            if (typeof(err) !== String) err = err.toString();
+            skill.log("Error : " + err);
+            return({
+                message: {
+                    title: "Error",
+                    text: err
+                }
+            }); 
       });
-    }).catch((error) => {
-      console.log("Catch error in command get-ad-token " + error);
-      /* Handle the error of this command here */
-      message.text = "Could not retrieved the token from the ad :(";
-      message.private = true;
-      return resolve({
-        success: false,
-        message: message
-      });
+    }, {
+        description: "Skill to retrieve the events from actIntech"
     });
-  });
-}
-/**
-  Handler for intent events-events (ask-soon-events).
 
-  Params :
-  --------
-    entities (Object)
-*/
-function nlpEvents({ entities = {}, data }) {
-  return new Promise((resolve, reject) => {
-    /*
-      >>> YOUR CODE HERE <<<
-      resolve the handler with a formatted message object.
-    */
-    eventsHandler({phrase: "events soon"}).then((message) => {
-        return resolve(message);
-    }).catch((message) => {
-        return reject(message);
+    skill.addIntent("events","events",({ entities = {}, data }) => {
+        return Promise.resolve.then(() => {
+            skill.log("Nlp Events");
+            return skill.handleCommand("events",{phrase: "events all", data});
+        });
     });
-  });
-}
 /* </SKILL LOGIC> */
-
-// You may define other logic function unexposed here. Try to keep the skill code slim.
+};
