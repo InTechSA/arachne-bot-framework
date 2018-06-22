@@ -83,7 +83,25 @@ module.exports = (skill) => {
             }
         });
     }, {
-        description: "Tea maker"
+        description: "Commande pour lancer un timer pour le thé !",
+        "subcommands":[
+            {
+                "name":"tea-maker-black",
+                "cmd":"black",
+                "description":"Timer pour le thé noir",
+
+            },
+            {
+                "name":"tea-maker-green",
+                "cmd":"green",
+                "description":"Timer pour le thé vert",
+            },
+            {
+                "name":"tea-maker-herbs",
+                "cmd":"herbs",
+                "description":"Timer pour le thé herbs",
+            }
+        ]
     });
 
     skill.addIntent("tea-alarm", "set-tea-alarm", ({ entities, data }) => {

@@ -191,7 +191,36 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "To know who is someone with his trigram or username"
+        description: "To know who is someone with his trigram or username",
+        subcommands: [
+            {
+                "name":"tigram or username",
+                "cmd":"",
+                "description":"Cherche un collaborateur avec son trigram ou son username, si il n'est pas trouvé, renvoie une suggestion",
+                "parameters":[
+                    {
+                        "position":0,
+                        "name":"query",
+                        "description":"trigram ou username ou query",
+                        "example":"BBN|benjamin.bertin|benjamin"
+                    }
+                ],
+                "examples":[
+                    {
+                        "phrase":"whois BBN",
+                        "action":"Cherche un user avec le trigramme BBN"
+                    },
+                    {
+                        "phrase":"whois benjamin.bertin",
+                        "action":"Cherche un user avec le username benjamin.bertin"
+                    },
+                    {
+                        "phrase":"whois benjamin",
+                        "action":"renvoie des suggestions de collaborateurs qui contiennent benjamin dans leur username"
+                    }
+                ]
+            }
+        ]
     });
 
     skill.addIntent("whois", "whois", ({ entities: { 'trigram': trigram = {} }, data }) => {
