@@ -81,7 +81,38 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "Make the bot say an itinary"
+        description: "Cherche un itinéraire entre deux lieux",
+        "subcommands":[
+            {
+                "name":"itinary",
+                "cmd":"",
+                "description":"Prends deux ou un paramètre en entrée ( séparé par '->' ), si le deuxième est vide, le point de départ sera l'agence",
+                "parameters":[
+                    {
+                        "position":0,
+                        "name":"place1",
+                        "description":"Premier lieux",
+                        "example":"208 Rue de Noertzange, 3622 Kayl"
+                    },
+                    {
+                        "position":1,
+                        "name":"place2",
+                        "description":"Deuxième lieux",
+                        "example":"4 Bisserweg, 1238 Lëtzebuerg"
+                    }
+                ],
+                "examples":[
+                    {
+                        "phrase":"itinary scott's pub",
+                        "action":"Cherche un itinéraire de l'agence vers le scott's pub"
+                    },
+                    {
+                        "phrase":"itinary thionville -> scott's pub",
+                        "action":"Cherche un itinéraire de thionville vers le scott's pub"
+                    }
+                ]
+            }
+        ]
     });
 
     skill.addIntent("get-itinary","itinary",({ entities: { 'location': location = {}}, data }) => {

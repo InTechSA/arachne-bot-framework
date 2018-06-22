@@ -25,10 +25,8 @@ module.exports = (skill) => {
                     return resolve({message : {text: 'Error contacting the nlu API '}});
                 }
                 let analyzed = { };
-                skill.log(body);
                 try {
                     analyzed.intent = body.data.intent ? body.data.intent.name.toLowerCase() : null;
-                    skill.log(analyzed.intent)
                       analyzed.entities = {};
                       if(body.data.entities) {
                           for (let entity of body.data.entities) {

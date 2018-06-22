@@ -61,6 +61,9 @@ exports.SkillManager = class SkillManager {
       storeItem: (key, value) => {
         return this.hub.StorageManager.storeItem(skillName, key, value);
       },
+      clearItem: (key) => {
+        return this.hub.StorageManager.clearItem(skillName, key);
+      },
       createHook: (messageOnDelete) => {
         return this.hub.HookManager.create(skillName, messageOnDelete);
       },
@@ -75,6 +78,9 @@ exports.SkillManager = class SkillManager {
       },
       createPipeWithHook: (handler, secret) => {
         return this.hub.PipeManager.createWithHook(skillName, handler, secret);
+      },
+      deletePipe: (identifier) => {
+        return this.hub.PipeManager.remove(skillName, identifier);
       },
       handleCommand: (cmd, { phrase, data }) => {
         return this.hub.handleCommand(cmd, { phrase, data });

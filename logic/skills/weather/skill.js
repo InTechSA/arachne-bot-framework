@@ -63,7 +63,32 @@ module.exports = (skill) => {
             });  
         });
     }, {
-        description: "To get the weather of a location"
+        description: "Récupère le temps actuel à un lieux donné",
+        "subcommands":[
+            {
+                "name":"get-weather",
+                "cmd":"",
+                "description":"Renvoie les events en fonction du paramètre entrée",
+                "parameters":[
+                    {
+                        "position":0,
+                        "name":"lieux",
+                        "description":"lieux où le temps doit être cherché",
+                        "example":"luxembourg ville"
+                    }
+                ],
+                "examples":[
+                    {
+                        "phrase":"weather Paris",
+                        "action":"renvoie le temps à paris"
+                    },
+                    {
+                        "phrase":"weather Metz",
+                        "action":"renvoie le temps à Metz"
+                    }
+                ]
+            }
+        ]
     });
     
     skill.addIntent("weather", "weather", ({ entities: { location: location = [] }, data }) => {

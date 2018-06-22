@@ -34,6 +34,10 @@ module.exports.create_storage = function(skill, key, value) {
   });
 }
 
+module.exports.clear_storage_key = function(skill, key) {
+  return Storage.findOneAndRemove({skill, key});
+}
+
 module.exports.get_storage = function(skill, key) {
   return new Promise((resolve, reject) => {
     Storage.findOne({ skill, key }, (err, storage) => {

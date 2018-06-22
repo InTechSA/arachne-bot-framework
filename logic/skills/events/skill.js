@@ -138,7 +138,7 @@ module.exports = (skill) => {
         return skill.execute('getToken').then((response) => {
             const token = response.response.token;
             switch (query) {
-                case 'all':
+                case '':
                     // All case
                     // Retrieve all the events
                     skill.log("Retreiving all events");
@@ -203,7 +203,32 @@ module.exports = (skill) => {
             }); 
       });
     }, {
-        description: "Skill to retrieve the events from actIntech"
+        description: "Permet de récupérer les événements de ActIntech",
+        "subcommands":[
+            {
+                "name":"get-events",
+                "cmd":"",
+                "description":"Renvoie les events en fonction du paramètre entrée",
+                "parameters":[
+                    {
+                        "position":0,
+                        "name":"eventSearch",
+                        "description":"(optionel) pour rechercher les events avec un critère de recherche, sans paramètres, cela renvoie tous les événements actifs",
+                        "example":"disney"
+                    }
+                ],
+                "examples":[
+                    {
+                        "phrase":"events disney",
+                        "action":"Cherche les events avec le mot clé disney"
+                    },
+                    {
+                        "phrase":"events",
+                        "action":"renvoie tous les events actifs d'actIntech"
+                    }
+                ]
+            }
+        ]
     });
 
     skill.addIntent("events","events",({ entities = {}, data }) => {

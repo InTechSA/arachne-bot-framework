@@ -59,13 +59,7 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "Start a new quizz",
-        examples: [
-            {
-                phrase: "!quizz",
-                action: "Creates a new quizz and starts interactive mode for answers."
-            }
-        ]
+        description: "Lance un quizz ! <Attention> si vous voulez répondre au quizz en dehors d'un chat privé, ajoutez ! devant votre réponse"
     });
 
     skill.addIntent("quizz", "quizz", ({ entities, data }) => {

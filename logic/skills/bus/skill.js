@@ -40,7 +40,7 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "Command to get the bus from the agence"
+        description: "Commande pour avoir les horaires du bus partant de l'agence"
     });
     
     skill.addIntent("bus", "bus", ({ data }) => {

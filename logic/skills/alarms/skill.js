@@ -94,7 +94,31 @@ module.exports = (skill) => {
        });
       });
     },{
-        description: "create an alarm"
+        description: "Create an alarm",
+        "subcommands":
+        [
+            {
+                "name":"create-alarms",
+                "cmd":"",
+                "description":"Crée une alarme avec une heure précise ( doit être au format HH:mm )",
+                "parameters":
+                [
+                    {
+                        "position":0,
+                        "name":"heure",
+                        "description":"L'heure a laquelle l'alarme va se déclencher ",
+                        "example":"12:00"
+                    }
+                ],
+                "examples":
+                [
+                    {
+                        "phrase":"alarms 12:00",
+                        "action":"Crée une alarme à 12:00"
+                    }
+                ]
+            }
+        ]
     });
     
     skill.addInteraction("confirmation", (thread, { phrase, data }) => {

@@ -180,6 +180,10 @@ module.exports = class Skill {
         }
     }
 
+    deletePipe(identifier) {
+        return this.manager.deletePipe(identifier);
+    }
+
     /** Execute a command from this or another skill.
      * 
      * @param {String} cmd 
@@ -214,5 +218,14 @@ module.exports = class Skill {
      */
     storeItem(key, item) {
         return this.manager.storeItem(key, item);
+    }
+
+    /** Clear an item
+     * 
+     * @param {String} key
+     * @param {Object} item
+     */
+    clearItem(key) {
+        return this.manager.clearItem(key);
     }
 }

@@ -163,7 +163,24 @@ module.exports = (skill) => {
             }); 
         });
     },{
-        description: "Command to get your vacation or made a request for vacations"
+        description: "Commande pour récupérer vos congés ou faire une demande de congés",
+        "subcommands":[
+            {
+                "name":"get-leaves",
+                "cmd":"",
+                "description":"Renvoie le bilan de vos congés pour cette année",
+            },
+            {
+                "name":"request-leave",
+                "cmd":"request",
+                "description":"Démarre une demande de congés automatisée"
+            },
+            {
+                "name":"get-status",
+                "cmd":"status",
+                "description":"Vous renvoie les status de vos demandes de congés faites avec le bot"
+            }
+        ]
     });
     
     /**
