@@ -45,7 +45,7 @@ module.exports = (skill) => {
     skill.addPipe('croissantPipeHandler', (pipeIdentifier, { hookId, data, headers }) => {
         skill.getItem("initedHook").then((hookTab) => {
             skill.log( "Error retrieved the hooks");
-            hookTab.map((el) => el = skil.useHook(el.hookID, {
+            hookTab.map((el) => el = skill.useHook(el.hookID, {
                 message:{
                     title: "RAPPEL CROISSANT",
                     text: "C'est à toi de ramener les croissants cette semaine !!'",
@@ -80,7 +80,7 @@ module.exports = (skill) => {
                                 return skill.createHook().then((hook) => {
                                     initedHook.push({adapter: data.connector.id, hookID: hook._id});
                                     return skill.storeItem("croissant","initedHook",initedHook).then((stored) => {
-                                        return resolve({
+                                        return({
                                             message: {
                                                 title: "Hook request",
                                                 text: "Ok hook created, ready to roll :)",

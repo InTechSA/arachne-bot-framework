@@ -17,12 +17,13 @@ module.exports = (skill) => {
             }).then((response) => {
                 var helpSkills = response.data.skills;
                 var text = "";
+                var helpCmd;
                 switch(phrase[0]) {
                     case "":
                         var j;
                         for(var helpSkill of helpSkills) {
                             if(helpSkill.active) {
-                                for(var helpCmd of helpSkill.commands) {
+                                for(helpCmd of helpSkill.commands) {
                                     text += "- `!" + helpCmd.cmd + "` -> " + helpCmd.help.description + "\n";
                                 }
                             }
@@ -51,7 +52,7 @@ module.exports = (skill) => {
                                 }
                             });
                         } else {
-                            var helpCmd = helpCmds.filter((cmd) => cmd.cmd === command)[0];
+                            helpCmd = helpCmds.filter((cmd) => cmd.cmd === command)[0];
                             var title = "Aide de " + helpCmd.cmd;
                             text += "Description : " + helpCmd.help.description + "\n";
                             if(helpCmd.help.subcommands) {
@@ -79,7 +80,7 @@ module.exports = (skill) => {
                                     text += "\n";
                                 }
                             } else {
-                                text += "Pas de sous commande ! Utilisez juste `!"+helpCmd.cmd+"`"
+                                text += "Pas de sous commande ! Utilisez juste `!"+helpCmd.cmd+"`";
                             }
                             return({
                                 message: {
