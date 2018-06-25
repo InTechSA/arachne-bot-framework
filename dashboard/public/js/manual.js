@@ -197,8 +197,8 @@ class Help {
                                 </div>
                                 <p class="mb-1">${text(command.help.description) || "No description"}</p>
 
-                                <h5>Subcommands</h5>
                                 ${command.help.subcommands ? `
+                                    <h5>Subcommands</h5>
                                     <ul class="list-group list-group-flush">
                                         ${command.help.subcommands.map(subcommand => `
                                             <li class="list-group-item"><strong>${subcommand.cmd}</strong> ${text("→ " + subcommand.description || "")}</li>
@@ -253,8 +253,24 @@ class Help {
 
                     <p class="mb-1">${text(command.help.description) || "No description"}</p>
 
-                    <h3>Subcommands</h3>
+                    ${command.help.parameters ? `
+                        <h3>Parameters</h3>
+
+                        <ul class="list-group list-group-flush">
+                        ${command.help.parameters.map(parameter => `
+                            <li class="list-group-item small">
+                                <span style="text-decoration: underlined">${text(parameter.name)}:</span>
+                                <span class="pl-5">${text(parameter.description || "")}</span>
+                                <br/>
+                                <em class="pl-5">${text(parameter.example || "")}</em>
+                            </li>
+                        `).join("\n")}
+                    </ul>
+                    `: ""}
+
                     ${command.help.subcommands ? `
+                        <h3>Subcommands</h3>
+                        
                         <div class="list-group list-group-flush">
                             ${command.help.subcommands.map(subcommand => `
                                 <div class="list-group-item">

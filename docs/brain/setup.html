@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -694,71 +668,35 @@
 <h2 id="install">Install</h2>
 <h3 id="classical-installation">Classical installation</h3>
 <ul>
-<li>You must have a local installation of <a href="https://nodejs.org" target="_blank">NodeJS</a> <em>(Tested for LTS 8 and v9.9.0)</em> with npm.</li>
+<li>You must have a local installation of <a href="https://nodejs.org" target="_blank">NodeJS</a> <em>(Tested for LTS 8, v9.9.0 and v10.0.0)</em> with npm.</li>
 <li>Clone this repository using <code>git clone https://github.com/InTechSA/arachne-bot-framework</code>.</li>
 <li>Move into the brain folder: <code>cd bot-architecture-poc/brain</code>.</li>
 <li>Install npm modules with <code>npm install</code>.</li>
-<li>Add the connect information to the database in <code>brain/database/secret.js</code>, exporting a valid <code>host</code> string for mongodb (atlas, or even local if you have mongodb running on your computer) <strong>OR</strong> set the mongodb connexion string as an environment variable <code>MONGO_URL</code> (see below).</li>
+<li>Add the connect information to the database in <code>brain/database/secret.js</code>, exporting a valid <code>host</code> string for mongodb (atlas, or even local if you have mongodb running on your computer) <strong>OR</strong> set the mongodb connexion string as an environment variable <code>MONGO_URL</code> (recommended see below).</li>
 <li>Run the brain with <code>npm start</code>, or with environment variables : <code>SET MONGO_URL=&quot;mongodb://localhost/botbrain&quot; &amp;&amp; SET PORT=8080 &amp;&amp; node brain.js</code> <em>(Baware ! you must escape specific character, like <code>&amp;</code>, in environment variables values !)</em></li>
-<li><em>Optional : run microservices at will using <code>npm install</code> and <code>npm start</code>.</em></li>
 </ul>
 <blockquote>
-<p>You can access the administration dashboard at <a href="localhost:8080/dashboard" target="_blank">localhost:8080/dashboard</a>. Setup admin user with <a href="localhost:8080/dashboard/setup" target="_blank">localhost:8080/dashboard/setup</a>, username is <em>Nakasar</em> and password is <em>Password0</em>.</p>
-<p>Nota Bene: In order to use the nlp skill, you must add a <code>secret.js</code> file in the <code>brain/logic/skills/nlp</code> folder exporting a <code>recastai_token</code> with your recast ai token. (Or you may recode a new nlp skill exposing an <code>analyse</code> command). You also may set the <code>recastai_token</code> secret within the dashboard after running the brain.</p>
+<p>You can access the administration dashboard at <a href="localhost:8080/dashboard" target="_blank">localhost:8080/dashboard</a>. Setup admin user with <a href="localhost:8080/setup" target="_blank">localhost:8080/setup</a>, username is <em>Nakasar</em> and password is <em>Password0</em>.</p>
+<p>Nota Bene: In order to use the natural language, you will have to create a skill exposing an <code>analyze</code> command). You may use any NLU service like wit.ai or recast.ai.</p>
 <p>You can set the running port using <code>SET PORT=5012 &amp;&amp; node brain.js</code> instead of <code>npm start</code>.</p>
 </blockquote>
 <hr>
 <p><img src="../src/imgs/docker.png" alt="Docker install"></p>
 <h3 id="docker-full-install">Docker full install</h3>
 <blockquote>
-<p>Using the docker-compose file at the root of the project, you can run the brain, a mongo server, a rocketchat server and the adapter with a few commands, then start building skills.</p>
+<p>You may want to start a local chat server to test the bot on. You will need this repository, and an adapter projet (you can create one on your own or use one from the arachne team). To start all services at once, consider creating a docker-file using networks.</p>
 </blockquote>
-<ul>
-<li>Clone this repository using <code>git clone https://github.com/InTechSA/arachne-bot-framework</code> then checkout a release branch (or keep master). Or download a release from github website.  </li>
-<li>Edit or create a .env file at the root of the project: <code>cd bot-architecture-poc</code> then <code>nano .env</code>. Let the BOT_TOKEN empty as you can&apos;t create one yet.  </li>
-</ul>
-<pre><code>###
-# ADAPTER
-###
-BOT_URL=http://brain:8080
-BOT_TOKEN=
-HUBOT_NAME=superbot
-ROCKETCHAT_USER=superbot
-ROCKETCHAT_PASSWORD=password
-
-###
-# BRAIN
-###
-# Url of the brain.
-MONGO_URL=mongodb://mongo:27017/brain
-BRAIN_HOST=0.0.0.0
-BRAIN_PORT=8080
-</code></pre><ul>
-<li>Run the containers with <code>docker-compose up -d</code>.</li>
-<li>The bot adapter should crash in loop. You have to connect to <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> and create a user named <code>superbot</code> with password <code>password</code>.</li>
-<li>Setup the dashboard admin account at <a href="http://localhost:3012/dashboard/setup" target="_blank">http://localhost:3012/dashboard/setup</a></li>
-<li>Login to the dashboard as admin: <a href="http://localhost:3012/dashboard/login" target="_blank">http://localhost:3012/dashboard/login</a>. Username is <code>Nakasar</code> and password is <code>Password0</code>.</li>
-<li>Go to the connectors pannel <a href="http://localhost:3012/dashboard/connectors" target="_blank">http://localhost:3012/dashboard/connectors</a> and create a new connector. Copy its token.</li>
-<li>Edit the BOT_TOKEN variable in the .env file with the token you just copied.</li>
-<li>Stop all containers with <code>docker-compose stop</code> and run them again with <code>docker-compose up -d --build</code>.</li>
-<li>Here you are! You can create other account on rocketchat and have fun with the bot!</li>
-</ul>
-<blockquote>
-<p>Note Bene: To use the natural language, you must edit the skill named <em>nlp</em> and add a secret with key <code>recastai_token</code> and the recast.ai token as value, or create a new skill with a command named &quot;analyzed&quot;.</p>
-</blockquote>
-<hr>
 <h3 id="docker-install">Docker install</h3>
 <ul>
 <li>Clone this repository using <code>git clone https://github.com/InTechSA/arachne-bot-framework</code>.</li>
 <li>Configure the <code>MONGO_URL</code> variable in the docker file with the appropriate connection string to your provider (eventually local mongodb) or set it when running container.</li>
-<li>Build the Brain image using the Dockerfile, then run it : <em>(in brain/)</em> <code>docker build . -t nakasar/botbrain</code> then <code>docker run -d -p 49160:8080 nakasar/botbrain</code> <em>(don&apos;t forget to expose port 49160 to access dashboard and brain API!)</em>. You can set environment variables with the extended command instead: <code>docker run -d -e MONGO_URL=&apos;mongodb://localhost/botbrain&apos; -p 49160:8080 nakasar/botbrain</code>.</li>
+<li>Build the Brain image using the Dockerfile, then run it : <code>docker build . -t nakasar/botbrain</code> then <code>docker run -d -p 49160:8080 nakasar/botbrain</code> <em>(don&apos;t forget to expose port 49160 to access dashboard and brain API!)</em>. You can set environment variables with the extended command instead: <code>docker run -d -e MONGO_URL=&apos;mongodb://localhost/botbrain&apos; -p 49160:8080 nakasar/botbrain</code>.</li>
 <li>Run rocketchat server and rocket chat adapter with docker-compose (in <code>connectors</code> folder, run <code>docker-compose up -d</code>).</li>
 </ul>
 <blockquote>
-<p>You can access the administration dashboard at <a href="127.0.0.1:49160/dashboard" target="_blank">127.0.0.1:49160/dashboard</a>. Setup admin user with <a href="localhost:8080/dashboard/setup" target="_blank">127.0.0.1:49160/dashboard/setup</a>, username is <em>Nakasar</em> and password is <em>Password0</em>.</p>
+<p>You can access the administration dashboard at <a href="127.0.0.1:49160/dashboard" target="_blank">127.0.0.1:49160/dashboard</a>. Setup admin user with <a href="localhost:8080/setup" target="_blank">127.0.0.1:49160/setup</a>, username is <em>Nakasar</em> and password is <em>Password0</em>.</p>
 <p>Note Bene: If you run docker inside a Virtual Machine, be sure to expose the following ports in your VM software : 3012 &lt;-&gt; 49160 (adapter), 3000 &lt;-&gt; 3000 (rocketchat server). Dashboard will be accessible from <a href="127.0.0.1:3012/dashboard" target="_blank">127.0.0.1:3012/dashboard</a>.</p>
-<p>Nota Bene: In order to use the nlp skill, you must add a <code>secret.js</code> file in the <code>brain/logic/skills/nlp</code> folder exporting a <code>recastai_token</code> with your recast ai token. (Or you may recode a new nlp skill exposing an <code>analyze</code> command). You also may set the <code>recastai_token</code> secret within the dashboard after running the brain.</p>
-<p>Nota Bene: If you are using the rocketchat server included, you must create a user named <code>superbot</code>, a random email, and password <code>password</code> for the bot. Then log out and create another account for you.</p>
+<p>Nota Bene: In order to use the natural language, you will have to create a skill exposing an <code>analyze</code> command). You may use any NLU service like wit.ai or recast.ai.</p>
 </blockquote>
 <hr>
 <h2 id="environment">ENVIRONMENT</h2>
@@ -807,6 +745,11 @@ BRAIN_PORT=8080
 <td>Method of the auth service route.</td>
 </tr>
 <tr>
+<td>AUTH_SERVICE_KEY</td>
+<td></td>
+<td>Public key or secret to check auth token from service</td>
+</tr>
+<tr>
 <td>AUTH_SERVICE_USERNAME_FIELD</td>
 <td>username</td>
 <td>Name of the username field.</td>
@@ -826,6 +769,7 @@ AUTH_SERVICE_ROUTE=https://myad-service.mysociety.com/authentication
 AUTH_SERVICE_METHOD=POST
 AUTH_SERVICE_PASSWORD_FIELD=password
 AUTH_SERVICE_USERNAME_FIELD=username
+AUTH_SERVICE_KEY=-----BEGIN PUBLIC KEY-----\r\nazdazdazdazda...azdadazd\r\ndpLaz45d...azd5da\r\n-----END PUBLIC KEY-----
 ADMIN_USER=Nakasar
 </code></pre><p>The ADMIN_USER should be able to connect using the external auth service with this username, so make sure it is correct!</p>
 <pre><code>set USE_AUTH_SERVICE=true &amp;&amp; set AUTH_SERVICE_ROUTE=https://myad-service.mysociety.com/authentication &amp;&amp; set AUTH_SERVICE_METHOD=POST &amp;&amp; set AUTH_SERVICE_PASSWORD_FIELD=password &amp;&amp; set AUTH_SERVICE_USERNAME_FIELD=username &amp;&amp; set ADMIN_USER=Nakasar &amp;&amp; npm start
@@ -880,7 +824,7 @@ ADMIN_USER=Nakasar
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.3.1","depth":2,"next":{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},"previous":{"title":"Arachne Brain","level":"1.3","depth":1,"path":"brain/README.md","ref":"brain/README.md","articles":[{"title":"Install","level":"1.3.1","depth":2,"path":"brain/setup.md","ref":"brain/setup.md","articles":[]},{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},{"title":"Skills","level":"1.3.3","depth":2,"path":"brain/skills.md","ref":"brain/skills.md","articles":[{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},{"title":"Examples","level":"1.3.3.4","depth":3,"ref":"","articles":[{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]}]}]},{"title":"Dashboard","level":"1.3.4","depth":2,"path":"brain/dashboard.md","ref":"brain/dashboard.md","articles":[{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},{"title":"Users and Accounts","level":"1.3.4.2","depth":3,"anchor":"#users-and-accounts","path":"brain/dashboard.md","ref":"brain/dashboard.md#users-and-accounts","articles":[]},{"title":"Permissions","level":"1.3.4.3","depth":3,"anchor":"#permissions","path":"brain/dashboard.md","ref":"brain/dashboard.md#permissions","articles":[]},{"title":"Adapters","level":"1.3.4.4","depth":3,"anchor":"#adapters","path":"brain/dashboard.md","ref":"brain/dashboard.md#adapters","articles":[]},{"title":"Skills","level":"1.3.4.5","depth":3,"anchor":"#skills","path":"brain/dashboard.md","ref":"brain/dashboard.md#skills","articles":[]},{"title":"Test","level":"1.3.4.6","depth":3,"anchor":"#test","path":"brain/dashboard.md","ref":"brain/dashboard.md#test","articles":[]}]},{"title":"API","level":"1.3.5","depth":2,"path":"brain/api.md","ref":"brain/api.md","articles":[{"title":"Bot Endpoints","level":"1.3.5.1","depth":3,"anchor":"#bot","path":"brain/api.md","ref":"brain/api.md#bot","articles":[]},{"title":"Administration Endpoints","level":"1.3.5.2","depth":3,"anchor":"#administration","path":"brain/api.md","ref":"brain/api.md#administration","articles":[]},{"title":"Permissions","level":"1.3.5.3","depth":3,"path":"brain/permissions.md","ref":"brain/permissions.md","articles":[]}]},{"title":"Code Documentation","level":"1.3.6","depth":2,"path":"brain/code/README.md","ref":"brain/code/README.md","articles":[{"title":"Structure & Components","level":"1.3.6.1","depth":3,"path":"brain/code/components.md","ref":"brain/code/components.md","articles":[]},{"title":"The Hub","level":"1.3.6.2","depth":3,"path":"brain/code/hub.md","ref":"brain/code/hub.md","articles":[{"title":"Skill loading","level":"1.3.6.2.1","depth":4,"anchor":"#skills","path":"brain/code/hub.md","ref":"brain/code/hub.md#skills","articles":[]},{"title":"Command Handling","level":"1.3.6.2.2","depth":4,"anchor":"#command-handling","path":"brain/code/hub","ref":"brain/code/hub#command-handling","articles":[]},{"title":"NLP","level":"1.3.6.2.3","depth":4,"anchor":"#natural-language-processing","path":"brain/code/hub","ref":"brain/code/hub#natural-language-processing","articles":[]},{"title":"Overseer","level":"1.3.6.2.4","depth":4,"anchor":"#overseer","path":"brain/code/hub","ref":"brain/code/hub#overseer","articles":[]},{"title":"Conversations","level":"1.3.6.2.5","depth":4,"anchor":"#conversations","path":"brain/code/hub","ref":"brain/code/hub#conversations","articles":[]},{"title":"Hooks","level":"1.3.6.2.6","depth":4,"anchor":"#hooks","path":"brain/code/hub","ref":"brain/code/hub#hooks","articles":[]}]},{"title":"Connectors","level":"1.3.6.3","depth":3,"path":"brain/code/connectors.md","ref":"brain/code/connectors.md","articles":[]}]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/setup.md","mtime":"2018-05-29T07:58:53.141Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.3.1","depth":2,"next":{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},"previous":{"title":"Arachne Brain","level":"1.3","depth":1,"path":"brain/README.md","ref":"brain/README.md","articles":[{"title":"Install","level":"1.3.1","depth":2,"path":"brain/setup.md","ref":"brain/setup.md","articles":[]},{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},{"title":"Skills","level":"1.3.3","depth":2,"path":"brain/skills.md","ref":"brain/skills.md","articles":[{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},{"title":"Examples","level":"1.3.3.4","depth":3,"ref":"","articles":[{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]}]}]},{"title":"Dashboard","level":"1.3.4","depth":2,"path":"brain/dashboard.md","ref":"brain/dashboard.md","articles":[{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},{"title":"Users and Accounts","level":"1.3.4.2","depth":3,"anchor":"#users-and-accounts","path":"brain/dashboard.md","ref":"brain/dashboard.md#users-and-accounts","articles":[]},{"title":"Permissions","level":"1.3.4.3","depth":3,"anchor":"#permissions","path":"brain/dashboard.md","ref":"brain/dashboard.md#permissions","articles":[]},{"title":"Adapters","level":"1.3.4.4","depth":3,"anchor":"#adapters","path":"brain/dashboard.md","ref":"brain/dashboard.md#adapters","articles":[]},{"title":"Skills","level":"1.3.4.5","depth":3,"anchor":"#skills","path":"brain/dashboard.md","ref":"brain/dashboard.md#skills","articles":[]},{"title":"Test","level":"1.3.4.6","depth":3,"anchor":"#test","path":"brain/dashboard.md","ref":"brain/dashboard.md#test","articles":[]}]},{"title":"API","level":"1.3.5","depth":2,"path":"brain/api.md","ref":"brain/api.md","articles":[{"title":"Permissions","level":"1.3.5.1","depth":3,"path":"brain/permissions.md","ref":"brain/permissions.md","articles":[]}]},{"title":"Code Documentation","level":"1.3.6","depth":2,"path":"brain/code/README.md","ref":"brain/code/README.md","articles":[{"title":"Structure & Components","level":"1.3.6.1","depth":3,"path":"brain/code/components.md","ref":"brain/code/components.md","articles":[]},{"title":"The Hub","level":"1.3.6.2","depth":3,"path":"brain/code/hub.md","ref":"brain/code/hub.md","articles":[{"title":"Skill loading","level":"1.3.6.2.1","depth":4,"anchor":"#skills","path":"brain/code/hub.md","ref":"brain/code/hub.md#skills","articles":[]},{"title":"Command Handling","level":"1.3.6.2.2","depth":4,"anchor":"#command-handling","path":"brain/code/hub","ref":"brain/code/hub#command-handling","articles":[]},{"title":"NLP","level":"1.3.6.2.3","depth":4,"anchor":"#natural-language-processing","path":"brain/code/hub","ref":"brain/code/hub#natural-language-processing","articles":[]},{"title":"Overseer","level":"1.3.6.2.4","depth":4,"anchor":"#overseer","path":"brain/code/hub","ref":"brain/code/hub#overseer","articles":[]},{"title":"Conversations","level":"1.3.6.2.5","depth":4,"anchor":"#conversations","path":"brain/code/hub","ref":"brain/code/hub#conversations","articles":[]},{"title":"Hooks","level":"1.3.6.2.6","depth":4,"anchor":"#hooks","path":"brain/code/hub","ref":"brain/code/hub#hooks","articles":[]}]},{"title":"Connectors","level":"1.3.6.3","depth":3,"path":"brain/code/connectors.md","ref":"brain/code/connectors.md","articles":[]}]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/setup.md","mtime":"2018-06-20T11:58:11.185Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

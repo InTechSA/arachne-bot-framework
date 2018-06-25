@@ -204,29 +204,22 @@ module.exports = (skill) => {
       });
     }, {
         description: "Permet de récupérer les événements de ActIntech",
-        "subcommands":[
+        "parameters":[
             {
-                "name":"get-events",
-                "cmd":"",
-                "description":"Renvoie les events en fonction du paramètre entrée",
-                "parameters":[
-                    {
-                        "position":0,
-                        "name":"eventSearch",
-                        "description":"(optionel) pour rechercher les events avec un critère de recherche, sans paramètres, cela renvoie tous les événements actifs",
-                        "example":"disney"
-                    }
-                ],
-                "examples":[
-                    {
-                        "phrase":"events disney",
-                        "action":"Cherche les events avec le mot clé disney"
-                    },
-                    {
-                        "phrase":"events",
-                        "action":"renvoie tous les events actifs d'actIntech"
-                    }
-                ]
+                "position":0,
+                "name":"eventSearch",
+                "description":"(optionel) pour rechercher les events avec un critère de recherche, sans paramètres, cela renvoie tous les événements actifs",
+                "example":"disney"
+            }
+        ],
+        "examples":[
+            {
+                "phrase":"events disney",
+                "action":"Cherche les events avec le mot clé disney"
+            },
+            {
+                "phrase":"events",
+                "action":"renvoie tous les events actifs d'actIntech"
             }
         ]
     });
@@ -237,5 +230,4 @@ module.exports = (skill) => {
             return skill.handleCommand("events",{phrase: "events all", data});
         });
     });
-/* </SKILL LOGIC> */
 };

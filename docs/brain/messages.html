@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -685,23 +659,23 @@
                                 <h1 id="message-formatting">Message formatting</h1>
 <p>Adapters reformat messages to send rich embeded message (if any) to clients. The brain must send compatible message format.</p>
 <p>The simpliest message a skill may return from one of its Promise is the following :</p>
-<pre><code class="lang-javascript">resolve({ message: { text: <span class="hljs-string">&quot;This is a very simple message.&quot;</span> } });
+<pre><code class="lang-javascript"><span class="hljs-keyword">return</span> { message: { text: <span class="hljs-string">&quot;This is a very simple message.&quot;</span> } };
 </code></pre>
 <p>You may add some additionnal information to the message object, like a title, or change the message avatar (using the image url instead of bot avatar, or the give emoji, not supported by all adapter!) :</p>
-<pre><code class="lang-javascript">resolve({
+<pre><code class="lang-javascript"><span class="hljs-keyword">return</span> {
   message: {
     title: <span class="hljs-string">&quot;Hey!&quot;</span>,
     avatar: <span class="hljs-string">&quot;https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png&quot;</span>,
     emoji: <span class="hljs-string">&quot;:smirk:&quot;</span>,
     text: <span class="hljs-string">&quot;This message has an amazing title!&quot;</span>
   }
-});
+};
 </code></pre>
 <p><strong>Attachments</strong>
 Messages can display several attachments, these are additionnals fields displayed after the message. They can contain images, video, files, buttons, text...</p>
 <p><img src="https://a.slack-edge.com/1877/img/api/message_guidelines/Formatting_1.png" alt="https://a.slack-edge.com/1877/img/api/message_guidelines/Formatting_1.png"></p>
 <p>Attachments are listed under the <code>attachments</code> array of the message object :</p>
-<pre><code class="lang-javascript">resolve({
+<pre><code class="lang-javascript"><span class="hljs-keyword">return</span> {
   message: {
     title: <span class="hljs-string">&quot;An incredible message&quot;</span>,
     text: <span class="hljs-string">&quot;This message is surely the best!&quot;</span>,
@@ -743,7 +717,7 @@ Messages can display several attachments, these are additionnals fields displaye
       ...
     ]
   }
-});
+};
 </code></pre>
 
                                 
@@ -788,7 +762,7 @@ Messages can display several attachments, these are additionnals fields displaye
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Messages","level":"1.3.3.1","depth":3,"next":{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},"previous":{"title":"Skills","level":"1.3.3","depth":2,"path":"brain/skills.md","ref":"brain/skills.md","articles":[{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},{"title":"Examples","level":"1.3.3.4","depth":3,"ref":"","articles":[{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]}]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/messages.md","mtime":"2018-05-08T09:57:49.731Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Messages","level":"1.3.3.1","depth":3,"next":{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},"previous":{"title":"Skills","level":"1.3.3","depth":2,"path":"brain/skills.md","ref":"brain/skills.md","articles":[{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},{"title":"Conversation","level":"1.3.3.2","depth":3,"path":"brain/conversations.md","ref":"brain/conversations.md","articles":[]},{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},{"title":"Examples","level":"1.3.3.4","depth":3,"ref":"","articles":[{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]}]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/messages.md","mtime":"2018-06-20T13:02:50.190Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -686,22 +660,46 @@
 <p>Skills can notify the hub that their response is awaiting one from the user (like a confirmation, or a selection). For that, they need to create a <em>Thread</em> stored by the hub, via the overseer they can require. This will create a unique thread id that the skill must return to the adapter. The adapter will then activate the &quot;conversation mode&quot; for the next reply, and send it to the <code>/converse</code> endpoint with the thread id they received. The hub will call the skill handler defined for this thread at his creation.</p>
 <p><img src="../src/imgs/quizz_workflow.png" alt="The Conversation Mode Diagram"></p>
 <h2 id="create-a-conversation-in-a-skill">Create a conversation in a skill</h2>
-<p>To create a conversation within a skill, you need to first add a interaction object by clicking on the &quot;add interaction&quot; button on the left, or by adding the following code in the top of the skill : </p>
-<pre><code class="lang-javascript"><span class="hljs-comment">// In the Conversation handler part of the skill</span>
-<span class="hljs-keyword">let</span> interactions = {
-    <span class="hljs-comment">// The name of the conversation given ( can be anything )</span>
-    <span class="hljs-string">&apos;thread-test&apos;</span>: {
-        <span class="hljs-comment">// This one need to be the same as declared below</span>
-        name: <span class="hljs-string">&quot;thread-test&quot;</span>,
-        <span class="hljs-comment">// This one is the name of the function for when entering the conversation mode, ie when the API receive a message on the route /converse with the thread id associated to this skill </span>
-        interact: testThreadHandler
-  }
-};
+<p>To handle a conversation for your skill, you first need to declare a new interaction with the <code>skill.addInteraction(name, handler)</code>. The name, once again, has to be unique accross all skills. The handler is a <code>Function(thread, { phrase, data })</code> that returns a Promise to a <em>response</em> object:</p>
+<pre><code class="lang-javascript"><span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+    skill.addInteraction(<span class="hljs-string">&quot;lang-selection&quot;</span>, (thread, { phrase, data }) =&gt; {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+            <span class="hljs-keyword">const</span> knowLanguages = [<span class="hljs-string">&quot;french&quot;</span>, <span class="hljs-string">&quot;japanese&quot;</span>, <span class="hljs-string">&quot;english&quot;</span>];
+
+            <span class="hljs-keyword">if</span> (phrase === <span class="hljs-string">&quot;quit&quot;</span>) {
+                <span class="hljs-keyword">return</span> {
+                    message: {
+                        text: <span class="hljs-string">&quot;Alright!&quot;</span>
+                    }
+                }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (phrase &amp;&amp; knowLanguages.includes(phrase)) {
+                <span class="hljs-comment">// Here, we will call our hello command while populating the arguments of the command with the language.</span>
+                <span class="hljs-keyword">return</span> skill.handleCommand(<span class="hljs-string">&quot;hello&quot;</span>, { phrase: phrase, data });
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">// Return a message that will continue this conversation by passing the given thread object.</span>
+                <span class="hljs-keyword">return</span> {
+                    message: {
+                        text: <span class="hljs-string">`I don&apos;t know this language, sorry. I can only talk in: <span class="hljs-subst">${knowLanguages.join(&quot;, &quot;)}</span>. Please select another one or quit.`</span>,
+                        interactive: <span class="hljs-literal">true</span>,
+                        thread: thread
+                    }
+                }
+            }
+        }).catch(err =&gt; {
+            <span class="hljs-keyword">return</span> {
+                message: {
+                    text: <span class="hljs-string">&quot;Something went wrong, I&apos;m sorry.&quot;</span>
+                }
+            };
+        });
+    });
+}
 </code></pre>
-<p>Then in the skill code ( specificly in the function of the command or the nlp ) return a specific message in the skill like the following one : </p>
+<p>To create a new conversation using the created handler, populate the <em>message</em> object with <code>interactive: true</code> and a <code>thread</code> <em>object</em>.</p>
+<p>The <code>thread</code> <em>object</em> expect the phrase that solicitate the conversation in <em>source</em>. You can store data in this thread as [[key, value]] array. You can set a duration and a timeout_message to display if the thread timeout. Finally, you must specify the name of the handler.</p>
 <pre><code class="lang-javascript">...
 <span class="hljs-comment">// Code in the skill logic</span>
-<span class="hljs-keyword">return</span> resolve({
+<span class="hljs-keyword">return</span> {
     <span class="hljs-comment">// return the message with the thread parameters to create a thread</span>
     message: {
         <span class="hljs-comment">// interactive true, required to create a thread or continue a thread</span>
@@ -711,43 +709,18 @@
             <span class="hljs-comment">// The source phrase that created the thread, ( optional )</span>
             source: phrase,
             <span class="hljs-comment">// Eventual data to add to the thread, ( optional )</span>
-            data: [data_un: <span class="hljs-number">42</span>, data_deux: <span class="hljs-string">&quot;data_deux&quot;</span>],
+            data: [[data_un, <span class="hljs-number">42</span>], [data_deux, <span class="hljs-string">&quot;data_deux&quot;</span>],
             <span class="hljs-comment">// the handler, REQUIRED, ie the name in the interaction object above </span>
-            handler: <span class="hljs-string">&quot;thread-test&quot;</span>,
+            handler: <span class="hljs-string">&quot;lang-selection&quot;</span>,
             <span class="hljs-comment">// duration of thread before timeout ( optional, default set to 30 )</span>
             duration: <span class="hljs-number">10</span>,
             <span class="hljs-comment">// The time out message ( optional )</span>
-            timeout_message: <span class="hljs-string">&quot;Cette conversation a timeout, dommage !!&quot;</span>
+            timeout_message: <span class="hljs-string">&quot;Contact me again if you need something.&quot;</span>
         },
-        title: <span class="hljs-string">&quot;Not implemented&quot;</span>,
-        text: <span class="hljs-string">&quot;J&apos;ai cr&#xE9;e le thread&quot;</span>
+        title: <span class="hljs-string">&quot;Select a language&quot;</span>,
+        text: <span class="hljs-string">&quot;In what language should I say hello in?&quot;</span>
     }
-});
-</code></pre>
-<p>From this point, the skill will be created, you then need to add a function in the skill logic to response to the conversation request that will be following :</p>
-<pre><code class="lang-javascript"><span class="hljs-comment">// The function called when entered a conversation ( ie when someone send a request on the /converse route with a thread id for this skill )</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">testThreadHandler</span>(<span class="hljs-params">thread, {phrase, data}</span>) </span>{
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-        <span class="hljs-keyword">if</span>(phrase == <span class="hljs-string">&apos;coucou&apos;</span>) {
-            <span class="hljs-comment">// If you want to close a thread, just don&apos;t put the interactive true parameter</span>
-            <span class="hljs-keyword">return</span> resolve({
-                message: {
-                    title: <span class="hljs-string">&quot;Aborting&quot;</span>,
-                    text: <span class="hljs-string">`Fermeture du thread`</span>
-                }
-            });
-        } <span class="hljs-keyword">else</span> {
-            <span class="hljs-comment">// Else , precise the interactive true parameter</span>
-            <span class="hljs-keyword">return</span> resolve({
-                message: {
-                    interactive: <span class="hljs-literal">true</span>,
-                    title: <span class="hljs-string">&quot;Continue&quot;</span>,
-                    text: <span class="hljs-string">`Je continue`</span>
-                }
-            });
-        }
-    });
-}
+};
 </code></pre>
 
                                 
@@ -792,7 +765,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Conversation","level":"1.3.3.2","depth":3,"next":{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},"previous":{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/conversations.md","mtime":"2018-05-22T15:40:48.049Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Conversation","level":"1.3.3.2","depth":3,"next":{"title":"Hooks","level":"1.3.3.3","depth":3,"path":"brain/hooks.md","ref":"brain/hooks.md","articles":[]},"previous":{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/conversations.md","mtime":"2018-06-20T13:17:04.363Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -687,169 +661,120 @@
 <pre><code class="lang-javascript"><span class="hljs-comment">/*
   SKILL : tea
   AUTHOR : Anonymous
-  DATE : 25/04/2018
+  DATE : 14/05/2018
 */</span>
 
-<span class="hljs-comment">/*
-  You should not modify this part unless you know what you&apos;re doing.
-*/</span>
+<span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+    <span class="hljs-keyword">const</span> schedule = skill.loadModule(<span class="hljs-string">&apos;node-schedule&apos;</span>);
 
-<span class="hljs-comment">// Defining the skill</span>
-<span class="hljs-comment">// Commands the skill can execute.</span>
-<span class="hljs-comment">/* &lt;SKILL COMMANDS&gt; */</span>
-<span class="hljs-keyword">let</span> commands = {
-  <span class="hljs-string">&apos;set-tea-alarm&apos;</span>: {
-    cmd: <span class="hljs-string">&quot;tea&quot;</span>,
-    execute: commandTea
-  }
-};
-<span class="hljs-comment">/* &lt;/SKILL COMMANDS&gt; */</span>
+    skill.addCommand(<span class="hljs-string">&quot;tea&quot;</span>, <span class="hljs-string">&quot;set-tea-alarm&quot;</span>, ({ phrase, data }) =&gt; {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+            <span class="hljs-keyword">try</span> {
+                <span class="hljs-keyword">let</span> [teaType, ...textString] = phrase.split(<span class="hljs-string">&quot; &quot;</span>);
 
-<span class="hljs-comment">// intents the skill understands.</span>
-<span class="hljs-comment">/* &lt;SKILL INTENTS&gt; */</span>
-<span class="hljs-keyword">let</span> intents = {
-  <span class="hljs-string">&apos;tea-set-tea-alarm&apos;</span>: {
-    slug: <span class="hljs-string">&quot;tea-alarm&quot;</span>,
-    handle: handleTeaIntent,
-    expected_entities: [<span class="hljs-string">&quot;tea-type&quot;</span>]
-  }
-};
-<span class="hljs-comment">/* &lt;/SKILL INTENTS&gt; */</span>
-
-<span class="hljs-comment">// Conversation handlers of the skill.</span>
-<span class="hljs-comment">/* &lt;SKILL INTERACTIONS&gt; */</span>
-<span class="hljs-keyword">let</span> interactions = {
-};
-<span class="hljs-comment">/* &lt;/SKILL INTERACTIONS&gt; */</span>
-
-<span class="hljs-comment">// dependencies of the skill.</span>
-<span class="hljs-comment">/* &lt;SKILL DEPENDENCIES&gt; */</span>
-<span class="hljs-keyword">let</span> dependencies = [<span class="hljs-string">&quot;node-schedule&quot;</span>];
-<span class="hljs-comment">/* &lt;/SKILL DEPENDENCIES&gt; */</span>
-
-<span class="hljs-comment">// Exposing the skill definition.</span>
-exports.commands = commands;
-exports.intents = intents;
-exports.dependencies = dependencies;
-exports.interactions = interactions;
-
-<span class="hljs-comment">/*
-  Skill logic begins here.
-  You must implements the functions listed as &quot;execute&quot; and &quot;handle&quot; handler, or your skill will not load.
-*/</span>
-<span class="hljs-comment">/* &lt;SKILL LOGIC&gt; */</span>
-<span class="hljs-keyword">const</span> overseer = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;../../overseer&apos;</span>);
-<span class="hljs-keyword">const</span> schedule = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;node-schedule&apos;</span>);
-
-<span class="hljs-comment">/**
-  Handler for intent tea-set-tea-alarm (tea-alarm).
-
-  Params :
-  --------
-    entities (Object)
-*/</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleTeaIntent</span>(<span class="hljs-params">{ entities: { &apos;tea-type&apos;: teatype = {}}, data }</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    <span class="hljs-comment">/*
-      &gt;&gt;&gt; YOUR CODE HERE &lt;&lt;&lt;
-      resolve the handler with a formatted message object.
-    */</span>
-    <span class="hljs-keyword">return</span> resolve({
-      message: {
-        title: <span class="hljs-string">&quot;Not implemented&quot;</span>,
-        text: <span class="hljs-string">&quot;This functionnality is currently not implemented.&quot;</span>
-      }
-    });
-  });
-}
-
-<span class="hljs-comment">/**
-  Handler for command set-tea-alarm (!tea).
-
-  Params :
-  --------
-    phrase: String
-*/</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">commandTea</span>(<span class="hljs-params">{ phrase, data }</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    <span class="hljs-keyword">try</span> {
-        <span class="hljs-keyword">let</span> [teaType, ...textString] = phrase.split(<span class="hljs-string">&quot; &quot;</span>);
-        <span class="hljs-keyword">let</span> text = textString ? textString.join(<span class="hljs-string">&quot; &quot;</span>) : <span class="hljs-string">&quot;&quot;</span>;
-
-        <span class="hljs-comment">// Checking tea format</span>
-        <span class="hljs-keyword">let</span> time = <span class="hljs-number">0</span>; <span class="hljs-comment">// minutes</span>
-        <span class="hljs-keyword">let</span> image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg&quot;</span>;
-        <span class="hljs-keyword">switch</span> (teaType) {
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;green&quot;</span>:
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;vert&quot;</span>:
-                time = <span class="hljs-number">3</span>;
-                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2017/10/04/12/10/peppermint-2816012_960_720.jpg&quot;</span>;
-                <span class="hljs-keyword">break</span>;
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;black&quot;</span>:
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;noir&quot;</span>:
-                time = <span class="hljs-number">5</span>;
-                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2015/07/01/08/42/oolong-827397_960_720.jpg&quot;</span>;
-                <span class="hljs-keyword">break</span>;
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbs&quot;</span>:
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;infusion&quot;</span>:
-            <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbes&quot;</span>:
-                time = <span class="hljs-number">7</span>;
-                image = <span class="hljs-string">&quot;https://cdn.pixabay.com/photo/2018/04/02/17/10/hibiscus-3284431_960_720.jpg&quot;</span>;
-                <span class="hljs-keyword">break</span>;
-            <span class="hljs-keyword">default</span>:
-                time = <span class="hljs-number">0</span>;
-        }
-        <span class="hljs-keyword">if</span> (time == <span class="hljs-number">0</span>) {
-            <span class="hljs-keyword">return</span> resolve({
-                message: {
-                    title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
-                    text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
+                <span class="hljs-comment">// Checking tea format</span>
+                <span class="hljs-keyword">let</span> time = <span class="hljs-number">0</span>; <span class="hljs-comment">// minutes</span>
+                <span class="hljs-keyword">let</span> image = <span class="hljs-string">&quot;https://imgur.com/cm2YcD5.jpg&quot;</span>;
+                <span class="hljs-keyword">switch</span> (teaType) {
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;green&quot;</span>:
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;vert&quot;</span>:
+                        time = <span class="hljs-number">3</span>;
+                        image = <span class="hljs-string">&quot;https://imgur.com/cm2YcD5.jpg&quot;</span>;
+                        <span class="hljs-keyword">break</span>;
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;black&quot;</span>:
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;noir&quot;</span>:
+                        time = <span class="hljs-number">5</span>;
+                        image = <span class="hljs-string">&quot;https://imgur.com/VKn1RuC.jpg&quot;</span>;
+                        <span class="hljs-keyword">break</span>;
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbs&quot;</span>:
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;infusion&quot;</span>:
+                    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;herbes&quot;</span>:
+                        time = <span class="hljs-number">7</span>;
+                        image = <span class="hljs-string">&quot;https://imgur.com/i1DjTDi.jpg&quot;</span>;
+                        <span class="hljs-keyword">break</span>;
+                    <span class="hljs-keyword">default</span>:
+                        time = <span class="hljs-number">0</span>;
                 }
-            });
-        } <span class="hljs-keyword">else</span> {
-            <span class="hljs-comment">// Set timer.</span>
-            overseer.HookManager.create(<span class="hljs-string">&quot;tea&quot;</span>).then((hook) =&gt; {
-                schedule.scheduleJob(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime() + time*<span class="hljs-number">60000</span>), () =&gt; {
-                    overseer.HookManager.execute(hook._id, {
+                <span class="hljs-keyword">if</span> (time == <span class="hljs-number">0</span>) {
+                    <span class="hljs-keyword">return</span> resolve({
                         message: {
-                            title: <span class="hljs-string">&quot;It&apos;s Tea Time!&quot;</span>,
-                            text: <span class="hljs-string">&quot;Your tea is ready! Run, Forest! Run!&quot;</span>,
-                            attachments: [{
-                                image_url: image
-                            }]
+                            title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                            text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
                         }
-                    }).catch((err) =&gt; <span class="hljs-built_in">console</span>.log(err));
+                    });
+                } <span class="hljs-keyword">else</span> {
+                    <span class="hljs-comment">// Set timer.</span>
+                    skill.createHook().then((hook) =&gt; {
+                        schedule.scheduleJob(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime() + time * <span class="hljs-number">60000</span>), () =&gt; {
+                            skill.userHook(hook._id, {
+                                message: {
+                                    title: <span class="hljs-string">&quot;It&apos;s Tea Time!&quot;</span>,
+                                    text: <span class="hljs-string">&quot;Your tea is ready! Run, Forest! Run!&quot;</span>,
+                                    attachments: [{
+                                        image_url: image
+                                    }]
+                                }
+                            }, { deleteHook: <span class="hljs-literal">true</span> }).catch((err) =&gt; skill.log(err));
+                        });
+                        <span class="hljs-keyword">return</span> resolve({
+                            message: {
+                                title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                                text: <span class="hljs-string">&quot;Okay! I&apos;ll remind your in &quot;</span> + time + <span class="hljs-string">&quot; minutes :)&quot;</span>,
+                                request_hook: <span class="hljs-literal">true</span>,
+                                hook
+                            }
+                        })
+                    }).catch((err) =&gt; {
+                        <span class="hljs-keyword">return</span> resolve({
+                            message: {
+                                title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                                text: <span class="hljs-string">&quot;Tea Timer cannot set a hook in this channel, sorry.&quot;</span>
+                            }
+                        })
+                    });
+                }
+            } <span class="hljs-keyword">catch</span> (e) {
+                <span class="hljs-keyword">return</span> resolve({
+                    message: {
+                        title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
+                        text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
+                    }
                 });
-                <span class="hljs-keyword">return</span> resolve({
-                    message: {
-                        title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
-                        text: <span class="hljs-string">&quot;Okay! I&apos;ll remind your in &quot;</span> + time + <span class="hljs-string">&quot; minutes :)&quot;</span>,
-                        request_hook: <span class="hljs-literal">true</span>,
-                        hook_id: hook._id
-                    }
-                })
-            }).catch((err) =&gt; {
-                <span class="hljs-keyword">return</span> resolve({
-                    message: {
-                        title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
-                        text: <span class="hljs-string">&quot;Tea Timer cannot set a hook in this channel, sorry.&quot;</span>
-                    }
-                })
-            });
-        }
-    } <span class="hljs-keyword">catch</span> (e) {
-        <span class="hljs-keyword">return</span> resolve({
-            message: {
-                title: <span class="hljs-string">&quot;Tea Timer&quot;</span>,
-                text: <span class="hljs-string">&quot;Type `!tea &lt;green|black|herbs&gt;` to set a timer for your tea.&quot;</span>
             }
         });
-    }
-  });
-}
-<span class="hljs-comment">/* &lt;/SKILL LOGIC&gt; */</span>
+    }, {
+        description: <span class="hljs-string">&quot;Commande pour lancer un timer pour le th&#xE9; !&quot;</span>,
+        <span class="hljs-string">&quot;subcommands&quot;</span>:[
+            {
+                <span class="hljs-string">&quot;name&quot;</span>:<span class="hljs-string">&quot;tea-maker-black&quot;</span>,
+                <span class="hljs-string">&quot;cmd&quot;</span>:<span class="hljs-string">&quot;black&quot;</span>,
+                <span class="hljs-string">&quot;description&quot;</span>:<span class="hljs-string">&quot;Timer pour le th&#xE9; noir&quot;</span>,
 
-<span class="hljs-comment">// You may define other logic function unexposed here. Try to keep the skill code slim.</span>
+            },
+            {
+                <span class="hljs-string">&quot;name&quot;</span>:<span class="hljs-string">&quot;tea-maker-green&quot;</span>,
+                <span class="hljs-string">&quot;cmd&quot;</span>:<span class="hljs-string">&quot;green&quot;</span>,
+                <span class="hljs-string">&quot;description&quot;</span>:<span class="hljs-string">&quot;Timer pour le th&#xE9; vert&quot;</span>,
+            },
+            {
+                <span class="hljs-string">&quot;name&quot;</span>:<span class="hljs-string">&quot;tea-maker-herbs&quot;</span>,
+                <span class="hljs-string">&quot;cmd&quot;</span>:<span class="hljs-string">&quot;herbs&quot;</span>,
+                <span class="hljs-string">&quot;description&quot;</span>:<span class="hljs-string">&quot;Timer pour le th&#xE9; herbs&quot;</span>,
+            }
+        ]
+    });
+
+    skill.addIntent(<span class="hljs-string">&quot;tea-alarm&quot;</span>, <span class="hljs-string">&quot;set-tea-alarm&quot;</span>, ({ entities, data }) =&gt; {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+            <span class="hljs-keyword">return</span> {
+                message: {
+                    title: <span class="hljs-string">&quot;Not implemented&quot;</span>,
+                    text: <span class="hljs-string">&quot;Type `!tea green|black|herbs` to set a timer.&quot;</span>
+                }
+            };
+        });
+    });
+}
 </code></pre>
 
                                 
@@ -894,7 +819,7 @@ exports.interactions = interactions;
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"next":{"title":"Dashboard","level":"1.3.4","depth":2,"path":"brain/dashboard.md","ref":"brain/dashboard.md","articles":[{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},{"title":"Users and Accounts","level":"1.3.4.2","depth":3,"anchor":"#users-and-accounts","path":"brain/dashboard.md","ref":"brain/dashboard.md#users-and-accounts","articles":[]},{"title":"Permissions","level":"1.3.4.3","depth":3,"anchor":"#permissions","path":"brain/dashboard.md","ref":"brain/dashboard.md#permissions","articles":[]},{"title":"Adapters","level":"1.3.4.4","depth":3,"anchor":"#adapters","path":"brain/dashboard.md","ref":"brain/dashboard.md#adapters","articles":[]},{"title":"Skills","level":"1.3.4.5","depth":3,"anchor":"#skills","path":"brain/dashboard.md","ref":"brain/dashboard.md#skills","articles":[]},{"title":"Test","level":"1.3.4.6","depth":3,"anchor":"#test","path":"brain/dashboard.md","ref":"brain/dashboard.md#test","articles":[]}]},"previous":{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/tea.md","mtime":"2018-05-08T14:37:03.615Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"next":{"title":"Dashboard","level":"1.3.4","depth":2,"path":"brain/dashboard.md","ref":"brain/dashboard.md","articles":[{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},{"title":"Users and Accounts","level":"1.3.4.2","depth":3,"anchor":"#users-and-accounts","path":"brain/dashboard.md","ref":"brain/dashboard.md#users-and-accounts","articles":[]},{"title":"Permissions","level":"1.3.4.3","depth":3,"anchor":"#permissions","path":"brain/dashboard.md","ref":"brain/dashboard.md#permissions","articles":[]},{"title":"Adapters","level":"1.3.4.4","depth":3,"anchor":"#adapters","path":"brain/dashboard.md","ref":"brain/dashboard.md#adapters","articles":[]},{"title":"Skills","level":"1.3.4.5","depth":3,"anchor":"#skills","path":"brain/dashboard.md","ref":"brain/dashboard.md#skills","articles":[]},{"title":"Test","level":"1.3.4.6","depth":3,"anchor":"#test","path":"brain/dashboard.md","ref":"brain/dashboard.md#test","articles":[]}]},"previous":{"title":"Conversation","level":"1.3.3.4.2","depth":4,"path":"brain/quizz.md","ref":"brain/quizz.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/tea.md","mtime":"2018-06-25T09:12:36.387Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

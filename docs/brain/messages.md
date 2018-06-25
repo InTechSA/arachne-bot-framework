@@ -4,19 +4,19 @@ Adapters reformat messages to send rich embeded message (if any) to clients. The
 
 The simpliest message a skill may return from one of its Promise is the following :
 ```javascript
-resolve({ message: { text: "This is a very simple message." } });
+return { message: { text: "This is a very simple message." } };
 ```
 
 You may add some additionnal information to the message object, like a title, or change the message avatar (using the image url instead of bot avatar, or the give emoji, not supported by all adapter!) :
 ```javascript
-resolve({
+return {
   message: {
     title: "Hey!",
     avatar: "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png",
     emoji: ":smirk:",
     text: "This message has an amazing title!"
   }
-});
+};
 ```
 
 **Attachments**
@@ -26,7 +26,7 @@ Messages can display several attachments, these are additionnals fields displaye
 
 Attachments are listed under the `attachments` array of the message object :
 ```javascript
-resolve({
+return {
   message: {
     title: "An incredible message",
     text: "This message is surely the best!",
@@ -68,5 +68,5 @@ resolve({
       ...
     ]
   }
-});
+};
 ```

@@ -6,27 +6,52 @@ Skills can notify the hub that their response is awaiting one from the user (lik
 
 ## Create a conversation in a skill
 
-To create a conversation within a skill, you need to first add a interaction object by clicking on the "add interaction" button on the left, or by adding the following code in the top of the skill : 
+To handle a conversation for your skill, you first need to declare a new interaction with the `skill.addInteraction(name, handler)`. The name, once again, has to be unique accross all skills. The handler is a `Function(thread, { phrase, data })` that returns a Promise to a _response_ object:
 
 ```javascript
-// In the Conversation handler part of the skill
-let interactions = {
-    // The name of the conversation given ( can be anything )
-    'thread-test': {
-        // This one need to be the same as declared below
-        name: "thread-test",
-        // This one is the name of the function for when entering the conversation mode, ie when the API receive a message on the route /converse with the thread id associated to this skill 
-        interact: testThreadHandler
-  }
-};
+module.exports = (skill) => {
+    skill.addInteraction("lang-selection", (thread, { phrase, data }) => {
+        return Promise.resolve().then(() => {
+            const knowLanguages = ["french", "japanese", "english"];
+
+            if (phrase === "quit") {
+                return {
+                    message: {
+                        text: "Alright!"
+                    }
+                }
+            } else if (phrase && knowLanguages.includes(phrase)) {
+                // Here, we will call our hello command while populating the arguments of the command with the language.
+                return skill.handleCommand("hello", { phrase: phrase, data });
+            } else {
+                // Return a message that will continue this conversation by passing the given thread object.
+                return {
+                    message: {
+                        text: `I don't know this language, sorry. I can only talk in: ${knowLanguages.join(", ")}. Please select another one or quit.`,
+                        interactive: true,
+                        thread: thread
+                    }
+                }
+            }
+        }).catch(err => {
+            return {
+                message: {
+                    text: "Something went wrong, I'm sorry."
+                }
+            };
+        });
+    });
+}
 ```
 
-Then in the skill code ( specificly in the function of the command or the nlp ) return a specific message in the skill like the following one : 
+To create a new conversation using the created handler, populate the _message_ object with `interactive: true` and a `thread` _object_.
+
+The `thread` _object_ expect the phrase that solicitate the conversation in _source_. You can store data in this thread as [[key, value]] array. You can set a duration and a timeout_message to display if the thread timeout. Finally, you must specify the name of the handler.
 
 ```javascript
 ...
 // Code in the skill logic
-return resolve({
+return {
     // return the message with the thread parameters to create a thread
     message: {
         // interactive true, required to create a thread or continue a thread
@@ -36,44 +61,16 @@ return resolve({
             // The source phrase that created the thread, ( optional )
             source: phrase,
             // Eventual data to add to the thread, ( optional )
-            data: [data_un: 42, data_deux: "data_deux"],
+            data: [[data_un, 42], [data_deux, "data_deux"],
             // the handler, REQUIRED, ie the name in the interaction object above 
-            handler: "thread-test",
+            handler: "lang-selection",
             // duration of thread before timeout ( optional, default set to 30 )
             duration: 10,
             // The time out message ( optional )
-            timeout_message: "Cette conversation a timeout, dommage !!"
+            timeout_message: "Contact me again if you need something."
         },
-        title: "Not implemented",
-        text: "J'ai crée le thread"
+        title: "Select a language",
+        text: "In what language should I say hello in?"
     }
-});
-```
-
-From this point, the skill will be created, you then need to add a function in the skill logic to response to the conversation request that will be following :
-
-```javascript
-// The function called when entered a conversation ( ie when someone send a request on the /converse route with a thread id for this skill )
-function testThreadHandler(thread, {phrase, data}) {
-    return new Promise((resolve, reject) => {
-        if(phrase == 'coucou') {
-            // If you want to close a thread, just don't put the interactive true parameter
-            return resolve({
-                message: {
-                    title: "Aborting",
-                    text: `Fermeture du thread`
-                }
-            });
-        } else {
-            // Else , precise the interactive true parameter
-            return resolve({
-                message: {
-                    interactive: true,
-                    title: "Continue",
-                    text: `Je continue`
-                }
-            });
-        }
-    });
-}
+};
 ```

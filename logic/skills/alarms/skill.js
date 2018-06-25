@@ -40,7 +40,7 @@ module.exports = (skill) => {
             });
           });
           alarmsToKeep.push(alarm);
-        }
+        } 
       }
       
       skill.storeItem("alarms", alarmsToKeep).then().catch((err) => skill.log(err));
@@ -61,23 +61,13 @@ module.exports = (skill) => {
           hours = parseInt(hours, 10);
           minutes = parseInt(minutes, 10);
           if (isNaN(hours) || hours < 0 || hours > 24) {
-            throw new Error("Invalid hour format.");
+            throw "Invalid hour format.";
           }
           if (isNaN(minutes) || minutes < 0 || minutes >= 60) {
-            throw new Error("Invalid minutes format.");
+            throw "Invalid minutes format.";
           }
           time.setHours(hours, minutes, 0, 0);
-        } catch(e) {
-          skill.log(e);
-          // Invalid time format.
           return({
-            message: {
-              title: "Invalid time format",
-              text: "Type `!alarm hh:mm` to create a new alarm."
-            }
-          });
-        }
-       return({
            message: {
                interactive: true,
                thread: {
@@ -91,32 +81,43 @@ module.exports = (skill) => {
                title: "Set a alarm.",
                text: `Will set an alarm for today, ${time.toLocaleTimeString()}, is that correct ? (o/N)`
            }
-       });
+        });
+        } catch(e) {
+          skill.log(e);
+          // Invalid time format.
+          return({
+            message: {
+              title: "Invalid time format",
+              text: "Type `!alarm hh:mm` to create a new alarm."
+            }
+          });
+        }
+      }).catch((err) => {
+          if(typeof(err) !== String) err = err.toString();
+            skill.log("Error : " + err);
+            return({
+                message: {
+                    title: "Error",
+                    text: err
+                }
+            }); 
       });
     },{
-        description: "Create an alarm",
-        "subcommands":
+        description: "Crée une alarme avec une heure précise ( doit être au format HH:mm )",
+        "parameters":
         [
             {
-                "name":"create-alarms",
-                "cmd":"",
-                "description":"Crée une alarme avec une heure précise ( doit être au format HH:mm )",
-                "parameters":
-                [
-                    {
-                        "position":0,
-                        "name":"heure",
-                        "description":"L'heure a laquelle l'alarme va se déclencher ",
-                        "example":"12:00"
-                    }
-                ],
-                "examples":
-                [
-                    {
-                        "phrase":"alarms 12:00",
-                        "action":"Crée une alarme à 12:00"
-                    }
-                ]
+                "position":0,
+                "name":"heure",
+                "description":"L'heure a laquelle l'alarme va se déclencher ",
+                "example":"12:00"
+            }
+        ],
+        "examples":
+        [
+            {
+                "phrase":"alarms 12:00",
+                "action":"Crée une alarme à 12:00"
             }
         ]
     });
@@ -127,19 +128,17 @@ module.exports = (skill) => {
             let text = thread.getData("text");
             // Close Thread.
             let response = "Aborted";
-            if (["oui", "yes", "o", "oui!", "yes!"].includes(phrase)) {
+            if (["oui", "yes", "o", "oui!", "yes!", "Yes"].includes(phrase)) {
                 response = "Ok! Alarm set today at " + time.toLocaleTimeString();
-            }
-            time.setHours(time.getHours()-2);
-            return skill.createHook().then((hook) => {
-                schedule.scheduleJob(time, () => {
-                    skill.useHook(hook._id, {
-                      message: {
-                        title: "Alarm",
-                        text: text
-                      }
-                    }, {deleteHook: true}).catch((err) => {
-                        if (err === 'NO_HOOK') {
+                time.setHours(time.getHours()-2);
+                return skill.createHook().then((hook) => {
+                    schedule.scheduleJob(time, () => {
+                        skill.useHook(hook._id, {
+                          message: {
+                            title: "Alarm",
+                            text: text
+                          }
+                        }, {deleteHook: true}).then((err) => {
                             skill.getItem("alarms", "alarms").then((storage) => {
                                 let alarms = [];
                                 if (storage) {
@@ -147,34 +146,50 @@ module.exports = (skill) => {
                                 }
                                 skill.storeItem("alarms", alarms).then().catch((err) => skill.log(err));
                             }).catch((err) => skill.log(err));
+                        }).catch((err) => {
+                            skill.getItem("alarms", "alarms").then((storage) => {
+                                let alarms = [];
+                                if (storage) {
+                                    alarms = storage.filter((a) => a.hook !== hook._id);
+                                }
+                                skill.storeItem("alarms", alarms).then().catch((err) => skill.log(err));
+                            }).catch((err) => skill.log(err));
+                        });
+                    });
+                    return skill.getItem("alarms").then((storage) => {
+                        let alarms = [];
+                        if (storage) {
+                          alarms = storage;
                         }
+                        alarms.push({ date: time, hook: hook._id, text });
+                        return skill.storeItem("alarms", alarms).then(() => {
+                            return({
+                                message: {
+                                    title: "Alarm ",
+                                    text: response,
+                                    request_hook: true,
+                                    hook: hook
+                                }
+                            });
+                        });
                     });
                 });
-                skill.getItem("alarms").then((storage) => {
-                    let alarms = [];
-                    if (storage) {
-                      alarms = storage;
-                    }
-                    alarms.push({ date: time, hook: hook._id, text });
-                    skill.storeItem("alarms", alarms).then().catch((err) => skill.log(err));
-                }).catch((err) => skill.log(err));
-                return({
-                    message: {
-                        title: "Alarm ",
-                        text: response,
-                        request_hook: true,
-                        hook: hook
-                    }
-                });
-            }).catch((err) => {
-              skill.log(err);
-              return({
-                    message: {
-                        title: "Alarm ",
-                        text: "Something went wrong when creating the alarm :("
-                    }
-                });
-            });
+            } else {
+                if(["non", "n", "N", "no", "No"].includes(phrase)) {
+                    return ({
+                        message: {
+                            text: response
+                        }
+                    });
+                } else {
+                    return({
+                        message: {
+                            text: "I didn't understood your answer, please reponse by Yes or No",
+                            interactive: true
+                        }
+                    });
+                }
+            }
         }).catch((err) => {
             if(typeof(err) !== String) err = err.toString();
             skill.log("Error : " + err);
@@ -187,4 +202,3 @@ module.exports = (skill) => {
         });
     });
 };
-/* </SKILL LOGIC> */
