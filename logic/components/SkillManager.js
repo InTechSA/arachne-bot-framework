@@ -4,8 +4,6 @@ const logger = new (require('./../../logic/components/Logger'))();
 const fs = require('fs');
 const path = require('path');
 
-const skillTemplateRegex = fs.readFileSync(path.join(__dirname, "./skillCodeRegex.txt"), "utf8").trim();
-
 const Skill = require('./Skill');
 
 exports.SkillManager = class SkillManager {
@@ -446,6 +444,7 @@ exports.SkillManager = class SkillManager {
     })
       .then((name) => this.skillController.toggle(name, false))
       .then(() => {
+        this.skills[name].active = false;
         logger.log(`\t\t... \x1b[32mdeactivated\x1b[0m`);
         return true;
       });

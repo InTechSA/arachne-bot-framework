@@ -70,15 +70,15 @@ exports.UserManager = class UserManager {
         return Promise.reject();
     }
 
-    assignRole(userName, roleName) {
+    assignRole(userName, roleName, fromAdmin = false) {
         return this.userController.get_by_username(userName).then(user => {
-            return this.userController.promote_user(user.id, roleName);
+            return this.userController.promote_user(user.id, roleName, fromAdmin);
         });
     }
 
-    removeRole(userName, roleName) {
+    removeRole(userName, roleName, fromAdmin = false) {
         return this.userController.get_by_username(userName).then(user => {
-            return this.userController.demote_user(user.id, roleName);
+            return this.userController.demote_user(user.id, roleName, fromAdmin);
         });
     }
 

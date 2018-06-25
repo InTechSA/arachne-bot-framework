@@ -18,7 +18,7 @@ exports.is_empty = function() {
   });
 };
 
-exports.promote_user = function(id, role) {
+exports.promote_user = function(id, role, fromAdmin = false) {
   return User.findById(id).then(user => {
     if (!user) {
       let error = new Error("User not found.");
@@ -27,6 +27,14 @@ exports.promote_user = function(id, role) {
     }
     return user;
   }).then(user => {
+
+    // 1. Only admin should be able to add admins.
+    if (role === "admin" && !fromAdmin) {
+      let error = new Error("Only admins may assign the admin role.");
+      error.code = 403;
+      throw error;
+    }
+
     // Check if role does exists.
     return Role.count({ name: role }).then(count => {
       if (count != 1) {
@@ -51,7 +59,7 @@ exports.promote_user = function(id, role) {
   });
 };
 
-exports.demote_user = function(id, role) {
+exports.demote_user = function(id, role, fromAdmin = false) {
   return User.findById(id).then(user => {
     if (!user) {
       let error = new Error('User not found');
@@ -60,6 +68,13 @@ exports.demote_user = function(id, role) {
     }
     return user;
   }).then(user => {
+    // 1. Only admin should be able to demote admins.
+    if (role === "admin" && !fromAdmin) {
+      let error = new Error("Only admins may demote other admins.");
+      error.code = 403;
+      throw error;
+    }
+
     if (role == "admin") {
       return User.count({ roles: 'admin' }).then(count => {
         logger.log(count);

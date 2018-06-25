@@ -799,7 +799,7 @@ module.exports = function (io) {
 
   // Assign a role to a user
   router.put('/users/:user_name/roles/:role', hasPerm('ASSIGN_ROLE'), (req, res, next) => {
-    hub.UserManager.assignRole(req.params.user_name, req.params.role).then((user) => {
+    hub.UserManager.assignRole(req.params.user_name, req.params.role, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then((user) => {
       return res.json({
         success: true,
         message: "Role assigned to user.",
@@ -810,7 +810,7 @@ module.exports = function (io) {
 
   // Remove a role from a user
   router.delete('/users/:user_name/roles/:role', hasPerm('REMOVE_ROLE'), (req, res, next) => {
-    hub.UserManager.removeRole(req.params.user_name, req.params.role).then((user) => {
+    hub.UserManager.removeRole(req.params.user_name, req.params.role, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then((user) => {
       return res.json({
         success: true,
         message: "Role removed from user.",
