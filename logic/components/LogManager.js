@@ -12,6 +12,8 @@ class LogManager {
         this.logController = require("./../../database/controllers/logController");
         this.buffer = [];
         this.isRunning = false;
+        this.size = 100;
+        this.maxChar = 500;
     }
 
     /**
@@ -42,7 +44,6 @@ class LogManager {
      * THis function will push the new log to put in the buffer and will call it if it's not already executed 
      */
     log(nameSkill, log) {
-        logger.info("New log for skill " + nameSkill);
         this.buffer.push({ nameSkill, log });
         if (!this.isRunning) {
             this.isRunning = true;
@@ -63,26 +64,24 @@ class LogManager {
             this.logController.getOne(nameSkill).then((Log) => {
                 var newLogTable;
                 let stringlog = log;
-                if (typeof(log) === 'string') {
-                    // If it is a string, will split on the line
-                    newLogTable = log.split('\n');
-                } else {
-                    // Else will stringigy the object and split on the lines
-                    stringlog = JSON.stringify(log);    
-                    newLogTable = stringlog.split('\n');
+                if (typeof(log) !== 'string') {
+                    // will stringigy the object
+                    stringlog = JSON.stringify(log); 
                 }
+                if(stringlog.length > this.maxChar) stringlog = stringlog.substring(0,this.maxChar) + " ... ";
+                // Split on the lines
+                newLogTable = stringlog.split('\n');
                 if (!Log.noLog) {
-                    logger.info("Taking existing log for " + nameSkill);
                     // Existing log
                     // Split on the lines
                     var tableLog = Log.log.split('\n');
                     var returnTab = [];
                     // If the old logs and the new ones are too big
-                    if (tableLog.length + newLogTable.length > 100) {
+                    if (tableLog.length + newLogTable.length > this.size) {
                         var j = 0;
                         // Keep only the recent ones
-                        for (var i = 0; i < 100; i++) {
-                            if (i >= 100 - newLogTable.length) {
+                        for (var i = 0; i < this.size; i++) {
+                            if (i >= this.size - newLogTable.length) {
                                 returnTab.push("[" + new Date().toISOString() + "] " + newLogTable[j]);
                                 j++;
                             } else {
@@ -103,9 +102,8 @@ class LogManager {
                         });
                     }
                 } else {
-                    logger.info("Create new log for skill " + nameSkill);
-                    if(newLogTable.length > 100 ) {
-                        newLogTable.splice(0,newLogTable - 100);
+                    if(newLogTable.length > this.size ) {
+                        newLogTable.splice(0,newLogTable - this.size);
                     }
                     // NO log for this skill, create one
                     this.logController.create_log(nameSkill, "[" + new Date().toISOString() + "] " + newLogTable.join('\n')).then(() => {
@@ -119,6 +117,10 @@ class LogManager {
                 return reject(err);
             });
         });
+    }
+
+    clearForSkill(skillName) {
+        return this.logController.delete(skillName);
     }
 }
 

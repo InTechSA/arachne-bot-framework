@@ -120,11 +120,12 @@ function reloadSkill(skillButton) {
   }
 }
 
-function deleteSkill(skillButton) {
-  let skill = $(skillButton).data('skill');
+function deleteSkill2() {
+  $('#deleteModal').modal('toggle');
+  var skill = $("#skillRemove").text();
   if (skill) {
     console.log("Delete " + skill);
-
+    
     $.ajax({
       baseUrl: base_url,
       type: "DELETE",
@@ -160,6 +161,12 @@ function deleteSkill(skillButton) {
       }
     });
   }
+}
+
+function deleteSkill(skillButton) {
+  let skill = $(skillButton).data('skill');
+  $("#skillRemove").text(skill);
+  $('#deleteModal').modal('toggle');
 }
 
 function reloadBrain() {
