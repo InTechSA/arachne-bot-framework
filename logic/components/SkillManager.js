@@ -839,16 +839,21 @@ exports.SkillManager = class SkillManager {
             logger.log(`\t... Persist skill ${skill} in database...`);
 
             // Extract the skill code
-            const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
-            // Extract the secret ( if it exist )
-            var secret = {};
-            if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
-              secret = require(this.skillsDirectory + "/" + skill + "/secret");
-            }
+            if (fs.existsSync(this.skillsDirectory + "/" + skill + "/skill.js")) {
+              const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
+              // Extract the secret ( if it exist )
+              var secret = {};
+              if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
+                secret = require(this.skillsDirectory + "/" + skill + "/secret");
+              }
 
-            return this.skillController.create_skill(skill, skill_code, secret).then(() => {
-              logger.log(`\t... Persisted skill ${skill} in database...`);
-            });
+              return this.skillController.create_skill(skill, skill_code, secret).then(() => {
+                logger.log(`\t... Persisted skill ${skill} in database...`);
+              });
+            } else {
+              logger.error(`\t... Skill ${skill} has no skill.js file in folder! This is a critical error, that should only appear in dev environment. Please delete the skill folder.`);
+              return;
+            }
           })
         });
 
