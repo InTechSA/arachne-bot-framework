@@ -161,7 +161,7 @@ class Help {
                                 </div>
                                 <p class="mb-1">${text(command.help.description) || "No description"}</p>
                             </a>
-                        `)}
+                        `).join("\n")}
                     </div>
                     <div class="card-body text-right">
                         <a href="#" class="card-link" onClick="detailSkill(event, this)" data-skill="${skill.name}">Learn More</a>
@@ -260,9 +260,8 @@ class Help {
                         ${command.help.parameters.map(parameter => `
                             <li class="list-group-item small">
                                 <span style="text-decoration: underlined">${text(parameter.name)}:</span>
-                                <span class="pl-5">${text(parameter.description || "")}</span>
-                                <br/>
-                                <em class="pl-5">${text(parameter.example || "")}</em>
+                                <span class="pl-2">${text(parameter.description || "")}</span>
+                                <em class="pl-2">→ ${text(parameter.example || "")}</em>
                             </li>
                         `).join("\n")}
                     </ul>
