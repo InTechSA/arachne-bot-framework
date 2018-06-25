@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -687,24 +661,193 @@
 <p>Skills are edited from with the dashboard (or using the arachne API). You can edit their code or their secret variables (like token for external services).</p>
 <p>Skill code and secrets are stored locally in the <code>/logic/skills</code> folder only for runtime purposes. Skills are persisted in the brain database, and will load these distants skills at startup. <strong>Therefore editing local files WILL NOT persist modifications ! You MUST use the dashboard or the brain API.</strong></p>
 <p>See the <a href="api.html#skills">api documentation</a> for the complete list of endpoints available to manage skills.</p>
-<h2 id="use-skill-commands-from-within-another-skill">Use skill commands from within another skill</h2>
-<p>Skills can execute other skill&apos;s commands via the overseer they can require (some skill may restrict what skills can access their commands via an auth system):</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> overseer = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;../../overseer&apos;</span>);
+<h2 id="definition-of-a-skill">Definition of a Skill</h2>
+<p>A skill is a file that exports a function taking as parameter a Skill object:</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">/*
+  SKILL: HELLO
+  AUTHOR: NAKASAR
+  DATE: 
+*/</span>
 
-  <span class="hljs-comment">/*
-   * In handler :
-   */</span>
-  overseer.handleCommand(<span class="hljs-string">&apos;get-ldap-token&apos;</span>).then((response) =&gt; {
-    <span class="hljs-keyword">let</span> token = response.token;
-    <span class="hljs-comment">// ...</span>
-  }).catch((error) =&gt; {
-    <span class="hljs-comment">// Error handling</span>
+<span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  skill.setDescription(<span class="hljs-string">&quot;This is my Skill&quot;</span>);
+}
+</code></pre>
+<h3 id="expose-a-new-command">Expose a new command</h3>
+<p>To add a new command, call the <code>skill.addCommand(cmd, name, handler, help)</code> method. The <code>cmd</code> parameter is the command word typed by the user to call the command, the <code>handler</code> is a Function({ phrase, data }) that will be called by the brain. You must also define a <code>help</code> object with at least a description (some examples would be welcomed).</p>
+<p>The <code>cmd</code> word is unique accross all the brain, and your skill will not load if another skill already use this command word. First in, first out.</p>
+<p>The handler is a <strong>Promise</strong> that resolves to a <em>response</em> object containing a <code>message: { title, text, attachments... }</code>. The brain will return to the sender of the command this <em>message</em> object. If you need to send additionnal data in case another skill executed the command, set it in the <em>response</em> object, not in the <em>message</em> object.</p>
+<p>The help object is used by the brain to generate help for skills, so that any user can easily now what the brain can do. The manual is available at this url: <a href="http://brainurl/manual" target="_blank">http://brainurl/manual</a>, or, for thoe who miss the man page, at <a href="http://brainurl/help/man" target="_blank">http://brainurl/help/man</a>.</p>
+<p>Your handler will get a <code>phrase</code> <em>string</em> which is what the user typed (without the <code>cmd</code> word), and a <code>data</code> <em>object</em> that contains additionnal data, such as the username, the channel identifier, the adapter identifier...</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">/*
+  SKILL: HELLO
+  AUTHOR: NAKASAR
+  DATE: 
+*/</span>
+
+<span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  skill.setDescription(<span class="hljs-string">&quot;Can say hello!&quot;</span>);
+
+  skill.addCommand(<span class="hljs-string">&quot;hello&quot;</span>, <span class="hljs-string">&quot;say-hello&quot;</span>, ({ phrase, data }) =&gt; {
+    <span class="hljs-comment">// The handler must be a promise that resolves to a response.</span>
+    <span class="hljs-comment">// The response contains a message object that can be complex, or as simple as some text.</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+      <span class="hljs-keyword">let</span> text;
+      <span class="hljs-keyword">if</span> (phrase.length &gt; <span class="hljs-number">0</span>) {
+        <span class="hljs-comment">// We have a user to greet.</span>
+        text = <span class="hljs-string">&quot;Welcome &quot;</span> + phrase;
+      } <span class="hljs-keyword">else</span> {
+        text = <span class="hljs-string">&quot;Welcome my friend!&quot;</span>
+      }
+
+      <span class="hljs-keyword">return</span> {
+        message: {
+          title: <span class="hljs-string">&quot;Hello!&quot;</span>,
+          text: text
+        }
+      };
+    }).catch(err =&gt; {
+      <span class="hljs-comment">// You should always return something to the user.</span>
+      <span class="hljs-comment">// If you don&apos;t, the brain will send a generic error message.</span>
+      <span class="hljs-comment">// So you&apos;d better catch any final errors here.</span>
+      <span class="hljs-keyword">return</span> {
+        message: {
+          text: <span class="hljs-string">&quot;I couldn&apos;t say hello, I&apos;m sorry.&quot;</span>
+        }
+      };
+    });
+  }, {
+    description: <span class="hljs-string">&quot;Say hello.&quot;</span>,
+    parameters: [
+      {
+        position: <span class="hljs-number">0</span>,
+        name: <span class="hljs-string">&quot;user&quot;</span>,
+        description: <span class="hljs-string">&quot;Name of the user to greet (optional)&quot;</span>,
+        example: <span class="hljs-string">&quot;Nakasar&quot;</span>
+      }
+    ]
+    examples: [
+      {
+        phrase: <span class="hljs-string">&quot;!hello&quot;</span>,
+        action: <span class="hljs-string">&quot;Displays a greeting.&quot;</span>
+      },
+      {
+        phrase: <span class="hljs-string">&quot;!hello Nakasar&quot;</span>,
+        action: <span class="hljs-string">&quot;Displays a personnal greeting.&quot;</span>
+      }
+    ]
+  })
+}
+</code></pre>
+<h3 id="add-a-new-intent">Add a new intent.</h3>
+<p>You can define intents that will be called when users talk to the bot with natural language. Intents are returned from a Natural Language Understanding service such as Wit.ai, DialogFlow, Recast.ai, or anything else that returns intents and entities from a sentence.</p>
+<p>Whenever the brain receives a sentence, it will execute a command called <code>analyze</code>, so you better create a skill that exposes such a command. This command must return a <em>response</em> object of this format:</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">return</span> {
+  message: {
+    text: <span class="hljs-string">`Sentence analyzed. <span class="hljs-subst">${intentslug ? `Intent found: ${intentslug}</span>`</span>: <span class="hljs-string">&quot;No intent found.&quot;</span>}<span class="hljs-string">`
+  },
+  intent: intentslug,
+  entities: {
+    &apos;lang&apos;: [
+      &apos;french&apos;
+    ]
+  }
+}
+</span></code></pre>
+<p>The brain will then look for a skill that has a handler for the <code>intentslug</code> found, and call this handler.</p>
+<p>To declare an intent for your skill, use the <code>skill.addIntent(slug, name, handler)</code> method.</p>
+<p>The <code>slug</code> is unique accross all the brain, and your skill will not load if another skill already use this intent slug. First in, first out.</p>
+<p>The handler is a <strong>Promise</strong> that resolves to a <em>response</em> object containing a <code>message: { title, text, attachments... }</code>. The brain will return to the sender of the intent this <em>message</em> object.</p>
+<p>Your handler will get a <code>phrase</code> <em>string</em> which is what the user typed (without the <code>cmd</code> word), and a <code>data</code> <em>object</em> that contains additionnal data, such as the username, the channel identifier, the adapter identifier...</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">/*
+  SKILL: HELLO
+  AUTHOR: NAKASAR
+  DATE: 
+*/</span>
+
+<span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  <span class="hljs-comment">// skill.addCommand(hello...);</span>
+
+  skill.addIntent(<span class="hljs-string">&quot;say-hello&quot;</span>, <span class="hljs-string">&quot;say-hello&quot;</span>, ({ entities, data }) =&gt; {
+    <span class="hljs-comment">// The handler must be a Promise that resolves to a response.</span>
+    <span class="hljs-comment">// The response contains a message object that can be complex, or as simple as some text.</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+      <span class="hljs-keyword">if</span> (!entities.lang) {
+        <span class="hljs-keyword">return</span> {
+          message: {
+            text: <span class="hljs-string">&quot;You didn&apos;t tell me in what language I should say hello!&quot;</span>
+          }
+        }
+      }
+      <span class="hljs-keyword">let</span> text;
+      <span class="hljs-keyword">switch</span>(entities.lang[<span class="hljs-number">0</span>]) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;french&quot;</span>:
+          text = <span class="hljs-string">`Bonjour <span class="hljs-subst">${data.username || &quot;mon ami !&quot;}</span>`</span>;
+          <span class="hljs-keyword">return</span> text;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;english&quot;</span>:
+          text = <span class="hljs-string">`Hello <span class="hljs-subst">${data.username || &quot;folk!&quot;}</span>`</span>;
+          <span class="hljs-keyword">return</span> text;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;japanese&quot;</span>:
+          text = <span class="hljs-string">`&#x3053;&#x3093;&#x306B;&#x3061;&#x306F;&#x30B1;&#x30D3;&#x30F3;!`</span>;
+          <span class="hljs-keyword">return</span> text;
+        <span class="hljs-keyword">default</span>:
+          text = <span class="hljs-string">`I&apos;m afraid I don&apos;t speak this langage, sorry.`</span>;
+          <span class="hljs-keyword">return</span> text;
+      }
+    }).then(greeting =&gt; {
+      <span class="hljs-comment">// The handler is a Promise, so don&apos;t hesitate to use the Promise chaining mecanism.</span>
+      <span class="hljs-keyword">return</span> {
+        message: {
+          text: greeting
+        }
+      }
+    }).catch(err =&gt; {
+      <span class="hljs-comment">// You should always return something to the user.</span>
+      <span class="hljs-comment">// If you don&apos;t, the brain will send a generic error message.</span>
+      <span class="hljs-comment">// So you&apos;d better catch any final errors here.</span>
+      <span class="hljs-keyword">return</span> {
+        message: {
+          text: <span class="hljs-string">&quot;I couldn&apos;t say hello, I&apos;m sorry.&quot;</span>
+        }
+      };
+    });
   });
+}
+</code></pre>
+<h2 id="using-brain-components">Using brain components</h2>
+<h3 id="use-skill-commands-from-within-another-skill">Use skill commands from within another skill</h3>
+<p>Skills can execute other skill&apos;s commands (some skill may restrict what skills can access their commands through an auth system):</p>
+<pre><code class="lang-javascript"><span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  <span class="hljs-comment">/*
+    Here goes the definition of the skill.
+  */</span>
+
+  skill.addCommand(<span class="hljs-string">&quot;hello&quot;</span>, <span class="hljs-string">&quot;say-hello&quot;</span>, ({ phrase, data }) =&gt; {
+    <span class="hljs-keyword">return</span> skill.execute(<span class="hljs-string">&quot;helloworld&quot;</span>, ({ phrase, data })); <span class="hljs-comment">// Will call the helloworld command from another skill.</span>
+  }, { description: <span class="hljs-string">&quot;Will say hello.&quot;</span> });
+}
 </code></pre>
 <blockquote>
 <p>Don&apos;t forget to catch the error, in case the command was deactivated!</p>
 </blockquote>
-<p>Anything outside the <code>message</code> object returned by a skill will never be sent to any adapter, but might be accessible to other skill using the overseer command handling.</p>
+<p>Anything outside the <code>message</code> object returned by a skill will never be sent to any adapter, but might be accessible to other skill using the execute method.</p>
+<h3 id="store-a-secret-variable">Store a secret variable.</h3>
+<p>You may want to define secret variables, such as an API token or credentials to a service. You don&apos;t want to store these in the skill file, as it may be visible by other users that have the permission to access this skill.</p>
+<p>The Skill object allow you to retrieve a secret for a skill that you can set with the API or the dashboard:</p>
+<pre><code class="lang-javascript"><span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  <span class="hljs-keyword">const</span> secret = skill.getSecret();
+  skill.log(<span class="hljs-string">&quot;My secret token is &quot;</span> + secret.token);
+}
+</code></pre>
+<h3 id="log-something">Log something</h3>
+<p>Each skill store their own logs so that you can easily understand what goes wrong and when, without being able to access the logs of skill you should&apos;nt see.</p>
+<pre><code class="lang-javascript"><span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+  skill.log(<span class="hljs-string">&quot;Skill is up and loaded!&quot;</span>);
+  skill.log({ message: <span class="hljs-string">&quot;I can log objects too!&quot;</span> });
+}
+</code></pre>
+<h3 id="do-so-much-more">Do so much more?</h3>
+<p>The next sections explain how to handle conversations and how to create hooks with an adapter. But before, we will learn to create rich messages.</p>
 
                                 
                                 </section>
@@ -748,7 +891,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Skills","level":"1.3.3","depth":2,"next":{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},"previous":{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/skills.md","mtime":"2018-05-14T11:38:29.997Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Skills","level":"1.3.3","depth":2,"next":{"title":"Messages","level":"1.3.3.1","depth":3,"path":"brain/messages.md","ref":"brain/messages.md","articles":[]},"previous":{"title":"Get Started","level":"1.3.2","depth":2,"path":"brain/start.md","ref":"brain/start.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/skills.md","mtime":"2018-06-20T13:02:23.191Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

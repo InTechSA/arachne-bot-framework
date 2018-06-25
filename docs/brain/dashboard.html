@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -683,14 +657,36 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="dashboard">Dashboard</h1>
-<p>The Dashboardsi where you can create new skills, editing existing one, manage adapters, monitor the bot, and so on.</p>
+<p>The Dashboard is where you can create new skills, edit existing one, manage adapters, monitor the bot, and so on.</p>
 <p>The Dashboard will be accessible by default at <code>/dashboard</code>.</p>
+<blockquote>
+<p>All operations can be achieved using the API without using the dashboard.</p>
+</blockquote>
 <h2 id="setup">Setup</h2>
+<p>In order to use the dashboard, you must setup the API. Follow the <code>/setup</code> route to create the admin user (as defined in the environment variables).</p>
 <h2 id="users-and-accounts">Users and Accounts</h2>
+<p>By default, only administrators can access the dashboard. If you do not use an external Auth Service, no other users can register. If you use an external Auth Service, all users will be able to login in. They will be given the default role and permission set. (Which is, by default, nothing.)</p>
+<p>If you do not use an Auth Service, admins can create new user users from the <code>/dashboard/users</code> panel. Users will be able to change their password.</p>
 <h2 id="permissions">Permissions</h2>
+<p>All operations are restricted by a permission system. Accessing the dashboard portal requires, for instance, the SEE_DASHBOARD permission.</p>
+<p>A user may have its own permissions, and inherits from its group permissions. Group and User permissions are managed from the <code>/dashboard/users</code> panel.</p>
+<p>You may define a default role with a set of permissions that will be granted to all new users (this is NOT retroactive). You can create and remoev all roles, except the <strong>admin</strong> role. You can&apos;t also delete all admin users. And only admins can delete admin users.</p>
 <h2 id="adapters">Adapters</h2>
+<p>Only authorized adapters can use the brain. You can add, manage, and delete adapters from the <code>/dashboard/connectors</code> panel.</p>
 <h2 id="skills">Skills</h2>
+<p>This is the core of the dashboard. In the <code>/dashboard/skills</code> panel, you can edit your skills and create new ones.</p>
+<p>By default, only admin have access to this page, and only them can create new skills. But you can assign the SEE_SKILLS and the CREATE_SKILL permissions (and similar permissions) to allow other group/users to manage skills. Users will only be able to the the skills they have created or they have access to, unless they have the SEE_SKILLS_ANY permission.</p>
+<p>Using the action buttons, you can:</p>
+<ul>
+<li>Reload the skill.</li>
+<li>See the logs of the skill and manage its storage, hooks and pipes.</li>
+<li>Toggle a skill.</li>
+<li>Delete a skill.</li>
+<li>Go the the editor.</li>
+</ul>
+<p>The Editor allow you to edit the code of a skill. Help is available in the right panel (or at the bottom of the page on small devices). Don&apos;t forget to save your skill. The UI will warn you if anything goes wrong while saving your code. You can also access the logs of the skill from withi the editor.</p>
 <h2 id="test">Test</h2>
+<p>You can test your skills from the Dashboard Portal, assuming you have created a &quot;Dashboard&quot; (case-sensitive) adapter that is active. Warning, the chat sandbox does not support rich messages with attachments and message formatting is quite prehistoric, but it&apos;s enough for debug. You can&apos;t use hooks and pipes with the chat sandbox.</p>
 
                                 
                                 </section>
@@ -734,7 +730,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Dashboard","level":"1.3.4","depth":2,"next":{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},"previous":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/dashboard.md","mtime":"2018-05-08T14:45:31.017Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Dashboard","level":"1.3.4","depth":2,"next":{"title":"Setup","level":"1.3.4.1","depth":3,"anchor":"#setup","path":"brain/dashboard.md","ref":"brain/dashboard.md#setup","articles":[]},"previous":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/dashboard.md","mtime":"2018-06-25T09:27:53.995Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

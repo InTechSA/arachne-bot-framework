@@ -382,33 +382,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.3.5.1" data-path="api.html">
-            
-                <a href="api.html#bot">
-            
-                    
-                    Bot Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.2" data-path="api.html">
-            
-                <a href="api.html#administration">
-            
-                    
-                    Administration Endpoints
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.5.3" data-path="permissions.html">
+        <li class="chapter " data-level="1.3.5.1" data-path="permissions.html">
             
                 <a href="permissions.html">
             
@@ -690,170 +664,106 @@
   DATE : 14/05/2018
 */</span>
 
-<span class="hljs-comment">/*
-  You should not modify this part unless you know what you&apos;re doing.
-*/</span>
+<span class="hljs-built_in">module</span>.exports = (skill) =&gt; {
+    <span class="hljs-keyword">const</span> axios = skill.loadModule(<span class="hljs-string">&apos;axios&apos;</span>);
 
-<span class="hljs-comment">// Defining the skill</span>
-<span class="hljs-comment">// Commands the skill can execute.</span>
-<span class="hljs-comment">/* &lt;SKILL COMMANDS&gt; */</span>
-<span class="hljs-keyword">let</span> commands = {
-  <span class="hljs-string">&apos;quizz&apos;</span>: {
-    cmd: <span class="hljs-string">&quot;quizz&quot;</span>,
-    execute: quizz
-  }
-};
-<span class="hljs-comment">/* &lt;/SKILL COMMANDS&gt; */</span>
+    skill.addCommand(<span class="hljs-string">&quot;quizz&quot;</span>, <span class="hljs-string">&quot;quizz&quot;</span>, ({ phrase, data }) =&gt; {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+            <span class="hljs-keyword">return</span> axios({
+                url: <span class="hljs-string">&quot;https://opentdb.com/api.php?amount=1&amp;difficulty=medium&amp;type=multiple&quot;</span>
+            }).then((response) =&gt; {
+                <span class="hljs-keyword">var</span> body = response.data;
+                <span class="hljs-keyword">let</span> source = <span class="hljs-built_in">decodeURI</span>(body.results[<span class="hljs-number">0</span>].question);
+                <span class="hljs-keyword">let</span> question = <span class="hljs-string">&quot;Quizz:\n*&quot;</span> + source + <span class="hljs-string">&quot;*&quot;</span>;
+                <span class="hljs-keyword">let</span> answers = [];
+                <span class="hljs-keyword">let</span> incorrect_answers = [];
+                body.results[<span class="hljs-number">0</span>].incorrect_answers.forEach((value) =&gt; {
+                    incorrect_answers.push(<span class="hljs-built_in">decodeURI</span>(value));
+                });
+                <span class="hljs-keyword">let</span> correct_answer = <span class="hljs-built_in">decodeURI</span>(body.results[<span class="hljs-number">0</span>].correct_answer);
+                answers = incorrect_answers;
+                answers.push(correct_answer);
+                answers.sort();
 
-<span class="hljs-comment">// intents the skill understands.</span>
-<span class="hljs-comment">/* &lt;SKILL INTENTS&gt; */</span>
-<span class="hljs-keyword">let</span> intents = {
-  <span class="hljs-string">&apos;quizz-quizz&apos;</span>: {
-    slug: <span class="hljs-string">&quot;quizz&quot;</span>,
-    handle: handleQuizz,
-    expected_entities: []
-  }
-};
-<span class="hljs-comment">/* &lt;/SKILL INTENTS&gt; */</span>
-
-<span class="hljs-comment">// Conversation handlers of the skill.</span>
-<span class="hljs-comment">/* &lt;SKILL INTERACTIONS&gt; */</span>
-<span class="hljs-keyword">let</span> interactions = {
-  <span class="hljs-string">&apos;thread-quizz-handler&apos;</span>: {
-    name: <span class="hljs-string">&quot;thread-quizz-handler&quot;</span>,
-    interact: answerHandler
-  }
-};
-<span class="hljs-comment">/* &lt;/SKILL INTERACTIONS&gt; */</span>
-
-<span class="hljs-comment">// dependencies of the skill.</span>
-<span class="hljs-comment">/* &lt;SKILL DEPENDENCIES&gt; */</span>
-<span class="hljs-keyword">let</span> dependencies = [<span class="hljs-string">&quot;request&quot;</span>];
-<span class="hljs-comment">/* &lt;/SKILL DEPENDENCIES&gt; */</span>
-
-<span class="hljs-comment">// Exposing the skill definition.</span>
-exports.commands = commands;
-exports.intents = intents;
-exports.dependencies = dependencies;
-exports.interactions = interactions;
-
-<span class="hljs-comment">/*
-  Skill logic begins here.
-  You must implements the functions listed as &quot;execute&quot; and &quot;handle&quot; handler, or your skill will not load.
-*/</span>
-<span class="hljs-comment">/* &lt;SKILL LOGIC&gt; */</span>
-<span class="hljs-keyword">const</span> overseer = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;../../overseer&apos;</span>);
-<span class="hljs-keyword">const</span> request = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;request&apos;</span>);
-
-<span class="hljs-comment">/**
-  Handler for command quizz (!quizz).
-
-  Params :
-  --------
-    phrase: String
-*/</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">quizz</span>(<span class="hljs-params">{ phrase }</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    <span class="hljs-comment">// Retrieve the questions from an API</span>
-    request.get({
-        url: <span class="hljs-string">&quot;https://opentdb.com/api.php?amount=1&amp;difficulty=medium&amp;type=multiple&quot;</span>,
-        json: <span class="hljs-string">&quot;true&quot;</span>,
-        callback: (err, res, body) =&gt; {
-            <span class="hljs-keyword">if</span> (!err &amp;&amp; body) {
-              <span class="hljs-comment">// Build the question</span>
-                  <span class="hljs-keyword">let</span> question = <span class="hljs-string">&quot;Quizz:\n*&quot;</span> + body.results[<span class="hljs-number">0</span>].question + <span class="hljs-string">&quot;*&quot;</span>;
-                  <span class="hljs-comment">// Build the answers </span>
-                  <span class="hljs-keyword">let</span> answers = body.results[<span class="hljs-number">0</span>].incorrect_answers;
-                  answers.push(body.results[<span class="hljs-number">0</span>].correct_answer);
-                  answers.sort();
-
-                  question += <span class="hljs-string">&quot;\n&gt; &quot;</span> + answers.join(<span class="hljs-string">&quot;\n&gt; &quot;</span>);
-                  question += <span class="hljs-string">&quot;\n (type `abort` or `skip` to skip)&quot;</span>;
-                  <span class="hljs-comment">// return the message with a thread object and an interactive true to create the thread</span>
-                  <span class="hljs-keyword">return</span> resolve({
-                      message: {
-                        <span class="hljs-comment">// Required to create a thread</span>
-                          interactive: <span class="hljs-literal">true</span>,
-                          thread: {
-                            <span class="hljs-comment">// The source is the prase that started the conversation ( optional )</span>
-                            source: body.results[<span class="hljs-number">0</span>].question,
-                            <span class="hljs-comment">// Additional datas ( optional )</span>
-                            data: [
-                                [<span class="hljs-string">&quot;correct_answer&quot;</span>, body.results[<span class="hljs-number">0</span>].correct_answer],
-                                [<span class="hljs-string">&quot;incorrect_answers&quot;</span>, body.results[<span class="hljs-number">0</span>].incorrect_answers]
-                            ],
-                            <span class="hljs-comment">// The handler name ( REQUIRED ), the same as in the interactions object above</span>
-                            handler: <span class="hljs-string">&quot;thread-quizz-handler&quot;</span>,
-                            <span class="hljs-comment">// the time out duration ( optional )</span>
-                            duration: <span class="hljs-number">10</span>,
-                            <span class="hljs-comment">// the timeout message that will be printed when the conversation time out ( optional )</span>
-                            timeout_message: <span class="hljs-string">&quot;Trop tard ! Soit plus rapide la prochaine fois, la bonne r&#xE9;ponse &#xE9;tait : &quot;</span>+body.results[<span class="hljs-number">0</span>].correct_answer,
-                          },
-                          title: body.results[<span class="hljs-number">0</span>].category,
-                          text: question
-                      }
-                  });
-            } <span class="hljs-keyword">else</span> {
-                <span class="hljs-keyword">return</span> resolve({
+                question += <span class="hljs-string">&quot;\n&gt; &quot;</span> + answers.join(<span class="hljs-string">&quot;\n&gt; &quot;</span>);
+                question += <span class="hljs-string">&quot;\n (type `abort` or `skip` to skip)&quot;</span>;
+                <span class="hljs-keyword">return</span>({
                     message: {
-                        title: <span class="hljs-string">&quot;Cannot fetch quizz&quot;</span>,
-                        text: <span class="hljs-string">&quot;Error while requesting quizz service.&quot;</span>
+                        interactive: <span class="hljs-literal">true</span>,
+                        thread: {
+                            source,
+                            data: [
+                                [<span class="hljs-string">&quot;correct_answer&quot;</span>, correct_answer],
+                                [<span class="hljs-string">&quot;incorrect_answers&quot;</span>, incorrect_answers]
+                            ],
+                            handler: <span class="hljs-string">&quot;thread-quizz-handler&quot;</span>,
+                            duration: <span class="hljs-number">30</span>,
+                            timeout_message: <span class="hljs-string">&quot;Trop tard ! Soit plus rapide la prochaine fois, la bonne r&#xE9;ponse &#xE9;tait : &quot;</span> + correct_answer,
+                        },
+                        title: body.results[<span class="hljs-number">0</span>].category,
+                        text: question
+                    }
+                });
+            }).catch((err) =&gt; {
+                <span class="hljs-keyword">throw</span> <span class="hljs-string">&quot;Error while requesting quizz api&quot;</span>;
+            });
+        }).catch((err) =&gt; {
+            <span class="hljs-keyword">if</span>(<span class="hljs-keyword">typeof</span>(err) !== <span class="hljs-built_in">String</span>) err = err.toString();
+            skill.log(<span class="hljs-string">&quot;Error : &quot;</span> + err);
+            <span class="hljs-keyword">return</span>({
+                message: {
+                    title: <span class="hljs-string">&quot;Error&quot;</span>,
+                    text: err
+                }
+            }); 
+        });
+    }, {
+        description: <span class="hljs-string">&quot;Lance un quizz ! &lt;Attention&gt; si vous voulez r&#xE9;pondre au quizz en dehors d&apos;un chat priv&#xE9;, ajoutez ! devant votre r&#xE9;ponse&quot;</span>
+    });
+
+    skill.addIntent(<span class="hljs-string">&quot;quizz&quot;</span>, <span class="hljs-string">&quot;quizz&quot;</span>, ({ entities, data }) =&gt; {
+        <span class="hljs-keyword">return</span> skill.handleCommand(<span class="hljs-string">&quot;quizz&quot;</span>, { data });
+    });
+
+    skill.addInteraction(<span class="hljs-string">&quot;thread-quizz-handler&quot;</span>, (thread, { phrase, data }) =&gt; {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve().then(() =&gt; {
+            skill.log(phrase);
+            <span class="hljs-keyword">if</span> (phrase === thread.getData(<span class="hljs-string">&quot;correct_answer&quot;</span>)) {
+                <span class="hljs-keyword">return</span>({
+                    message: {
+                        title: <span class="hljs-string">&quot;Correct o/&quot;</span>,
+                        text: <span class="hljs-string">`<span class="hljs-subst">${phrase}</span> is the correct answer, congrats!`</span>
+                    }
+                });
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ([<span class="hljs-string">&quot;abort&quot;</span>, <span class="hljs-string">&quot;skip&quot;</span>].includes(phrase)) {
+                <span class="hljs-keyword">return</span>({
+                    message: {
+                        title: <span class="hljs-string">&quot;Aborting&quot;</span>,
+                        text: <span class="hljs-string">`The answer was *<span class="hljs-subst">${thread.getData(&quot;correct_answer&quot;)}</span>*. <span class="hljs-subst">${thread.getData(&quot;attemps&quot;) || 0}</span> attemps.`</span>
+                    }
+                });
+            } <span class="hljs-keyword">else</span> {
+                thread.setData(<span class="hljs-string">&quot;attemps&quot;</span>, (thread.getData(<span class="hljs-string">&quot;attemps&quot;</span>) || <span class="hljs-number">0</span>) + <span class="hljs-number">1</span>);
+                <span class="hljs-keyword">return</span>({
+                    message: {
+                        interactive: <span class="hljs-literal">true</span>,
+                        title: <span class="hljs-string">&quot;Wrong :(&quot;</span>,
+                        text: <span class="hljs-string">`<span class="hljs-subst">${phrase}</span> is not the expected answer, try again!`</span>
                     }
                 });
             }
-        }
+        }).catch((err) =&gt; {
+            <span class="hljs-keyword">if</span>(<span class="hljs-keyword">typeof</span>(err) !== <span class="hljs-built_in">String</span>) err = err.toString();
+            skill.log(<span class="hljs-string">&quot;Error : &quot;</span> + err);
+            <span class="hljs-keyword">return</span>({
+                message: {
+                    title: <span class="hljs-string">&quot;Error&quot;</span>,
+                    text: err
+                }
+            }); 
+        });
     });
-  });
 }
-<span class="hljs-comment">// The function that will be executed when a request is received on the /converse route with the thread id associated to the skill</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">answerHandler</span>(<span class="hljs-params">thread, { phrase }</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    <span class="hljs-comment">// Correct answer</span>
-    <span class="hljs-keyword">if</span> (phrase === thread.getData(<span class="hljs-string">&quot;correct_answer&quot;</span>)) {
-      <span class="hljs-comment">// no interactive true parameter , so the thread will be closed</span>
-        <span class="hljs-keyword">return</span> resolve({
-            message: {
-                title: <span class="hljs-string">&quot;Correct o/&quot;</span>,
-                text: <span class="hljs-string">`<span class="hljs-subst">${phrase}</span> is the correct answer, congrats!`</span>
-            }
-        });
-    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>([<span class="hljs-string">&quot;abort&quot;</span>, <span class="hljs-string">&quot;skip&quot;</span>].includes(phrase)) {
-      <span class="hljs-comment">// Abort skip catch</span>
-        <span class="hljs-built_in">console</span>.log(thread.getData(<span class="hljs-string">&quot;attemps&quot;</span>));
-        <span class="hljs-comment">// No interactive true parameter, so the thread will be closed</span>
-        <span class="hljs-keyword">return</span> resolve({
-            message: {
-                title: <span class="hljs-string">&quot;Aborting&quot;</span>,
-                text: <span class="hljs-string">`The answer was *<span class="hljs-subst">${thread.getData(&quot;correct_answer&quot;)}</span>*. <span class="hljs-subst">${thread.getData(&quot;attemps&quot;) || 0}</span> attemps.`</span>
-            }
-        });
-    } <span class="hljs-keyword">else</span> {
-      <span class="hljs-built_in">console</span>.log(thread.getData(<span class="hljs-string">&quot;attemps&quot;</span>));
-      thread.setData(<span class="hljs-string">&quot;attemps&quot;</span>, (thread.getData(<span class="hljs-string">&quot;attemps&quot;</span>) || <span class="hljs-number">0</span>) + <span class="hljs-number">1</span>);
-      <span class="hljs-comment">// Wrong answer, interactive true parameter to continue the conversation</span>
-      <span class="hljs-keyword">return</span> resolve({
-          message: {
-              interactive: <span class="hljs-literal">true</span>,
-              title: <span class="hljs-string">&quot;Wrong :(&quot;</span>,
-              text: <span class="hljs-string">`<span class="hljs-subst">${phrase}</span> is not the expected answer, try again!`</span>
-          }
-      });
-    }
-  });
-}
-<span class="hljs-comment">/**
-  Handler for intent quizz-quizz (quizz).
-
-  Params :
-  --------
-    entities (Object)
-*/</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleQuizz</span>(<span class="hljs-params">{ entities = {}, phrase, data }</span>) </span>{
-  <span class="hljs-keyword">return</span> quizz({ phrase });
-}
-<span class="hljs-comment">/* &lt;/SKILL LOGIC&gt; */</span>
-
-<span class="hljs-comment">// You may define other logic function unexposed here. Try to keep the skill code slim.</span>
 </code></pre>
 
                                 
@@ -898,7 +808,7 @@ exports.interactions = interactions;
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Conversation","level":"1.3.3.4.2","depth":4,"next":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]},"previous":{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/quizz.md","mtime":"2018-05-22T15:40:48.045Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T08:24:44.917Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Conversation","level":"1.3.3.4.2","depth":4,"next":{"title":"Hooks","level":"1.3.3.4.3","depth":4,"path":"brain/tea.md","ref":"brain/tea.md","articles":[]},"previous":{"title":"API Request","level":"1.3.3.4.1","depth":4,"path":"brain/weather.md","ref":"brain/weather.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Kevin \"Nakasar\" Thizy","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Arachne Framework","gitbook":"*","description":"Multi-Platform Bot Framework with skill architecture."},"file":{"path":"brain/quizz.md","mtime":"2018-06-25T09:12:13.839Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-25T09:30:54.933Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

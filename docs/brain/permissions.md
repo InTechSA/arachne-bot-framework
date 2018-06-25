@@ -30,6 +30,7 @@
 | CREATE_SKILL          | Create a new skill (the user will be granted rights on it).   |
 | DELETE_SKILL*         | Delete a skill the user has access to (TUHAT)                 |
 | DELETE_SKILL_HOOKS*   | Clear hooks for a skill the user has access to.               |
+| DELETE_SKILL_PIPES*   | Clear pipes for a skill the user has access to.               |
 | DELETE_SKILL_STORAGE* | Clear storage for a skill the user has access to.             |
 | EDIT_SKILL*           | Edit a skill the user has access to.                          |
 | EDIT_SKILL_CODE*      | Edit the code of a skill the user has access to.              |
@@ -38,6 +39,8 @@
 | RELOAD_SKILL*         | Reload a skill the user has access to.                        |
 | SEE_SKILLS*           | See list of skills the user has access to.                    |
 | SEE_SKILL_CODE*       | See the code of a skill the user has access to.               |
+| SEE_SKILL_LOGS*       | See the logs of a skill the user has access to.               |
+| SEE_SKILL_PIPES*      | Get the list of pipes active for a skill TUHAT.               |
 | SEE_SKILL_SECRET*     | see the secret of a skill the user has access to.             |
 | TOGGLE_SKILLS*        | Activate/Deactivate a skill the user has access to.           |
 |                       |                                                               |
@@ -53,4 +56,5 @@
 | CLEAR_STORAGE         | Clear the storage of the brain.                               |
 | RELOAD_BRAIN          | Reload the brain.                                             |
 |                       |                                                               |
-| SEE_CONFIGURATION     | Access brain configuration                                    |
+| CONFIGURE_BRAIN       | Access brain configuration                                    |
+
