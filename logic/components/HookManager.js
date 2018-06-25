@@ -27,7 +27,7 @@ class HookManager {
    * @param {String} messageOnDelete
    * @return {Promise} Promise to the created hook : { _id, skill }
    */
-  create(skill, messageOnDelete = null) {
+  create(skill, messageOnDelete = "") {
    return this.hookController.create_hook(skill, messageOnDelete);
   }
 
