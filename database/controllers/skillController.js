@@ -2,6 +2,8 @@
 var Skill = require("../models/skillModel");
 const storageController = require('./storageController');
 const hookController = require('./hookController');
+const logController = require('./logController');
+const pipeController = require('./pipeController');
 /**
  * Create a new skill.
  *
@@ -54,6 +56,10 @@ module.exports.delete = function(name) {
     return storageController.clear_storage_for_skill(name)
         .then(hookController.purge_for_skill(name))
         .then(() => {
+            return pipeController.remove_for_skill(name);
+        }).then(() => {
+            return logController.delete(name);
+        }).then(() => {
             return Skill.findOneAndRemove({ name });
         });
 };
