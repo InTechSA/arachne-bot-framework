@@ -11,7 +11,7 @@ module.exports = (skill) => {
     skill.addCommand('mr', 'merge-requests', ({ phrase, data }) => {
         const [cmd, ...params] = phrase.split(" ");
         
-        if (params.length === 0) {
+        if (params.length === 0 && !["list", "create", "accept", "reject"].includes(cmd)) {
             // No params, cmd is client, and list MR.
             return listMR({ phrase: cmd, data });
         }
