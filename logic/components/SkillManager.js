@@ -4,8 +4,6 @@ const logger = new (require('./../../logic/components/Logger'))();
 const fs = require('fs');
 const path = require('path');
 
-const skillTemplateRegex = fs.readFileSync(path.join(__dirname, "./skillCodeRegex.txt"), "utf8").trim();
-
 const Skill = require('./Skill');
 
 exports.SkillManager = class SkillManager {
@@ -287,6 +285,7 @@ exports.SkillManager = class SkillManager {
 
       // Force status to unactive and replace current skill object.
       skill.active = false;
+      delete this.skills[skill.name];
       this.skills[skill.name] = skill;
 
       Object.values(skill.commands).forEach(command => {
@@ -446,6 +445,7 @@ exports.SkillManager = class SkillManager {
     })
       .then((name) => this.skillController.toggle(name, false))
       .then(() => {
+        this.skills[name].active = false;
         logger.log(`\t\t... \x1b[32mdeactivated\x1b[0m`);
         return true;
       });
@@ -839,16 +839,21 @@ exports.SkillManager = class SkillManager {
             logger.log(`\t... Persist skill ${skill} in database...`);
 
             // Extract the skill code
-            const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
-            // Extract the secret ( if it exist )
-            var secret = {};
-            if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
-              secret = require(this.skillsDirectory + "/" + skill + "/secret");
-            }
+            if (fs.existsSync(this.skillsDirectory + "/" + skill + "/skill.js")) {
+              const skill_code = fs.readFileSync(this.skillsDirectory + "/" + skill + "/skill.js");
+              // Extract the secret ( if it exist )
+              var secret = {};
+              if (fs.existsSync(this.skillsDirectory + "/" + skill + "/secret.js")) {
+                secret = require(this.skillsDirectory + "/" + skill + "/secret");
+              }
 
-            return this.skillController.create_skill(skill, skill_code, secret).then(() => {
-              logger.log(`\t... Persisted skill ${skill} in database...`);
-            });
+              return this.skillController.create_skill(skill, skill_code, secret).then(() => {
+                logger.log(`\t... Persisted skill ${skill} in database...`);
+              });
+            } else {
+              logger.error(`\t... Skill ${skill} has no skill.js file in folder! This is a critical error, that should only appear in dev environment. Please delete the skill folder.`);
+              return;
+            }
           })
         });
 
@@ -874,20 +879,7 @@ exports.SkillManager = class SkillManager {
    * @return {Promise} Promise object represents the skill's code.
    */
   getSkillCode(skillName) {
-    return new Promise((resolve, reject) => {
-      if (this.skills[skillName]) {
-        fs.readFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), 'utf8', (err, data) => {
-          if (err) {
-            logger.error(err.stack);
-            return reject();
-          }
-          let code = data;
-          return resolve(code);
-        })
-      } else {
-        return reject();
-      }
-    });
+    return this.skillController.get_code(skillName);
   }
 
   /**
@@ -994,12 +986,12 @@ exports.SkillManager = class SkillManager {
    * @param {String} code - The code of the skill to save.
    * @return {Promise} Promise object resolves if success, reject otherwise.
    */
-  saveSkillCode(skillName, code) {
+  saveSkillCode(skillName, code, codeId) {
     return new Promise((resolve, reject) => {
       this.validateSkillCode(code).then(success => {
         logger.info(`Saving code of skill \x1b[33m${skillName}\x1b[0m...`);
         logger.log(`\t... Push ${skillName} to database...`);
-        this.skillController.save_code(skillName, code).then((skill) => {
+        this.skillController.save_code(skillName, code, codeId).then((skill) => {
           logger.log(`\t... Writing code file of ${skillName}...`);
           fs.writeFile(path.join(this.skillsDirectory, `/${skillName}/skill.js`), code, 'utf8', (err) => {
             if (err) {
@@ -1012,7 +1004,7 @@ exports.SkillManager = class SkillManager {
             logger.log(`\t... Reload skill.`);
 
             this.reloadSkill(skillName).then(() => {
-              return resolve();
+              return resolve(skill.code_id);
             }).catch((err) => {
               const error = new Error("Skill saved, but couldn't be loaded because: " + err.message);
               error.skill = skillName;
@@ -1021,6 +1013,10 @@ exports.SkillManager = class SkillManager {
           });
         }).catch((err) => {
           logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
+          if (err.code) {
+            err.skill = skillName;
+            return reject(err);
+          }
           const error = new Error("Code is valid, but couldn't save it to database.");
           error.skill = skillName;
           return reject(error);

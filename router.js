@@ -135,9 +135,9 @@ module.exports = function (io) {
     users.is_empty().then((isempty) => {
       if (isempty) {
         hub.PermissionManager.createRole("admin", []).then(() => {
-          return users.create_user({ user_name: process.env.ADMIN_USER.trim() || "Nakasar", password: "Password0", roles: ["admin"] });
+          return users.create_user({ user_name: (process.env.ADMIN_USER ? process.env.ADMIN_USER.trim() : "Nakasar"), password: "Password0", roles: ["admin"] });
         }).then(user => {
-          return users.promote_user(user.id, "admin");
+          return users.promote_user(user.id, "admin", true);
         }).then(admin => {
           return res.json({ success: true, message: "Admin user added.", user: { id: admin._id, roles: admin.roles, user_name: admin.user_name } });
         }).catch((err) => {
@@ -334,8 +334,8 @@ module.exports = function (io) {
    */
   router.get('/skills/:skill/edit', hasPerm('SEE_SKILL_CODE'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
-      hub.getSkillCode(req.params.skill).then((code) => {
-        return res.json({ success: true, message: `Code of Skill ${req.params.skill} retrieved.`, code: code })
+      hub.getSkillCode(req.params.skill).then(code => {
+        return res.json({ success: true, message: `Code of Skill ${req.params.skill} retrieved.`, code: code.code, codeId: code.code_id })
       }).catch(() => {
         return res.json({ success: false, message: `Could not get code of Skill ${req.params.skill}.` })
       });
@@ -355,15 +355,20 @@ module.exports = function (io) {
    *
    * @apiSuccess {Boolean} success Success of operation.
    * @apiSuccess {String} message Message from api.
+   * @apiSuccess {String} codeId Unique identifier for this version of the skill.
    */
   router.put('/skills/:skill/code', hasPerm('EDIT_SKILL_CODE'), (req, res) => {
     if (!req.body.code) {
-      return res.json({ success: false, message: "Missing 'code' definition in body." });
+      return res.status(400).json({ success: false, message: "Missing 'code' definition in body." });
+    }
+
+    if (!req.body.codeId) {
+      return res.status(400).json({ success: false, message: "Missing codeId in body" });
     }
 
     if (hub.hasSkill(req.params.skill)) {
-      hub.saveSkillCode(req.params.skill, req.body.code).then(() => {
-        return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.` })
+      hub.saveSkillCode(req.params.skill, req.body.code, req.body.codeId).then(codeId => {
+        return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.`, codeId: codeId })
       }).catch((err) => {
         return res.json({ success: false, message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." }); // eslint-disable-line no-control-regex
       });
@@ -799,7 +804,7 @@ module.exports = function (io) {
 
   // Assign a role to a user
   router.put('/users/:user_name/roles/:role', hasPerm('ASSIGN_ROLE'), (req, res, next) => {
-    hub.UserManager.assignRole(req.params.user_name, req.params.role).then((user) => {
+    hub.UserManager.assignRole(req.params.user_name, req.params.role, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then((user) => {
       return res.json({
         success: true,
         message: "Role assigned to user.",
@@ -810,7 +815,7 @@ module.exports = function (io) {
 
   // Remove a role from a user
   router.delete('/users/:user_name/roles/:role', hasPerm('REMOVE_ROLE'), (req, res, next) => {
-    hub.UserManager.removeRole(req.params.user_name, req.params.role).then((user) => {
+    hub.UserManager.removeRole(req.params.user_name, req.params.role, req.decoded.user.roles && req.decoded.user.roles.includes('admin')).then((user) => {
       return res.json({
         success: true,
         message: "Role removed from user.",

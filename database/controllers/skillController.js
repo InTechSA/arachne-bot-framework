@@ -32,6 +32,7 @@ module.exports.create_skill = function(name, code, secret = {}) {
 
             let newSkill = new Skill({ name, code });
             Object.keys(secret).forEach(key => newSkill.secret.set(key, secret[key]));
+            newSkill.code_id = (Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2)).toUpperCase();
             newSkill.save().then(skill => resolve(skill)).catch(err => reject(err));
         })
     });
@@ -64,28 +65,65 @@ module.exports.delete = function(name) {
         });
 };
 
+/** Get the code of a skill.
+ * 
+ * @param {String} name Name of the skill to get code of.
+ */
+module.exports.get_code = (name) => {
+    return Skill.findOne({ name }, "code code_id").then(skill => {
+        if (!skill) {
+            const error = new Error("Skill not found.");
+            error.code = 404;
+            throw error; 
+        }
+        return skill;
+    });
+}
+
 /**
  * Save the code of a skill.
  * 
  * @param {String} name - The name of the skill to update.
  * @param {String} code - The code to save.
+ * @param {String} codeId - The current id of the code (to check for concurrent modifications).
  * @returns {Promise<Skill>} A promise to the updated skill.
  */
-module.exports.save_code = function(name, code) {
-    return new Promise((resolve, reject) => {
+module.exports.save_code = function(name, code, codeId) {
+    return Promise.resolve().then(() => {
         if (!name || name.length <= 0) {
-            return reject(new Error("Can't edit an unamed skill."));
+            const error = new Error("Can't edit an unamed skill.");
+            error.code = 400;
+            throw error;
         }
         // Code should at least contain template.
         if (!code || code.length <= 0) {
-            return reject(new Error("Can't save an empty code."));
+            const error = new Error("Can't save an empty code.");
+            error.code = 400;
+            throw error;
         }
+
+        return Skill.findOne({ name });
+    }).then(skill => {
+        if (!skill) {
+            const error = new Error("No skill found.");
+            error.code = 404;
+            throw error;
+        }
+
+        // Code Id is a random string used to check concurrent modifications.
+        // The push shall be rejected if the given ID is different from the one stored.
+        if (codeId !== skill.code_id) {
+            const error = new Error("The skill was updated while you were editing it. You should save your code and reload the page to re-apply your modification.");
+            error.code = 409;
+            throw error;
+        }
+
+        skill.code = code;
+        skill.last_update = new Date();
+        skill.code_id = (Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2)).toUpperCase();
         
-        Skill.findOneAndUpdate({ name }, { code, last_update: new Date() }, (err, skill) => {
-            if (err) {
-                return reject(err);
-            }
-            return resolve(skill);
+        return skill.save().then(() => {
+            return { code_id: skill.code_id };
         });
     });
 };

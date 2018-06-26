@@ -183,14 +183,20 @@ module.exports = function (socket) {
    *   {String} hook_id - the id of the hook we want to close
    */
   socket.on('close-hook', (hook_id, callback) => {
-    hub.HookManager.get(hook_id).then((hook) => { 
-      hub.HookManager.remove(hook_id).then(() => {
+    hub.HookManager.get(hook_id).then((hook) => {
+      if(!hook) {
+        hook = {messageOnDelete: ""};
+        logger.error("Close hook on a non existant hook");
+        return callback(hook.messageOnDelete);
+      } else {
+        hub.HookManager.remove(hook_id).then(() => {
           logger.info("Deleted hook "+hook_id);
           return callback(hook.messageOnDelete);
-      }).catch((err) => {
-        logger.error(err);
-        return callback(err);
-      });
+        }).catch((err) => {
+          logger.error(err);
+          return callback(err);
+        });
+      }      
     }).catch((err) => {
       logger.error(err);
       return callback(err);
