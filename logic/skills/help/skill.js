@@ -80,7 +80,7 @@ module.exports = (skill) => {
                                     text += "\n";
                                 }
                             } else {
-                                text += "Pas de sous commande ! Utilisez juste `!"+helpCmd.cmd+"`"
+                                text += "Pas de sous commande !"
                             }
                             return({
                                 message: {

@@ -21,6 +21,10 @@ const SkillSchema = new Schema({
     default: false
   },
   code: String,
+  code_id: {
+    type: String,
+    default: (Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2)).toUpperCase()
+  },
   secret: {
       type: Map,
       of: String,

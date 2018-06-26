@@ -140,7 +140,7 @@ exports.deactivateSkill = (skillName) => SkillManager.deactivateSkill(skillName)
 exports.loadSkill = (skillName) => SkillManager.loadSkill(skillName);
 exports.reloadSkill = (skillName) => SkillManager.reloadSkill(skillName);
 exports.getSkillCode = (skillName) => SkillManager.getSkillCode(skillName);
-exports.saveSkillCode = (skillName, code) => SkillManager.saveSkillCode(skillName, code);
+exports.saveSkillCode = (skillName, code, codeId) => SkillManager.saveSkillCode(skillName, code, codeId);
 exports.createSkill = (skill) => SkillManager.createSkill(skill);
 exports.deleteSkill = (skillName) => SkillManager.deleteSkill(skillName);
 exports.getSkills = () => SkillManager.getSkills();

@@ -184,7 +184,8 @@ module.exports = function(io) {
             botname: hub.ConfigurationManager.loadedConfiguration.botname,
             skill_edited: {
               name: req.params.skill,
-              code: code,
+              code: code.code,
+              codeId: code.code_id,
               intents: skill.intents ? skill.intents.intents : [],
               commands: skill.commands ? skill.commands.commands : [],
               active: skill.active

@@ -174,25 +174,10 @@ block supercontent
           animate(attributename='y' begin='0.5s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
 
     #skill-editor(style="display: none;")
-      if skill_edited
-        h1= skill_edited.name
-      else
-        h1 New Skill: unnammed skill
+      h1= skill_edited.name
       .row
         .col-md-4#left-panel
           h4 Script configuration
-          form#skill-generate
-            .form-group.row
-              label.col-sm-4.col-form-label(for="skill-name") Skill name
-              .col-sm-8
-                input.form-control#skill-name(type="text")
-            .form-group.row
-              label.col-sm-4.col-form-label(for="skill-template") Skill type
-              .col-sm-8
-                select.form-control#skill-template
-                  option(selected="selected") From scratch
-                  option API request
-            button.btn.btn-primary(type="submit") Generate template
           #skill-toolbox(style="display: none;")
             .list-group.list-group-flush
               if skill_edited
@@ -244,10 +229,8 @@ block supercontent
               // Display modal otherwise
               h5.d-lg-none-block.action(onClick="displayHelp()", style="margin-top:20px") Display help
 
-  if skill_edited
+
     #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="true" data-skill-name=skill_edited.name data-skill-code=skill_edited.code)
-  else
-    #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="false")
   
   script
-    include ../public/js/new_skill.js
+    include ../public/js/edit_skill.js

@@ -4,7 +4,7 @@ const base_url = "/";
 // This can be activated in the browser console with UNLIMITEDPOWER = true;
 // The Power Mode uses experimental features like speech synthetisis.
 // Therefore it will not work on all browsers.
-let UNLIMITEDPOWER = true;
+let UNLIMITEDPOWER = false;
 
 /**
  * Log out user from dashboard, clear session.
