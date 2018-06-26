@@ -67,7 +67,6 @@ $("#configure-secret-form").submit(function (event) {
     data: JSON.stringify({ secret: secrets }),
     dataType: "json",
     success: (json) => {
-      console.log(json);
       $("#configure-secret-modal").modal('hide');
       notifyUser({
         title: "Secret saved!",
@@ -91,17 +90,17 @@ $("#save-skill").click(function () {
       type: "info",
       delay: -1
     });
-
     $.ajax({
       method: "PUT",
       baseUrl: base_url,
       url: "/skills/" + skillName + "/code",
-      data: { code: skillCode },
+      data: { code: skillCode, codeId },
       dataType: "json",
       success: function (json) {
-        console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
+          $("#edited-skill-data").attr("data-skill-codeid", json.codeId);		
+          codeId = json.codeId;
           notifyUser({
             title: "Skill pushed!",
             message: `Your skill ${skillName} is updated and running!`,
@@ -121,7 +120,7 @@ $("#save-skill").click(function () {
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",
-          message: `Couldn't push ${skillName}.`,
+          message: err.responseJSON.message || `Couldn't push ${skill.name}.`,
           type: "error",
           delay: 5
         });
@@ -137,6 +136,7 @@ editor.setTheme('ace/theme/monokai');
 let editedSkillData = $('#edited-skill-data');
 var skillName = editedSkillData.data('skill-name');
 var skillCode = editedSkillData.data('skill-code');
+var codeId = editedSkillData.data('skill-codeid');
 $('#skill-generate').hide();
 $('#skill-toolbox').show();
 $("#left-panel").removeClass("col-md-4");

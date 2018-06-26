@@ -185,7 +185,7 @@ module.exports = function(io) {
             skill_edited: {
               name: req.params.skill,
               code: code.code,
-              codeId: code.code_id,
+              codeid: code.code_id,
               intents: skill.intents ? skill.intents.intents : [],
               commands: skill.commands ? skill.commands.commands : [],
               active: skill.active
