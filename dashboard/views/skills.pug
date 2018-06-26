@@ -6,7 +6,7 @@ block content
       h1 Skills
     .col.align-self-center.text-right
       buton.btn.btn-outline-warning#reload-brain(role="button") Reload Brain
-      a.btn.btn-outline-success#new-skill(role="button" href="/dashboard/skills/new" style="margin-left: 1em;") New Skill
+      a.btn.btn-outline-success#new-skill(role="button" onClick="$('#createSkillModal').modal('toggle')" style="margin-left: 1em;color: green") New Skill
   
   .list-group
     if skills
@@ -54,21 +54,38 @@ block content
               p.font-weight-light.font-italic There are no commands for this skill.
 
   #deleteModal.modal.fade.bd-example-modal-lg(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
-            .modal-dialog.modal-lg(role='document')
-                .modal-content
-                    .modal-header
-                      h5#exampleModalLabel.modal-title Are you sure you want to delete the &nbsp;
-                      h5#skillRemove.modal-title 
-                      h5.modal-title &nbsp; skill ?
-                      button.close(type='button', data-dismiss='modal', aria-label='Close')
-                      span(aria-hidden='true') ×
-                    .modal-body
-                      .container(style="padding-top: 30px;padding-bottom: 30px;")
-                        .row
-                          .col-sm-6.text-center
-                            button.btn.btn-success(onClick="deleteSkill2(this)") Yes
-                          .col-sm-6.text-center
-                            button.btn.btn-danger(type='button', data-dismiss='modal', aria-label='Close') No 
+    .modal-dialog.modal-lg(role='document')
+        .modal-content
+            .modal-header
+              h5#exampleModalLabel.modal-title Are you sure you want to delete the &nbsp;
+              h5#skillRemove.modal-title 
+              h5.modal-title &nbsp; skill ?
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+              span(aria-hidden='true') ×
+            .modal-body
+              .container(style="padding-top: 30px;padding-bottom: 30px;")
+                .row
+                  .col-sm-6.text-center
+                    button.btn.btn-success(onClick="deleteSkill2(this)") Yes
+                  .col-sm-6.text-center
+                    button.btn.btn-danger(type='button', data-dismiss='modal', aria-label='Close') No
+
+  #createSkillModal.modal.fade.bd-example-modal-lg(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+    .modal-dialog.modal-lg(role='document')
+      .modal-content
+        .modal-header
+          h5.modal-title Enter the name of the skill you want to create
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        .modal-body
+          .container(style="padding-top: 30px;padding-bottom: 30px;")
+            .row
+            form#skill-generate
+              .form-group.row
+                label.col-sm-4.col-form-label(for="skill-name") Skill name
+                .col-sm-8
+                  input.form-control#skill-name(type="text")
+              input.btn.btn-primary(type="submit" value="Create Skill !")
 
   script
     include ../public/js/skills.js

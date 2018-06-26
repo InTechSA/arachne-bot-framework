@@ -206,4 +206,70 @@ function reloadBrain() {
   });
 }
 
+const skillNameRegex = /^[a-z\\-]{3,20}$/;
+
+$("#skill-generate").submit(function (event) {
+    var id = event.target.id;
+    let skillName = $(`#${id} #skill-name`).val();
+    console.log("Generate new skill");
+    event.preventDefault();
+    skillName = skillName.toLowerCase();
+
+    if (!skillNameRegex.test(skillName)) {
+      return notifyUser({ title: "Invalid skill name.", message: "Name must be lower-case, contain only letters and -.",type: "error",delay: 5 })
+    } else {
+        let code = 
+          "/*"+"\n"+
+          `\tSKILL : ${skillName || "new-skill"}\n`+
+          `\tUTHOR : "Anonymous"\n`+
+          `\tDATE : ${(new Date()).toLocaleDateString()}\n`+
+          `*/\n`+"\n"+
+          `module.exports = (skill) => {\n`+"\n"+
+          `};`.trim();
+
+        let skilljson = {
+            skill_name: skillName,
+            skill_code: code
+        }
+    
+        let notificationId = notifyUser({
+            title: "Saving skill...",
+            message: "We are pushing your new skill, please wait.",
+            type: "info",
+            delay: -1
+        });
+    
+        $.ajax({
+            method: "PUT",
+            baseUrl: base_url,
+            url: "/skills",
+            data: skilljson,
+            dataType: "json",
+            success: function (json) {
+              console.log(json);
+              dismissNotification(notificationId);
+              if (json.success) {
+                  window.location.href = "/dashboard/skills/"+skillName+"/edit?newSkill=true";
+              } else {
+                  notifyUser({
+                  title: `Couldn't push ${skillName}`,
+                  message: json.message,
+                  type: "error",
+                  delay: 5
+                  });
+              }
+            },
+            error: function (err) {
+            dismissNotification(notificationId);
+            notifyUser({
+                title: `Couldn't push ${skillName}`,
+                message: `Error : ${json.message}`,
+                type: "error",
+                delay: 5
+            });
+            }
+        });
+    }
+});
+
 $("#reload-brain").click(reloadBrain);

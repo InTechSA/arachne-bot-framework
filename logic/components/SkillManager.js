@@ -263,7 +263,7 @@ exports.SkillManager = class SkillManager {
           });
         }).catch((err) => {
           logger.error(`\t... \x1b[31mFailed\x1b[0m for reason: ${err.message || "Unkown reason"}.`);
-          return reject(new Error("Could not push skill code."));
+          return reject(err);
         });
       }).catch((err) => {
         logger.error(err);

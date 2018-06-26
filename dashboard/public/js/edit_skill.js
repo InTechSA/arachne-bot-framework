@@ -1,111 +1,13 @@
-const skillNameRegex = /^[a-z\\-]{3,20}$/;
-
-class Skill {
-  constructor() {
-    this.name = undefined;
-    this.code = "";
-    this.author = undefined;
-    this.secret = {};
-  }
-
-  generateCode() {
-    let code = `
-/*
-  SKILL : ${this.name || "new-skill"}
-  AUTHOR : ${this.author || "Anonymous"}
-  DATE : ${(new Date()).toLocaleDateString()}
-*/
-
-module.exports = (skill) => {
-  
-}
-    `.trim();
-    this.code = code;
-    return code;
-  }
-
-  setName(name) {
-    this.name = name;
-  }
-
-  /**
-    Generate the skill using a template (or from scratch).
-  */
-  generate(name, template, skills) {
-    return new Promise((resolve, reject) => {
-      // Check if name is available.
-      let trueName = name.toLowerCase();
-
-      if (!skillNameRegex.test(trueName)) {
-        return reject({ title: "Invalid skill name.", message: "Name must be lower-case, contain only letters and -." })
-      }
-
-      if (Object.keys(skills).includes(trueName)) {
-        return reject({ message: "Skill name " + name + " already in use." });
-      }
-
-      this.name = name;
-      this.dependencies = [];
-      this.intents = {};
-      this.commands = {};
-
-      switch (template) {
-        default:
-          this.generateCode();
-          break;
-      }
-
-      return resolve();
-    });
-  }
-}
-
 function showEditor() {
   $("#code-alert").hide();
   $("#editor").show();
 }
 
-$("#skill-generate").submit(function (event) {
-  var id = event.target.id;
-  console.log("Generate new skill");
-  event.preventDefault();
-
-  $('#skill-generate').hide();
-
-  let skillName = $(`#${id} #skill-name`).val();
-  let skillTemplate = $(`#${id} #skill-template`).val();
-
-  skill.generate(skillName, skillTemplate, skills).then(() => {
-    $("main h1").text(skill.name);
-    $("#skill-toolbox").show();
-    $("#left-panel").removeClass("col-md-4");
-    $("#left-panel").addClass("col-md-2");
-    $("#middle-panel").removeClass("col-md-6");
-    $("#middle-panel").addClass("col-md-8");
-    let notificationId = notifyUser({
-      title: "Skill generated!",
-      message: "You can add commands and intents using the left-side panel.",
-      type: "success",
-      delay: 2
-    });
-    editor.setValue(skill.code);
-    editor.clearSelection();
-    showEditor();
-  }).catch((err) => {
-    $('#skill-generate').show();
-    notifyUser({
-      title: err.title || "Can't create skill.",
-      message: err.message,
-      type: "error"
-    });
-  });
-});
-
 function configureSecret() {
   $.ajax({
     type: "GET",
     baseUrl: base_url,
-    url: `/skills/${skill.name}/secret`,
+    url: `/skills/${skillName}/secret`,
     dataType: 'json',
     success: (json) => {
       $("#configure-secret-alert").empty();
@@ -123,7 +25,7 @@ function configureSecret() {
       console.log(err);
     }
   });
-}
+};
 
 function deleteSecret(button) {
   $(button)[0].parentNode.parentNode.remove();
@@ -140,7 +42,7 @@ function displayConfigureSecretAlert({ title = "Error", message = "Couldn't save
       </button>
     </div>
   `.trim());
-}
+};
 
 // Add a new line to the secrets table in modal.
 $("#new-secret").click((event) => {
@@ -160,12 +62,11 @@ $("#configure-secret-form").submit(function (event) {
   $.ajax({
     type: "PUT",
     baseUrl: base_url,
-    url: `/skills/${skill.name}/secret`,
+    url: `/skills/${skillName}/secret`,
     contentType: 'application/json',
     data: JSON.stringify({ secret: secrets }),
     dataType: "json",
     success: (json) => {
-      console.log(json);
       $("#configure-secret-modal").modal('hide');
       notifyUser({
         title: "Secret saved!",
@@ -181,38 +82,34 @@ $("#configure-secret-form").submit(function (event) {
 });
 
 $("#save-skill").click(function () {
-  skill.code = editor.getValue();
+  skillCode = editor.getValue();
 
-  if ($('#edited-skill-data').data('edit-skill')) {
     let notificationId = notifyUser({
       title: "Saving skill...",
       message: "We are pushing your skill, please wait.",
       type: "info",
       delay: -1
     });
-
     $.ajax({
       method: "PUT",
       baseUrl: base_url,
-      url: "/skills/" + skill.name + "/code",
-      data: { code: skill.code, codeId: $("#edited-skill-data").data("skill-codeid") },
+      url: "/skills/" + skillName + "/code",
+      data: { code: skillCode, codeId },
       dataType: "json",
       success: function (json) {
-        console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
-          $("#edited-skill-data").attr("data-skill-codeid", json.codeId);
-          $("#edited-skill-data").data("skill-codeid", json.codeId);
-
+          $("#edited-skill-data").attr("data-skill-codeid", json.codeId);		
+          codeId = json.codeId;
           notifyUser({
             title: "Skill pushed!",
-            message: `Your skill ${skill.name} is updated and running!`,
+            message: `Your skill ${skillName} is updated and running!`,
             type: "success",
             delay: 5
           });
         } else {
           notifyUser({
-            title: `Can't push ${skill.name}`,
+            title: `Can't push ${skillName}`,
             message: json.message,
             type: "error",
             delay: 5
@@ -229,54 +126,6 @@ $("#save-skill").click(function () {
         });
       }
     })
-  } else {
-    let skilljson = {
-      skill_name: skill.name,
-      skill_code: skill.code,
-    }
-
-    if (skill.secret) {
-      skilljson.skill_secret = skill.secret;
-    }
-
-    let notificationId = notifyUser({
-      title: "Saving skill...",
-      message: "We are pushing your new skill, please wait.",
-      type: "info",
-      delay: -1
-    });
-
-    $.ajax({
-      method: "PUT",
-      baseUrl: base_url,
-      url: "/skills",
-      data: skilljson,
-      dataType: "json",
-      success: function (json) {
-        console.log(json);
-        dismissNotification(notificationId);
-        if (json.success) {
-          window.location.href = "/dashboard/skills/"+skill.name+"/edit?newSkill=true";
-        } else {
-          notifyUser({
-            title: `Can't push ${skilljson.name}`,
-            message: json.message,
-            type: "error",
-            delay: 5
-          });
-        }
-      },
-      error: function (err) {
-        dismissNotification(notificationId);
-        notifyUser({
-          title: "Error",
-          message: `Couldn't push ${skilljson.name}.`,
-          type: "error",
-          delay: 5
-        });
-      }
-    });
-  }
 });
 
 
@@ -284,64 +133,22 @@ $("#save-skill").click(function () {
 let editor = ace.edit('editor');
 editor.session.setMode('ace/mode/javascript');
 editor.setTheme('ace/theme/monokai');
+let editedSkillData = $('#edited-skill-data');
+var skillName = editedSkillData.data('skill-name');
+var skillCode = editedSkillData.data('skill-code');
+var codeId = editedSkillData.data('skill-codeid');
+$('#skill-generate').hide();
+$('#skill-toolbox').show();
+$("#left-panel").removeClass("col-md-4");
+$("#left-panel").addClass("col-md-2");
+$("#middle-panel").removeClass("col-md-6");
+$("#middle-panel").addClass("col-md-8");
 
-
-// Init skill edit page
-let skill;
-
-// Load current bot skills
-let skills = {};
-$.ajax({
-  method: "GET",
-  baseUrl: base_url,
-  url: "/skills",
-  dataType: 'json',
-  success: function (json) {
-    if (json.success) {
-      skills = json.skills;
-
-      // Fill current skill data or init a new empty skill
-      let editedSkillData = $('#edited-skill-data');
-      if (editedSkillData.data('edit-skill')) {
-        // Retrieve current skill data
-        skill = new Skill();
-        skill.name = editedSkillData.data('skill-name');
-        skill.code = editedSkillData.data('skill-code');
-
-        const skillFound = skills.find(el => el.name === skill.name);
-
-        $('#skill-generate').hide();
-        $('#skill-toolbox').show();
-        $("#left-panel").removeClass("col-md-4");
-        $("#left-panel").addClass("col-md-2");
-        $("#middle-panel").removeClass("col-md-6");
-        $("#middle-panel").addClass("col-md-8");
-
-        editor.setValue(skill.code);
-        editor.clearSelection();
-        showEditor();
-        $('#loader').hide();
-        $('#skill-editor').show();
-      } else {
-        // Init an empty skill
-        skill = new Skill();
-        $('#loader').hide();
-        $('#skill-editor').show();
-
-        // Welcome user on start.
-        notifyUser({
-          title: "Welcome!",
-          message: "To begin building your new skill, you must generate it from a template (or build from scratch).",
-          type: "info",
-          delay: -1
-        });
-      }
-    }
-  },
-  error: function (err) {
-
-  }
-});
+editor.setValue(skillCode);
+editor.clearSelection();
+showEditor();
+$('#loader').hide();
+$('#skill-editor').show();
 
 //////////////////////////////////////////////////////////////////////////////////////
 
