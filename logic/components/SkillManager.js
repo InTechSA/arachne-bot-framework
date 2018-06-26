@@ -285,6 +285,7 @@ exports.SkillManager = class SkillManager {
 
       // Force status to unactive and replace current skill object.
       skill.active = false;
+      delete this.skills[skill.name];
       this.skills[skill.name] = skill;
 
       Object.values(skill.commands).forEach(command => {

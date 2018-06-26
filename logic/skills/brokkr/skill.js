@@ -7,6 +7,117 @@
 module.exports = (skill) => {
     const axios = skill.loadModule('axios');
     const { app_token, brokkr_url } = skill.getSecret();
+    
+    skill.addCommand('mr', 'merge-requests', ({ phrase, data }) => {
+        const [cmd, ...params] = phrase.split(" ");
+        
+        if (params.length === 0) {
+            // No params, cmd is client, and list MR.
+            return listMR({ phrase: cmd, data });
+        }
+        
+        switch (cmd) {
+            case "list":
+                return listMR({ phrase: params.join(" "), data });
+            case "create":
+                return createMR({ phrase: params.join(" "), data });
+            case "accept":
+                return acceptMR({ phrase: params.join(" "), data });
+            case "reject":
+                return Promise.resolve({
+                    message: {
+                        text: "I can't help you with closing Merge Requests. Maybe you could teach me by contributing to my skills?"
+                    }
+                });
+            default:
+                let text = "I can do so many things to help you managing your Merge Requests. Why not trying one of these commands?";
+                help += "\n- `!mr <client>` or `!mr list <client>` → To list your merge requests on a Brokkr client.";
+                help += "\n- `!mr create <client>` → To list your merge requests on a Brokkr client.";
+                help += "\n- `!mr accept <client> <merge_request>` → To accept a merge request.";
+                
+                return Promise.resolve({
+                    message: {
+                        attachments: [{
+                            title: "Brokkr ♦ Merge Request Management.",
+                            text,
+                            color: "#DD55AA"
+                        }]
+                    }
+                });
+        }
+    }, {
+        description: "List and manage merge request via Brokkr.",
+        parameters: [{
+            position: 0,
+            name: "client",
+            description: "Name of the Brokkr client where to fetch merge requests.",
+            example: "gitlab"
+        }],
+        subcommands: [
+            {
+                cmd: "list",
+                description: "List Merge Requests for the given client.",
+                parameters: [{
+                    position: 0,
+                    name: "client",
+                    description: "Client.",
+                    example: "gitlab"
+                }],
+                examples: [{
+                    phrase: "mr list gitlab",
+                    action: "List my MR on gitlab."
+                }]
+            },
+            {
+                cmd: "create",
+                description: "Create a new merge request for the given project beetween two branches.",
+                parameters: [{
+                    position: 0,
+                    name: "client",
+                    description: "Client.",
+                    example: "gitlab"
+                }, {
+                    position: 1,
+                    name: "project",
+                    description: "Name of the project.",
+                    example: "arachne-bot"
+                }, {
+                    position: 2,
+                    name: "source_branch",
+                    description: "Source branch for the merge request.",
+                    example: "develop"
+                }, {
+                    position: 3,
+                    name: "Target_branch",
+                    description: "Target branch for the merge request.",
+                    example: "master"
+                }],
+                examples: [{
+                    phrase: "mr create gitlab arachne-bot develop master",
+                    action: "Create a new MR for the arachne-bot project in gitlab, from branch develop into master."
+                }]
+            },
+            {
+                cmd: "accept",
+                description: "Accept a merge request.",
+                parameters: [{
+                    position: 0,
+                    name: "client",
+                    description: "Client.",
+                    example: "gitlab"
+                }, {
+                    position: 1,
+                    name: "merge_request_id",
+                    description: "Identifier of the merge request, given by the list command.",
+                    example: "604-2"
+                }],
+                examples: [{
+                    phrase: "brokkr mr accept gitlab 604-2",
+                    action: "Accept the merge request 604-2 on gitlab. The 604-2 id is given by the list command."
+                }]
+            }
+        ]
+    });
 
     skill.addCommand('brokkr', 'brokkr', ({ phrase, data }) => {
         const [cmd, ...params] = phrase.split(" ");
@@ -41,7 +152,7 @@ module.exports = (skill) => {
                 let help = "I can do so many things to help you. Why not trying one of these commands?";
                 help += "\n- `!brokkr apps <client>` → List applications on a certain client (try `dokku`).";
                 help += "\n- `!brokkr logs <client> <app>` → Get logs for an application on a client (try `dokku si-ad-test`).";
-                help += "\n- `!brokkr `"
+                help += "\n- `!brokkr`"
 
                 return Promise.resolve({
                     message: {
@@ -452,10 +563,14 @@ module.exports = (skill) => {
 
     function listMR({ phrase, data }) {
         return new Promise((resolve, reject) => {
-            /*
-              >>> YOUR CODE HERE <<<
-              resolve the handler with a formatted message object.
-            */
+            if (!phrase || phrase.length === 0) {
+                return resolve({
+                    message: {
+                        text: "I need the name of a client defined in brokkr to fetch your merge requests: `!mr list <client>`. Try 'gitlab'"
+                    }
+                });
+            }
+            
             const headers = {};
             if (data.userName) {
                 headers['User-Proxy'] = data.userName;
@@ -501,6 +616,14 @@ module.exports = (skill) => {
                         message: {
                             title: "Brokkr can't access your data.",
                             text: `Visit ${brokkr_url}/addkey/${phrase} to authorize the application.`
+                        }
+                    });
+                }
+                if (err.response.status == 404) {
+                    return resolve({
+                        message: {
+                            title: "Unknown client.",
+                            text: `I don't know any client with this name. Maybe you should consider adding one from the Brokkr interface?`
                         }
                     });
                 }

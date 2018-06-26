@@ -7,14 +7,12 @@
 module.exports = (skill) => {
     
     const schedule = skill.loadModule('node-schedule');
-    var alarmsTab = [];
     
     function getAndDeleteAlarm(hook,oneOrRepeat) {
         if(oneOrRepeat !== "repeat") {
             skill.getItem("alarms").then((alarms) => {
                 if (!alarms) alarms = [];
                 alarms = alarms.filter((a) => a.hook.toString() !== hook.toString());
-                alarmsTab = alarmsTab.filter((alarm) => alarm.ID.toString() !== hook.toString());
                 skill.storeItem("alarms", alarms).then(() => {
                     skill.log("Deleted");
                 }).catch((err) => skill.log(err));
@@ -28,12 +26,22 @@ module.exports = (skill) => {
             if(oneOrRepeat === "repeat") {
                 var scheduleRule;
                 scheduleRule = new schedule.RecurrenceRule();
-                scheduleRule.hour = alarmDate.split(':')[0];
+                scheduleRule.hour = parseInt(alarmDate.split(':')[0]) - 2;
+                if(scheduleRule.hour < 0 ) {
+                    scheduleRule.hour = schedule.hour + 24;
+                }
                 scheduleRule.minute = alarmDate.split(':')[1];
                 alarmDate = scheduleRule;
                 deleteHook = false;
+            } else {
+                alarmDate = new Date(alarmDate - (2* 3600000));
+                skill.log(alarmDate);
             }
-            var scheduleObj = schedule.scheduleJob(alarmDate, () => {
+            
+            var scheduleObj = schedule.scheduleJob(hook.toString(), alarmDate, () => {
+                if (oneOrRepeat === "one") {
+                    scheduleObj.cancel();
+                }
                 skill.useHook(hook, {
                     message: {
                         title: "Alarm",
@@ -51,24 +59,33 @@ module.exports = (skill) => {
     
     // Load alarms from database if any.
     skill.getItem("alarms").then((alarms) => {
+        skill.log("Loading alarms:");
+        skill.log(alarms);
         if (!alarms) return;
         const Promises = [];
         const today = new Date();
         let alarmsToKeep = [];
+        
+        // Cancel all current jobs if any.
+        skill.log("Removing and scheduled jobs.");
+        skill.log(schedule.scheduledJobs);
+        for (let job in schedule.scheduledJobs) {
+            schedule.cancelJob(job)
+        }
+                    
         for (let alarm of alarms) {
             if(alarm.oneOrRepeat !== "repeat" ) {
                 var alarmDate = new Date(alarm.date);
                 if ( alarmDate > today) {
                     Promises.push(scheduleAlarm(alarm.hook,alarmDate,alarm.text,alarm.oneOrRepeat));
                     alarmsToKeep.push(alarm);
-                }
+                } 
             } else {
                 Promises.push(scheduleAlarm(alarm.hook, alarm.date, alarm.text, alarm.oneOrRepeat));
                 alarmsToKeep.push(alarm);
             }
         }
         Promise.all(Promises).then((schedulesObjs) => {
-            alarmsTab = schedulesObjs;
             skill.storeItem("alarms", alarmsToKeep).then().catch((err) => skill.log(err));
         });
     }).catch((err) => {
@@ -81,15 +98,18 @@ module.exports = (skill) => {
             var subCmds = phrase.split(" ");
             switch(subCmds[0]) {
                 case "list":
+                    skill.log("Jobs:");
+                    for (let job in schedule.scheduledJobs) {
+                        skill.log(job);
+                    }
                     return skill.getItem("alarms").then((alarms) => {
                         var text = "";
-                        skill.log(alarmsTab);
-                        alarms = alarms.filter((alarm) => alarm.channel === data.channel);
+                        alarms = alarms ? alarms.filter((alarm) => alarm.channel === data.channel) : null;
                         if(!alarms || alarms.length === 0) {
                             text += "Pas d'alarmes enregistrés !"+"\n"+" tapez `!alarms [one|repeat] [hh:mm] [texte]` pour créer une nouvelle alarme";
                         } else {
                             alarms.map((alarm) => {
-                                if(alarm.oneOrRepeat === "repeat") text += " - Prochaine alarme prévu à : "+alarm.date+", texte associé : "+alarm.text+", récurrence : tous les jours ,ID : "+alarm.hook + "\n";
+                                if(alarm.oneOrRepeat === "repeat") text += " - Prochaine alarme prévu à : "+alarm.date.split(':')[0] + ":" + (alarm.date.split(':')[1]<10?"0":"") + alarm.date.split(':')[1] +", texte associé : "+alarm.text+", récurrence : tous les jours ,ID : "+alarm.hook + "\n";
                                 else text += " - Alarme prévu à : "+alarm.date+", texte associé : "+alarm.text+", récurrence : une seule fois, ID : "+alarm.hook + "\n";
                             });
                             text += "Tapez `!alarms delete [ID]` pour supprimer une alarme.";
@@ -105,14 +125,10 @@ module.exports = (skill) => {
                     var ID = subCmds[1];
                     return skill.getItem("alarms").then((alarms) => {
                         var irem = alarms.findIndex((alarm) => alarm.hook.toString() === ID.toString());
-                        var iremTab = alarmsTab.findIndex((alarmTab) => alarmTab.ID.toString() === ID.toString());
-                        if(iremTab !== -1) {
-                            alarmsTab[iremTab].scheduleObj.cancel();
-                            alarmsTab.splice(iremTab,1);
-                        }
                         if(irem === -1) {
                             throw "Pas d'alarme avec cet ID :/";
                         } else {
+                            schedule.cancelJob(ID.toString());
                             alarms.splice(irem,1);
                             return skill.storeItem("alarms",alarms).then(() => {
                                 return skill.useHook(ID, { 
@@ -160,7 +176,7 @@ module.exports = (skill) => {
                         time.setHours(hours, minutes, 0, 0);
                         var text = `Will set an alarm for today, ${time.toLocaleTimeString()}, is that correct ? (o/N)`;
                         if(oneOrRepeat === "repeat") {
-                            text = `Will set an alarm everyday at ${time.toLocaleTimeString()}, is that correct ? (o/N)`;
+                            text = `Will set an alarm everyday at `+ timeString +`, is that correct ? (o/N)`;
                         }
                         return({
                             message: {
@@ -179,12 +195,11 @@ module.exports = (skill) => {
                             }
                         });
                     } catch(e) {
-                        skill.log(e);
                         // Invalid time format.
                         return({
                             message: {
                                 title: "Invalid time format",
-                                text: "Type `!alarms hh:mm` to create a new alarm."
+                                text: "Type `!alarms [one|repeat] [hh:mm] [message]` to create a new alarm."
                             }
                         });
                     }
@@ -205,16 +220,58 @@ module.exports = (skill) => {
         [
             {
                 "position":0,
+                "name":"one|repeat",
+                "description":"Si l'alarme doit être une fois ou tous les jours",
+                "example":"one"
+            },
+            {
+                "position":1,
                 "name":"heure",
                 "description":"L'heure a laquelle l'alarme va se déclencher ",
                 "example":"12:00"
+            },
+            {
+                "position":2,
+                "name":"AlarmText",
+                "description":"Le text affichée lorsque l'alarme sonne",
+                "example":"LT!!"
             }
         ],
         "examples":
         [
             {
-                "phrase":"alarms 12:00",
-                "action":"Crée une alarme à 12:00"
+                "phrase":"alarms one 12:00 MANGER",
+                "action":"Crée une alarme à 12:00 une seule fois"
+            },
+            {
+                "phrase":"alarms repeat 9:45 LT!!",
+                "action":"Crée une alarme à 9h45 tout les jours"
+            }
+        ],
+        "subcommands":[
+            {
+                "name":"liste",
+                "cmd":"list",
+                "description":"Affiche la liste des alarmes dans le channel courant"
+            },
+            {
+                "name":"delete",
+                "cmd":"delete",
+                "description":"Supprime une alarme en mettant en paramètre son ID (l'ID peut être trouvé en tapant `!alarms list` ",
+                "parameters":[
+                    {
+                        "position":0,
+                        "name":"ID",
+                        "description":"ID de l'alarme",
+                        "example":"0000000000000"
+                    }
+                ],
+                "examples":[
+                    {
+                        "phrase":"alarms delete 000000000000",
+                        "action":"Supprime l'alarme avec l'ID 000000000000"
+                    }
+                ]
             }
         ]
     });
@@ -226,15 +283,17 @@ module.exports = (skill) => {
                 let time = new Date(thread.getData("time"));
                 let text = thread.getData("text");
                 let oneOrRepeat = thread.getData("oneOrRepeat");
-                response = "Ok! Alarm set today at " + time.toLocaleTimeString();
+                if(oneOrRepeat === "repeat") {
+                    time = time.getHours() + ":"+time.getMinutes();
+                    response = "Ok ! Alarm set everyday at " + time;
+                }
+                else response = "Ok! Alarm set today at " + time.toLocaleTimeString();
                 response += "\n" + "You can see your alarms by typing `!alarms list`";
                 return skill.createHook().then((hook) => {
                     return skill.getItem("alarms").then((alarms) => {
                         if (!alarms) alarms = [];
-                        if(oneOrRepeat === "repeat") time = time.getHours() + ":"+time.getMinutes();
                         return scheduleAlarm(hook._id, time, text,oneOrRepeat).then((scheduleObj) => {
                             alarms.push({ date: time, hook: hook._id, text , oneOrRepeat, channel: data.channel});
-                            alarmsTab.push({ID: hook._id,scheduleObj: scheduleObj.scheduleObj});
                             return skill.storeItem("alarms",alarms).then(() => {
                                 return({
                                     message: {
@@ -254,17 +313,6 @@ module.exports = (skill) => {
                         message: {
                             text: response
                         }
-                        alarms.push({ date: time, hook: hook._id, text });
-                        return skill.storeItem("alarms", alarms).then(() => {
-                            return({
-                                message: {
-                                    title: "Alarm ",
-                                    text: response,
-                                    request_hook: true,
-                                    hook: hook
-                                }
-                            });
-                        });
                     });
                 } else {
                     return({
