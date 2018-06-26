@@ -123,7 +123,7 @@ function configureSecret() {
       console.log(err);
     }
   });
-};
+}
 
 function deleteSecret(button) {
   $(button)[0].parentNode.parentNode.remove();
@@ -140,7 +140,7 @@ function displayConfigureSecretAlert({ title = "Error", message = "Couldn't save
       </button>
     </div>
   `.trim());
-};
+}
 
 // Add a new line to the secrets table in modal.
 $("#new-secret").click((event) => {
@@ -195,12 +195,15 @@ $("#save-skill").click(function () {
       method: "PUT",
       baseUrl: base_url,
       url: "/skills/" + skill.name + "/code",
-      data: { code: skill.code },
+      data: { code: skill.code, codeId: $("#edited-skill-data").data("skill-codeid") },
       dataType: "json",
       success: function (json) {
         console.log(json);
         dismissNotification(notificationId);
         if (json.success) {
+          $("#edited-skill-data").attr("data-skill-codeid", json.codeId);
+          $("#edited-skill-data").data("skill-codeid", json.codeId);
+
           notifyUser({
             title: "Skill pushed!",
             message: `Your skill ${skill.name} is updated and running!`,
@@ -220,7 +223,7 @@ $("#save-skill").click(function () {
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",
-          message: `Couldn't push ${skilljson.name}.`,
+          message: err.responseJSON.message || `Couldn't push ${skill.name}.`,
           type: "error",
           delay: 5
         });
