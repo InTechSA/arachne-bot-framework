@@ -224,11 +224,20 @@ module.exports = (skill) => {
     });
 
     skill.addIntent("whois", "whois", ({ entities: { 'trigram': trigram = {} }, data }) => {
-        return Promise.resolve().then(() => {
-            skill.log(trigram);
-            skill.log("Nlp Whois");
-            return skill.handleCommand("whois",{phrase: "whois "+trigram, data});
-        });
+        return skill.handleCommand("whois",{phrase: "whois "+trigram, data});
+    },{
+        description: "Donne des informations sur une personne",
+        examples: [
+            {
+                action: "Va chercher les infos d'une personne avec son trigramme, son username, ou fait une recherche par prénom / nom",
+                phrases: [
+                    "qui est BBN ?",
+                    "Je veux connaitre Mathilde",
+                    "Tu connais jules.attivissimo ?",
+                    "Infos de BBN stp",
+                    "Photo de BBN"
+                ]
+            }]
     });
 
-}
+};

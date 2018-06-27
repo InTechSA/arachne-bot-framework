@@ -11,13 +11,13 @@ module.exports = (skill) => {
     skill.addCommand("help","help",({ phrase, data }) => {
         return Promise.resolve().then(() => {
             phrase.replace("help","").trim();
-            phrase = phrase.split(" ");
+            var cmds = phrase.split(" ");
             return axios({
-                url: "http://arachne-bot.intech-lab.com/help/skills"
+                url: "http://localhost:5002/help/skills"
             }).then((response) => {
                 var helpSkills = response.data.skills;
                 var text = "";
-                switch(phrase[0]) {
+                switch(cmds[0]) {
                     case "":
                         var j;
                         for(var helpSkill of helpSkills) {
@@ -27,71 +27,132 @@ module.exports = (skill) => {
                                 }
                             }
                         }
-                        text += "Pour consultez l'help de chaque commande, tapez `!help [cmd]`, example : `!help git`\nExplorez l'aide en ligne: https://arachne-bot.intech-lab.com/manual";
+                        text += "Pour consultez l'help de chaque commande, tapez `!help [cmd]`, example : `!help git`\nExplorez l'aide en ligne: https://arachne-bot.intech-lab.com/manual\n"
+                        + "Vous pouvez également voir des exemples de fonctions en langage naturelle en tapant `!help nlp`";
                         return({
                             message: {
                                 title: "Help of R2D2",
                                 title_url: "https://arachne-bot.intech-lab.com/manual",
-                                text
+                                text,
+                                noLinkParsing: true
                             }
                         });
                     default:
-                        var command = phrase[0];
-                        var helpCmds = [];
-                        helpSkills.map((el) => {
-                            if(el.active) {
-                                el.commands.map((cmd) =>{
-                                    helpCmds.push(cmd);
+                        if(cmds[0] === "nlp") {
+                            var helpIntents = [];
+                            helpSkills.map((el) => {
+                                if(el.active) {
+                                    el.intents.map((intent) =>{
+                                        helpIntents.push(intent);
+                                    });
+                                }
+                            });
+                            if(!cmds[1] || cmds[1] === "") {
+                                text = "";
+                                for(var helpIntent of helpIntents) {
+                                    text += "- Name : " + helpIntent.name + ", description : " + helpIntent.help.description + "\n";
+                                }
+                                return({
+                                    message: {
+                                        title: "Liste des intents : ",
+                                        text: text + "\n" + "Pour avoir des examples de phrase pour un intent, tapez `!help nlp [nameIntent]` , example : `!help nlp bus`"
+                                    }
+                                });
+                            } else {
+                                var helpIntent = helpIntents.filter((helpIntent) => helpIntent.name === cmds[1]);
+                                if(helpIntent.length === 0) {
+                                    return({
+                                        message: {
+                                            title: "Pas d'intent avec ce nom, tapez `!help nlp` pour avoir la liste des intents"
+                                        }
+                                    });
+                                } else {
+                                    helpIntent = helpIntent[0];
+                                    text = '';
+                                    skill.log(helpIntent);
+                                    if(!helpIntent.help.examples) {
+                                        text += "Pas d'exemples :(";
+                                    } else {
+                                        for(var example of helpIntent.help.examples) {
+                                            text += "\n"+"*Action* : " + example.action + "\n";
+                                            if(example.phrases) {
+                                                text += "*Exemples :*\n";
+                                                for(var i = 0; i< example.phrases.length; i++) {
+                                                    text += example.phrases[i];
+                                                    if(i !== example.phrases.length -1) text += "\n";
+                                                } 
+                                            } else {
+                                                text += "pas de phrases modèles :(";
+                                            }
+                                            text += "\n";
+                                        }
+                                    }
+                                    return({
+                                        message: {
+                                            title: "Name : " + helpIntent.name + ", Description : "+helpIntent.help.description,
+                                            text
+                                        }
+                                    });
+                                }
+                            }
+                        } else {
+                            var helpCmds = [];
+                            helpSkills.map((el) => {
+                                if(el.active) {
+                                    el.commands.map((cmd) =>{
+                                        helpCmds.push(cmd);
+                                    });
+                                }
+                            });
+                            if(helpCmds.filter((cmd) => cmd.cmd === cmds[0]).length === 0 ) {
+                                return({
+                                    message: {
+                                        text: "Pas de commande : " + cmds[0] + " pour la liste des commandes, tapez `!help`"
+                                    }
+                                });
+                            } else {
+                                var helpCmd = helpCmds.filter((cmd) => cmd.cmd === cmds[0])[0];
+                                var title = "Aide de " + helpCmd.cmd;
+                                text += "Description : " + helpCmd.help.description + "\n";
+                                if(helpCmd.help.subcommands) {
+                                    text += "Liste des commandes associées : \n";
+                                    for(var subCommand of helpCmd.help.subcommands) {
+                                        text += "  - `!" + helpCmd.cmd + " " + subCommand.cmd;
+                                        if(subCommand.parameters) {
+                                            for(var parameter of subCommand.parameters) {
+                                                text += " [" + parameter.name + (parameter.example ? "] (exemple : " + parameter.example + ")":"]");
+                                            }
+                                        }
+                                        text += "`";
+                                        if(subCommand.description) {
+                                                text += " -> " + subCommand.description;
+                                        }
+                                        if(subCommand.examples) {
+                                            j=0;
+                                            text += "\n"+" - - Exemple(s) : ";
+                                            for(var example of subCommand.examples) {
+                                                text += "`!" + example.phrase + "` -> " + example.action;
+                                                j++;
+                                                if(j!==subCommand.examples.length) text += " | ";
+                                            }
+                                        }
+                                        text += "\n";
+                                    }
+                                } else {
+                                    text += "Pas de sous commande !";
+                                }
+                                return({
+                                    message: {
+                                        title,
+                                        text
+                                    }
                                 });
                             }
-                        });
-                        if(helpCmds.filter((cmd) => cmd.cmd === command).length === 0 ) {
-                            return({
-                                message: {
-                                    text: "Pas de commande : " + command + " pour la liste des commandes, tapez `!help`"
-                                }
-                            });
-                        } else {
-                            var helpCmd = helpCmds.filter((cmd) => cmd.cmd === command)[0];
-                            var title = "Aide de " + helpCmd.cmd;
-                            text += "Description : " + helpCmd.help.description + "\n";
-                            if(helpCmd.help.subcommands) {
-                                text += "Liste des commandes associées : \n";
-                                for(var subCommand of helpCmd.help.subcommands) {
-                                    text += "  - `!" + helpCmd.cmd + " " + subCommand.cmd;
-                                    if(subCommand.parameters) {
-                                        for(var parameter of subCommand.parameters) {
-                                            text += " [" + parameter.name + (parameter.example ? "] (exemple : " + parameter.example + ")":"]");
-                                        }
-                                    }
-                                    text += "`";
-                                    if(subCommand.description) {
-                                            text += " -> " + subCommand.description;
-                                    }
-                                    if(subCommand.examples) {
-                                        j=0;
-                                        text += "\n"+" - - Exemple(s) : ";
-                                        for(var example of subCommand.examples) {
-                                            text += "`!" + example.phrase + "` -> " + example.action;
-                                            j++;
-                                            if(j!==subCommand.examples.length) text += " | ";
-                                        }
-                                    }
-                                    text += "\n";
-                                }
-                            } else {
-                                text += "Pas de sous commande !"
-                            }
-                            return({
-                                message: {
-                                    title,
-                                    text
-                                }
-                            });
                         }
                 }
             }).catch((err) => {
                 skill.log(err.message);
+                console.log(err);
                 throw "Une erreur est survenue durant l'appel des helps des skills du bot :("; 
             });
         }).catch((err) => {
@@ -109,7 +170,24 @@ module.exports = (skill) => {
     });
     
     skill.addIntent("help","get-help",({ entities: { command: command = [""] } , phrase , data }) => {
-        skill.log("NLP");
         return skill.handleCommand("help",{phrase: command[0],data});
+    },{
+        description: "Permet d'afficher l'aide avec une commande ou non",
+        examples: [
+            {
+                action: "Affiche l'aide complète",
+                phrases: [
+                    "Qu'est-ce que tu sais faire",
+                    "Aide",
+                    "J'ai besoin d'aide"
+                ]
+            },{
+                action: "Affiche l'aide d'une commande",
+                phrases: [
+                    "Affiche l'aide pour git",
+                    "A quoi sert git",
+                    "Je ne comprends pas ce que fait git."
+                ]
+            }]
     });
 };

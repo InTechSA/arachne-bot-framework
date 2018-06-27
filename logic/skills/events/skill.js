@@ -232,10 +232,18 @@ module.exports = (skill) => {
     });
 
     skill.addIntent("events","events",({ entities = {}, data }) => {
-        return Promise.resolve.then(() => {
-            skill.log("Nlp Events");
-            return skill.handleCommand("events",{phrase: "events all", data});
-        });
+        return skill.handleCommand("events",{phrase: "events all", data});
+    },{
+        description: "Donne des informations sur les events ActIntech",
+        examples: [
+            {
+                action: "",
+                phrases: [
+                    "Prochains évents ?",
+                    "Affiche les évènements à venir",
+                    "Quels sont les prochains évènements ?"
+                ]
+            }]
     });
 /* </SKILL LOGIC> */
 };

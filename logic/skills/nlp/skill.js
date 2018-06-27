@@ -12,7 +12,7 @@ module.exports = (skill) => {
         return new Promise((resolve, reject) => {
             skill.log(`> [INFO] {nlp} - Analyze "${phrase}".`);
             request({
-                url: "https://nlu-api.intech-lab.com/nlp/parse/"+secret.nlu_id,
+                url: "https://nlu-api.intech-lab.com/projects/"+secret.nlu_id+"/parse",
                 method: "POST",
                 headers: { 'App-Token': secret.nlu_token },
                 body: {
@@ -22,11 +22,12 @@ module.exports = (skill) => {
             }, (err,res,body) => {
                 if(err || res.statusCode !== 200) {
                     skill.log('> [ERROR] Error contacting the nlu API ' + (err || res.statusCode));
+                    skill.log(err);
                     return resolve({message : {text: 'Error contacting the nlu API '}});
                 }
                 let analyzed = { };
                 try {
-                    analyzed.intent = body.data.intent ? body.data.intent.name.toLowerCase() : null;
+                    analyzed.intent = body.data.intent ? body.data.intent.toLowerCase() : null;
                       analyzed.entities = {};
                       if(body.data.entities) {
                           for (let entity of body.data.entities) {

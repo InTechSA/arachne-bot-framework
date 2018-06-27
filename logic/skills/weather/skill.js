@@ -97,5 +97,16 @@ module.exports = (skill) => {
         } else {
             return skill.handleCommand("weather", { phrase: location[0], data });   
         }
+    },{
+        description: "Intent pour avoir le temps d'un endroit",
+        examples: [
+            {
+                action: "Affiche le temps actuellemnt d'un lieux",
+                phrases: [
+                    "Quel est le temps à Paris ?",
+                    "Quel temps fait-il à Kayl ?",
+                    "Météo à grenoble"
+                ]
+            }]
     });
-}
+};

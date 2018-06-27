@@ -1075,6 +1075,13 @@ exports.SkillManager = class SkillManager {
             cmd: command.cmd,
             help: command.help
           };
+        }),
+        intents: Object.values(skill.intents).map(intent => {
+          return {
+            name: intent.name,
+            slug: intent.slug,
+            help: intent.help
+          };
         })
       };
       if (skill.description && skill.description.length > 0) {
