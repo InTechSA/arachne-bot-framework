@@ -62,10 +62,6 @@ module.exports = (skill) => {
         description: "Lance un quizz ! <Attention> si vous voulez répondre au quizz en dehors d'un chat privé, ajoutez ! devant votre réponse"
     });
 
-    skill.addIntent("quizz", "quizz", ({ entities, data }) => {
-        return skill.handleCommand("quizz", { data });
-    });
-
     skill.addInteraction("thread-quizz-handler", (thread, { phrase, data }) => {
         return Promise.resolve().then(() => {
             skill.log(phrase);
@@ -104,4 +100,19 @@ module.exports = (skill) => {
             }); 
         });
     });
-}
+    
+    skill.addIntent("quizz", "quizz", ({ entities, data }) => {
+        return skill.handleCommand("quizz", { data });
+    },{
+        description: "Intent pour lancer un skill",
+        examples: [
+            {
+                action: "Lance un quizz",
+                phrases: [
+                    "Fais un quiz",
+                    "J'aimerais un quizz s'il te plait",
+                    "Je peux avoir un quizz ?"
+                ]
+            }]
+    });
+};

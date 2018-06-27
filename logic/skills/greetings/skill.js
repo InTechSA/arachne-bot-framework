@@ -18,11 +18,13 @@ module.exports = (skill) => {
         description: "Dis merci"
     });
 
+    var greetings = ['Hello',"Salut","Bonjour"];
+
     skill.addCommand('sayHello','sayHello',({ data }) => {
       return new Promise((resolve, reject) => {
         return resolve({
           message: {
-            text: `Hello ${(data.userName.split(".")[0] || "")} o/`
+            text: `${greetings[Math.floor(Math.random() * 3)]} ${(data.userName.split(".")[0] || "")} o/`
           }
         });
       });
@@ -32,5 +34,16 @@ module.exports = (skill) => {
 
     skill.addIntent('greetings','handleHello',({ data }) => {
       return skill.handleCommand('sayHello',{ data });
+    },{
+        description: "Répond à une salutation",
+        examples: [
+            {
+                action: "",
+                phrases: [
+                    "Salut mon pote",
+                    "Comment va",
+                    "salut bro"
+                ]
+            }]
     });
 }

@@ -130,6 +130,23 @@ module.exports = (skill) => {
                 }
             });
         });
+    },{
+        description: "Permet d'avoir un itinéraire entre deux lieux ou partant de l'agence Intech",
+        examples: [
+            {
+                action: "Affiche un itinéraire depuis Intech",
+                phrases: [
+                    "Itinéraire vers Thionville",
+                    "Je veux aller à Paris",
+                    "Je voudrais allez à la maison"
+                ]
+            },{
+                action: "Affiche un itinéraire d'un endroit à un autre",
+                phrases: [
+                    "Donne un itinéraire de Paris à Thionville",
+                    "Calcule un itinéraire de Paris à Grenoble."
+                ]
+            }]
     });
 
 };

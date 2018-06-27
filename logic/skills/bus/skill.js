@@ -44,7 +44,17 @@ module.exports = (skill) => {
     });
     
     skill.addIntent("bus", "bus", ({ data }) => {
-        skill.log("Nlp");
         return skill.handleCommand("bus",{phrase: "bus", data});
-    });
+    }, {
+            description: "Intent pour avoir les bus partant d'Intech",
+            examples: [
+                {
+                    action: "Va chercher les horaires de bus partant d'Intech",
+                    phrases: [
+                        "Quand est le prochain bus ?",
+                        "Je veux les bus",
+                        "Quels sont les prochains bus au départ du bureau ?"
+                    ]
+                }]
+        });
 };

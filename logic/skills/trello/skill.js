@@ -11,13 +11,14 @@ module.exports = (skill) => {
     const axios = skill.loadModule('axios');
     
 
-    function send(text, title, priv, interactive, hook, thread) {
+    function send(text, title, priv,noLinkParsing, interactive, hook, thread) {
         var message = {};
         if(title) message.title = title;
         if(interactive) message.interactive = true;
         if(hook) message.request_hook = true;message.hook = hook;
         if(priv) message.private = true;
         if(thread) message.thread = thread;
+        if(noLinkParsing) message.noLinkParsing = true;
         message.text = text;
         return({message});
     }
@@ -40,7 +41,7 @@ module.exports = (skill) => {
             return skill.storeItem("webHooks",webHooks)
             .then(() => {
                 return send("Pipe and webhook to trello was successfully created !\n"+"You will now receive notifications when the board"+
-                " has a modification", "Success",false,false,pipe.hook);
+                " has a modification", "Success",false,false,false,pipe.hook);
             }).catch((err) => {
                 return send("Une erreur est survenue, veuillez réesayer ultérieurement", "Error");
             });
@@ -53,7 +54,7 @@ module.exports = (skill) => {
         return Promise.resolve()
         .then(() => {
             if(phrase.length !== 64) {
-                return send("Votre token n'a pas la bonne taille, veuillez entrer UNIQUEMENT le token","Token invalide",true,true);
+                return send("Votre token n'a pas la bonne taille, veuillez entrer UNIQUEMENT le token","Token invalide",true,false,true);
             } else {
                 return axios({
                     url: apiTrelloUrl + `/tokens/${phrase}?token=${phrase}&key=${API_KEY}`
@@ -85,15 +86,21 @@ module.exports = (skill) => {
     });
 
     skill.addPipe("trelloPipeHandler",(pipeIdentifier, {  data, headers, hookId }) => {
-        skill.log("Received pipe for hook: " + hookId);
         try {
-            var text = data.action.display.translationKey.replace(/_/g," ");
-            var entities = data.action.display.entities;
-            for(var i in entities) {
-              if(text.includes(entities[i].type)) {
-                text = text.replace(entities[i].type,entities[i].text);
-              }
+            let text = data.action.display.translationKey.replace(/_/g," ");
+            let entities = data.action.display.entities;
+            
+            if (data.action.display.translationKey === "action_move_card_from_list_to_list") {
+                skill.log(entities)
+                text = entities["card"].text + " : " + entities["listBefore"].text + " → " + entities["listAfter"].text + " (by " + entities["memberCreator"].text + ").";
+            } else {
+                for(let i in entities) {
+                  if(text.includes(entities[i].type)) {
+                    text = text.replace(entities[i].type,entities[i].text);
+                  }
+                }    
             }
+            
             return skill.useHook(hookId, {
                 message: {
                     title: "Trello notif",
@@ -126,7 +133,7 @@ module.exports = (skill) => {
                     };
                     return send("Pour utiliser l'API de trello, j'ai besoin que vous confirmiez autoriser Trello pour vous donné une clé.\n"+
                             `Pour cela, allez sur le lien suivant : https://trello.com/1/authorize?expiration=never&name=MyPersonalToken&scope=read&response_type=token&key=${API_KEY}`+"\n"+
-                            `Puis coller le token donné dans le chat et envoyer le moi :)`,"Autoriser Trello",true,true,false,thread);
+                            `Puis coller le token donné dans le chat et envoyer le moi :)`,"Autoriser Trello",true,true,true,false,thread);
                 }
             } else {
                 phrase = phrase.split(" ");
@@ -142,7 +149,7 @@ module.exports = (skill) => {
                             response.data.map((el) => {
                                 outText += el.name + " lien : " + `[Lien](${el.shortUrl})` + "\n";
                             });
-                            return send(outText,"Vos tableaux :",true);
+                            return send(outText,"Vos tableaux :",true,true);
                         }).catch((err) => {
                             skill.log("Error : "+err);
                             return send("Une erreur est survenue en contactant l'API de trello "+err,"Error",true);

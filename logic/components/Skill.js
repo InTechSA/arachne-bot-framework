@@ -49,15 +49,22 @@ module.exports = class Skill {
      * @param {String} slug Slug of the intent, returned by the NLU service.
      * @param {String} name Name of the intent to be displayed.
      * @param {Function} handler Function to be called with { entites, data } as parameters.
+     * @param {Object} help Help definition for this intent (see documentation).
      */
-    addIntent(slug, name, handler) {
+    addIntent(slug, name, handler, help) {
         if (Object.keys(this.intents).includes(slug)) {
             throw new Error(`Intent slug \x1b[31m${slug}\x1b[0m is already handled for this skill.`);
         }
+
+        if (!help || !help.description) {
+            throw new Error(`Help definition of Intent named \x1b[31m${name}\x1b[0m is missing. You should at least give a \x1b[4mdescription\x1b[0m field for this itent.`)
+        }
+
         this.intents[slug] = {
             name,
             slug,
-            handler
+            handler,
+            help
         }
     }
 
