@@ -1008,6 +1008,7 @@ exports.SkillManager = class SkillManager {
             }).catch((err) => {
               const error = new Error("Skill saved, but couldn't be loaded because: " + err.message);
               error.skill = skillName;
+              error.codeId = skill.code_id;
               return reject(error);
             });
           });
