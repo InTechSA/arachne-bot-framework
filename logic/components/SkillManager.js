@@ -679,6 +679,16 @@ exports.SkillManager = class SkillManager {
               return skill;
             }
             return skill;
+          }).catch((err) => {
+            logger.error(`\x1b[33m${name}\x1b[0m could not be required. Replaced by an empty skill.`);
+
+            skill = new Skill(name, overseer);
+
+            // Then throw back the error to retrieve it.
+            return this.addSkill(skill).then((skill) => {
+              err.skill = skill.name;
+              throw err;
+            });
           });
         } catch (e) {
           // Could not require the skill. Reset the skill to an empty one and add it to the brain.
