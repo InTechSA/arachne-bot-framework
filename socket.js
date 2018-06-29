@@ -46,7 +46,7 @@ module.exports = function (socket) {
         return res(null, {
           success: response.success,
           message: {
-            text: `It seems I have no skill that could fit your request, maybe it was disabled, I'm sorry :/`
+            text: hub.ConfigurationManager.loadedConfiguration.errorintent
           },
           source: phrase
         });
