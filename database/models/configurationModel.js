@@ -39,6 +39,10 @@ const ConfigurationSchema = new Schema({
   errorthread: {
       type: String,
       default: "Unkown error while handling conversation in thread."
+  },
+  unauthorized: {
+      type: String,
+      default: "You are not allowed to use that"
   }
 });
 

@@ -19,3 +19,13 @@ module.exports.set_config = (config) => {
         return config;
     })
 }
+
+module.exports.reload = () => {
+    return Configuration.findOneAndRemove({})
+    .then(config => {
+        var object = config.toObject();
+        delete object._id;
+        delete object.__v;
+        return this.set_config(object);
+    });
+}

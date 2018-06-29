@@ -13,7 +13,8 @@ module.exports = (skill) => {
             phrase.replace("help","").trim();
             var cmds = phrase.split(" ");
             return axios({
-                url: "http://localhost:5002/help/skills"
+                url: "http://arachne-bot.intech-lab.com/help/skills",
+                data: {data}
             }).then((response) => {
                 var helpSkills = response.data.skills;
                 var text = "";
@@ -28,7 +29,7 @@ module.exports = (skill) => {
                             }
                         }
                         text += "Pour consultez l'help de chaque commande, tapez `!help [cmd]`, example : `!help git`\nExplorez l'aide en ligne: https://arachne-bot.intech-lab.com/manual\n"
-                        + "Vous pouvez également voir des exemples de fonctions en langage naturelle en tapant `!help nlp`";
+                        + "Vous pouvez également voir des exemples de fonctions en langage naturel en tapant `!help nlp`";
                         return({
                             message: {
                                 title: "Help of R2D2",

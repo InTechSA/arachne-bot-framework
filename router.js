@@ -93,7 +93,8 @@ module.exports = function (io) {
    * @apiGroup Help
    */
   router.get('/help/skills', (req, res, next) => {
-    hub.getHelpBySkills().then(help => {
+    const data = req.body.data || {};
+    hub.getHelpBySkills(data).then(help => {
       return res.json({
         success: true,
         message: "Help manual by skills.",
@@ -374,7 +375,7 @@ module.exports = function (io) {
           success: false,
           codeId: err.codeId,
           message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." // eslint-disable-line no-control-regex
-        }); 
+        });
       });
     } else {
       return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
@@ -461,7 +462,6 @@ module.exports = function (io) {
         hub.deactivateSkill(req.params.skill).then((skill) => {
           return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
         }).catch(err => {
-          console.log(err);
           return res.json({ success: false, message: "Could not deactivated skill." })
         });
       } else {
@@ -532,6 +532,127 @@ module.exports = function (io) {
       return res.json({
         success: true,
         message: "Delete logs for skill"
+      });
+    }).catch(next);
+  });
+
+  router.get('/skills/:skill/whitelist_connector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.getWhitelistConnector(req.params.skill).then((whitelist_connector) => {
+      return res.json({
+        success: true,
+        whitelist_connector
+      });
+    }).catch(next);
+  })
+
+  router.get('/skills/:skill/blacklist_connector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.getBlacklistConnector(req.params.skill).then((blacklist_connector) => {
+      return res.json({
+        success: true,
+        blacklist_connector
+      });
+    }).catch(next);
+  });
+
+  router.get('/skills/:skill/whitelist_user', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.getWhitelistUser(req.params.skill).then((whitelist_user) => {
+      return res.json({
+        success: true,
+        whitelist_user
+      });
+    }).catch(next);
+  })
+
+  router.post('/skills/:skill/whitelist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.ConnectorManager.getConnectors().then((connectors) => {
+      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
+      if (connector) {
+        hub.addWhitelistConnector(req.params.skill, connector.name).then(() => {
+          return res.json({
+            success: true,
+            message: "Connector added to the whitelist connectors of " + req.params.skill
+          })
+        }).catch(next);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "No connector with this name"
+        });
+      }
+    }).catch(next);
+  });
+
+  router.post('/skills/:skill/blacklist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.ConnectorManager.getConnectors().then((connectors) => {
+      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
+      if (connector) {
+        hub.addBlacklistConnector(req.params.skill, connector.name).then(() => {
+          return res.json({
+            success: true,
+            message: "Connector added to the blacklist connectors of " + req.params.skill
+          })
+        }).catch(next);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "No connector with this name"
+        });
+      }
+    }).catch(next);
+  });
+
+  router.post('/skills/:skill/whitelist_user/:userName', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.addWhitelistUser(req.params.skill, req.params.userName).then(() => {
+      return res.json({
+        success: true,
+        message: "User added to the whitelist users of " + req.params.skill
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/whitelist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.ConnectorManager.getConnectors().then((connectors) => {
+      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
+      if (connector) {
+        hub.deleteWhitelistConnector(req.params.skill, connector.name).then(() => {
+          return res.json({
+            success: true,
+            message: "Connector deleted from the whitelist connectors of " + req.params.skill
+          });
+        }).catch(next);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "No connector with this name"
+        });
+      }
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/blacklist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.ConnectorManager.getConnectors().then((connectors) => {
+      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
+      if (connector) {
+        hub.deleteBlacklistConnector(req.params.skill, connector.name).then(() => {
+          return res.json({
+            success: true,
+            message: "Connector deleted from the blacklist connectors of " + req.params.skill
+          });
+        }).catch(next);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "No connector with this name"
+        });
+      }
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/whitelist_user/:userName', hasPerm('EDIT_SKILL'), (req, res, next) => {
+    hub.deleteWhitelistUser(req.params.skill, req.params.userName).then(() => {
+      return res.json({
+        success: true,
+        message: "User added to the whitelist users of " + req.params.skill
       });
     }).catch(next);
   });

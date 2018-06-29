@@ -43,6 +43,8 @@ exports.SkillManager = class SkillManager {
       }
     };
 
+    this.whitelists = new Map();
+
     this.allowedModules = [
       "request",
       "axios",
@@ -324,6 +326,13 @@ exports.SkillManager = class SkillManager {
         };
       });
 
+      return this.skillController.get_Skill(skill.name);
+    }).then((skillDB) => {
+      this.whitelists.set(skill.name, {
+        whitelist_connector: skillDB.whitelist_connector,
+        blacklist_connector: skillDB.blacklist_connector,
+        whitelist_user: skillDB.whitelist_user
+      });
       return this.getSkill(skill.name);
     });
   }
@@ -1039,13 +1048,65 @@ exports.SkillManager = class SkillManager {
     });
   }
 
+  checkWhiteListForSkill(skillName, data = {}) {
+    const objectWhitelist = this.whitelists.get(skillName);
+    if (objectWhitelist.whitelist_connector.length > 0) {
+      if(!data.connector) return false;
+      if(!data.connector.name) return false;
+      if (!objectWhitelist.whitelist_connector.includes(data.connector.name)) {
+        return false;
+      }
+    }
+
+    if (objectWhitelist.blacklist_connector.length > 0) {
+      if(!data.connector) return true;
+      if(!data.connector.name) return true;
+      if (objectWhitelist.blacklist_connector.includes(data.connector.name)) {
+        return false;
+      }
+    }
+
+    if (objectWhitelist.whitelist_user.length > 0) {
+      if(!data.userName) return false;
+      if (!objectWhitelist.whitelist_user.includes(data.userName)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  checkWhiteList(type, cmdOrSlug, data = {}) {
+    let skill;
+    if (type === "command") {
+      skill = this.commands[cmdOrSlug].skill;
+    } else {
+      skill = this.intents[cmdOrSlug].skill;
+    }
+
+    return this.checkWhiteListForSkill(skill, data);
+  }
+
   /////////////////////////////////////////////////////////////
   // HANDLERS
+
+
 
   handleCommand(cmd, phrase = "", data = {}) {
     return Promise.resolve().then(() => {
       if (!this.hasCommand(cmd)) {
         throw new Error("Command is not active or undefined.");
+      }
+
+      if(!this.checkWhiteList("command",cmd,data)) {
+        return ({
+          message: {
+            attachments: [{
+              title: this.hub.ConfigurationManager.loadedConfiguration.unauthorized,
+              image_url: "https://media.giphy.com/media/njYrp176NQsHS/giphy.gif"
+            }]
+          }
+        });
       }
 
       return this.skills[this.commands[cmd].skill].commands[cmd].handler({ phrase, data });
@@ -1056,6 +1117,14 @@ exports.SkillManager = class SkillManager {
     return Promise.resolve().then(() => {
       if (!this.hasIntent(slug)) {
         throw new Error("Intent is not active or undefined.");
+      }
+
+      if(!this.checkWhiteList("intent",slug,data)) {
+        return ({
+          message: {
+            text: this.hub.ConfigurationManager.loadedConfiguration.unauthorized
+          }
+        });
       }
 
       return this.skills[this.intents[slug].skill].intents[slug].handler({ entities, data });
@@ -1075,8 +1144,8 @@ exports.SkillManager = class SkillManager {
   /////////////////////////////////////////////////////////////
   // HELP
 
-  getHelpBySkills() {
-    return Promise.resolve([...this.skills].map(skill => {
+  getHelpBySkills(data) {
+    return Promise.resolve([...this.skills].filter((skill) => this.checkWhiteListForSkill(skill.name, data)).map(skill => {
       const help = {
         name: skill.name,
         active: skill.active,
@@ -1101,4 +1170,49 @@ exports.SkillManager = class SkillManager {
       return help;
     }));
   }
+
+  addWhitelistConnector(name, id_connector) {
+    return this.skillController.add_whitelist_connector(name, id_connector);
+  }
+
+  addBlacklistConnector(name, id_connector) {
+    return this.skillController.add_blacklist_connector(name, id_connector);
+  }
+
+  addWhitelistUser(name, userName) {
+    return this.skillController.add_whitelist_user(name, userName);
+  }
+
+  deleteWhitelistConnector(name, id_connector) {
+    return this.skillController.delete_whitelist_connector(name, id_connector);
+  }
+
+  deleteBlacklistConnector(name, id_connector) {
+    return this.skillController.delete_blacklist_connector(name, id_connector);
+  }
+
+  deleteWhitelistUser(name, userName) {
+    return this.skillController.delete_whitelist_user(name, userName);
+  }
+
+  getWhitelistConnecor(name) {
+    return this.skillController.get_Skill(name).then((skill) => {
+      return Promise.resolve(skill.whitelist_connector);
+    });
+  }
+
+  getBlacklistConnecor(name) {
+    return this.skillController.get_Skill(name).then((skill) => {
+      return Promise.resolve(skill.blacklist_connector);
+    });
+  }
+
+  getWhitelistUser(name) {
+    return this.skillController.get_Skill(name).then((skill) => {
+      return Promise.resolve(skill.whitelist_user);
+    });
+  }
+
 }
+
+
