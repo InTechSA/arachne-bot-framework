@@ -370,7 +370,11 @@ module.exports = function (io) {
       hub.saveSkillCode(req.params.skill, req.body.code, req.body.codeId).then(codeId => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.`, codeId: codeId })
       }).catch((err) => {
-        return res.json({ success: false, message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." }); // eslint-disable-line no-control-regex
+        return res.json({
+          success: false,
+          codeId: err.codeId,
+          message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." // eslint-disable-line no-control-regex
+        }); 
       });
     } else {
       return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
