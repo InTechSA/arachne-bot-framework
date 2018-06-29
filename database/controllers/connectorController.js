@@ -3,8 +3,14 @@ var Connector = require("../models/connectorModel");
 const logger = new (require("../../logic/components/Logger"))();
 
 module.exports.create_connector = function(name, ip = "") {
-  return new Promise((resolve, reject) => {
-
+  return Connector.findOne({ name }).then(found => {
+    if (found) {
+      const error = new Error("Connector name already used.");
+      error.code = 400;
+      throw error;
+    }
+    return;
+  }).then(() => {
     let new_connector = new Connector();
     new_connector.name = name;
     new_connector.active = true;
@@ -14,13 +20,8 @@ module.exports.create_connector = function(name, ip = "") {
     let token = Math.random().toString(16).substring(2) + Date.now().toString(16) + Math.random().toString(16).substring(2);
     new_connector.token = token;
 
-    new_connector.save((err) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(new_connector);
-    })
-  });
+    return new_connector.save();
+  })
 };
 
 module.exports.toggleConnector = function(id, status) {
