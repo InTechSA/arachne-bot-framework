@@ -107,6 +107,13 @@ block content
                     i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="errorthread" onClick="editField(this)")
                     span.current= configuration.errorthread
                 td Message printed when there is an error in the thread execution
+            tr#unauthorized
+                th(scope='row') Unauthorized error
+                td= loaded_configuration.unauthorized
+                td
+                    i.fas.fa-edit.action.text-primary.mr-1(title="Edit" data-field="unauthorized" onClick="editField(this)")
+                    span.current= configuration.unauthorized
+                td Message printed when the user try to to a command or an intent he is not authorized to
     
     script
         include ../public/js/config.js

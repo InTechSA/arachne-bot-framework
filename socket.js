@@ -40,7 +40,7 @@ module.exports = function (socket) {
       });
     }
 
-    data.connector = { id: socket.connector.id }; // Automatically add the connector id to the data object.
+    data.connector = { id: socket.connector.id, name:socket.connector.name }; // Automatically add the connector id to the data object.
     hub.handleCommand('analyze', phrase, data).then((response) => {
       if (!response.response.intent) {
         return res(null, {

@@ -11,7 +11,7 @@ exports.ConfigurationManager = class ConfigurationManager {
     }
 
     reload() {
-        return this.getConfiguration().then(config => {
+        return this.configurationController.reload().then((config) => {
             this.loadedConfiguration = config;
             return config;
         });

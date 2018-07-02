@@ -43,11 +43,245 @@ function displayConfigureSecretAlert({ title = "Error", message = "Couldn't save
     </div>
   `.trim());
 };
+var whiteListConnectorsTab;
+var blackListConnectorsTab;
+var whiteListUsersTab;
+var connectorsTab;
+$.ajax({
+  type: "GET",
+  baseUrl: base_url,
+  url: `/connectors`,
+  success: (json) => {
+    connectorsTab = json.connectors;
+  },
+  error: (err) => {
+    console.log(err);
+  }
+})
+
+function whiteListConnectors() {
+  $.ajax({
+    type: "GET",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/whitelist_connector`,
+    dataType: "json",
+    success: (json) => {
+      $('#whitelistConnectors').empty();
+      whiteListConnectorsTab = json.whitelist_connector;
+      whiteListConnectorsTab.forEach(element => {
+        $('#whitelistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhitelistConnector('${element}')"></i></li>`)
+      });
+      $('#newWhitelistConnector').empty();
+      connectorsTab.forEach(element => {
+        $('#newWhitelistConnector').append(`<option>${element.name}</opion>`);
+      });
+      $("#whitelistConnector-modal").modal("show");
+    },
+    error: (err) => {
+      notifyUser({
+        title: "Error",
+        message :"Error getting the whitelist Connector",
+        type: "error"
+      });
+    }
+  })
+}
+
+function addWhitelistConnector() {
+  var newWhitelistConnectorName = $('#newWhitelistConnector').val();
+  $.ajax({
+    type: "POST",
+    baseURL: base_url,
+    url: `/skills/${skillName}/whitelist_connector/${newWhitelistConnectorName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("whitelistConnector-modal", { title: "Success", message: "The connector was added to the connector whitelist, reload or save the skill to save the modifications" ,type:"success"});
+      whiteListConnectorsTab.push(newWhitelistConnectorName);
+      $('#whitelistConnectors').empty();
+      whiteListConnectorsTab.forEach(element => {
+        $('#whitelistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhitelistConnector('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("whitelistConnector-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update whitelist." ,type:"danger"});
+    }
+  })
+} 
+
+function deleteWhitelistConnector(connectorName) {
+  $.ajax({
+    type: "DELETE",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/whitelist_connector/${connectorName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("whitelistConnector-modal", { title: "Success", message: "The connector was deleted from the connector whitelist, reload or save the skill to save the modifications" ,type:"success"});
+      whiteListConnectorsTab.splice(whiteListConnectorsTab.findIndex(a => a === connectorName),1);
+      $('#whitelistConnectors').empty();
+      whiteListConnectorsTab.forEach(element => {
+        $('#whitelistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhitelistConnector('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("whitelistConnector-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update whitelist.",type:"danger"}); 
+    }
+  })
+}
+
+function blackListConnectors() {
+  $.ajax({
+    type: "GET",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/blacklist_connector`,
+    dataType: "json",
+    success: (json) => {
+      $('#blacklistConnectors').empty();
+      blackListConnectorsTab = json.blacklist_connector;
+      blackListConnectorsTab.forEach(element => {
+        $('#blacklistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteBlacklistConnector('${element}')"></i></li>`)
+      });
+      $('#newBlacklistConnector').empty();
+      connectorsTab.forEach(element => {
+        $('#newBlacklistConnector').append(`<option>${element.name}</opion>`);
+      });
+      $("#blacklistConnector-modal").modal("show");
+    },
+    error: (err) => {
+      notifyUser({
+        title: "Error",
+        message :"Error getting the blacklist Connector",
+        type: "error"
+      });
+    }
+  })
+}
+
+function addBlacklistConnector() {
+  var newBlacklistConnectorName = $('#newBlacklistConnector').val();
+  $('#newBlacklistConnector').val('');
+  $.ajax({
+    type: "POST",
+    baseURL: base_url,
+    url: `/skills/${skillName}/blacklist_connector/${newBlacklistConnectorName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("blacklistConnector-modal", { title: "Success", message: "The connector was added to the connector blacklist, reload or save the skill to save the modifications" ,type:"success"});
+      blackListConnectorsTab.push(newBlacklistConnectorName);
+      $('#blacklistConnectors').empty();
+      blackListConnectorsTab.forEach(element => {
+        $('#blacklistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteBlacklistConnector('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("blacklistConnector-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update blacklist." ,type:"danger"});
+    }
+  })
+} 
+
+function deleteBlacklistConnector(connectorName) {
+  $.ajax({
+    type: "DELETE",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/blacklist_connector/${connectorName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("blacklistConnector-modal", { title: "Success", message: "The connector was deleted from the connector blacklist, reload or save the skill to save the modifications" ,type:"success"});
+      blackListConnectorsTab.splice(blackListConnectorsTab.findIndex(a => a === connectorName),1);
+      $('#blacklistConnectors').empty();
+      blackListConnectorsTab.forEach(element => {
+        $('#blacklistConnectors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteBlacklistConnector('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("blacklistConnector-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update blacklist." ,type:"danger"}); 
+    }
+  })
+}
+
+function whiteListUsers() {
+  $.ajax({
+    type: "GET",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/whitelist_user`,
+    dataType: "json",
+    success: (json) => {
+      $('#whiteListUsers').empty();
+      whiteListUsersTab = json.whitelist_user;
+      whiteListUsersTab.forEach(element => {
+        $('#whiteListUsers').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhiteListUser('${element}')"></i></li>`)
+      });
+      $("#whitelistUsers-modal").modal("show");
+    },
+    error: (err) => {
+      notifyUser({
+        title: "Error",
+        message :"Error getting the whitelist users",
+        type: "error"
+      });
+    }
+  })
+}
+
+function addWhiteListUser() {
+  var newWhitelistUser = $('#newWhitelistUser').val();
+  $('#newWhitelistUser').val('');
+  $.ajax({
+    type: "POST",
+    baseURL: base_url,
+    url: `/skills/${skillName}/whitelist_user/${newWhitelistUser}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("whitelistUsers-modal", { title: "Success", message: "The user was added to the user whitelist, reload or save the skill to save the modifications",type:"success"});
+      whiteListUsersTab.push(newWhitelistUser);
+      $('#whiteListUsers').empty();
+      whiteListUsersTab.forEach(element => {
+        $('#whiteListUsers').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhiteListUser('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("whitelistUsers-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update whitelist." ,type:"danger"});
+    }
+  })
+} 
+
+function deleteWhiteListUser(userName) {
+  $.ajax({
+    type: "DELETE",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/whitelist_user/${userName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("whitelistUsers-modal", { title: "Success", message: "The connector was deleted from the user whitelist, reload or save the skill to save the modifications",type:"success"});
+      whiteListUsersTab.splice(whiteListUsersTab.findIndex(a => a === userName),1);
+      $('#whiteListUsers').empty();
+      whiteListUsersTab.forEach(element => {
+        $('#whiteListUsers').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteWhiteListUser('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("whitelistUsers-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update blacklist." ,type:"danger"}); 
+    }
+  })
+}
+
+function displayModalAlert(modal, { title = "Error", message = "Couldn't save secret." ,type ="warning"} = {}) {
+  $(`#${modal} .modal-alert`).empty();
+  $(`#${modal} .modal-alert`).append(`
+    <div class="alert alert-${["info","success","danger","warning"].includes(type) ? type: "warning"} alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">${title}</h4>
+      <p>${message}</p>
+      <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  `.trim());
+};
 
 // Add a new line to the secrets table in modal.
 $("#new-secret").click((event) => {
   $('#configure-secret-form table tbody').append(`<tr><td><input class="form-control key" placeholder="key"></td><td><input class="form-control value" placeholder="value"></td><td class="align-middle"><span class="action text-danger" aria-label="Delete secret." title="Delete secret." onClick="deleteSecret(this)"><i class="fas fa-times"></i></span></td></tr>`.trim());
 });
+
 
 $("#configure-secret-form").submit(function (event) {
   event.preventDefault();

@@ -29,6 +29,18 @@ const SkillSchema = new Schema({
       type: Map,
       of: String,
       default: new Map()
+  },
+  whitelist_connector: {
+      type: Array,
+      default: []
+  },
+  blacklist_connector: {
+      type: Array,
+      default: []
+  },
+  whitelist_user: {
+      type: Array,
+      default: []
   }
 });
 

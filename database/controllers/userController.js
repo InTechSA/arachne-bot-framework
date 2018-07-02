@@ -459,7 +459,7 @@ exports.sign_in = function(username, password) {
         if (process.env.AUTH_SERVICE_KEY) {
           jwt.verify(response.data.accessToken, Buffer.from(process.env.AUTH_SERVICE_KEY.trim().replace(/\\r\\n/g, "\r\n")), (err, decoded) => {
             if (err || !decoded) {
-              console.log(err);
+              logger.log(err);
               return reject({ message: "Invalid authentication." });
             }
             // Auth is a success. Find local user.

@@ -29,7 +29,7 @@ function handleIntent(intentName, entities = {}, data = {}) {
       }
     })
     .catch(err => {
-      console.log(err);
+      logger.log(err);
       logger.warn(`Intent "\x1b[4m${intentName}\x1b[0m" is not handled.`);
       return { success: true, message: { text: ConfigurationManager.loadedConfiguration.noskillfoundnlp.replace('[IntentName]', intentName) } };
     });
@@ -148,7 +148,16 @@ exports.getSkillSecret = (skillName) => SkillManager.getSkillSecret(skillName);
 exports.updateSkillSecret = (skillName, secret) => SkillManager.updateSkillSecret(skillName, secret);
 exports.getSkill = (skillName) => SkillManager.getSkill(skillName);
 exports.hasSkill = (skillName) => SkillManager.hasSkill(skillName);
-exports.getHelpBySkills = () => SkillManager.getHelpBySkills();
+exports.getHelpBySkills = (data) => SkillManager.getHelpBySkills(data);
+exports.addWhitelistConnector = (name, id_connector) => SkillManager.addWhitelistConnector(name, id_connector);
+exports.addBlacklistConnector = (name, id_connector) => SkillManager.addBlacklistConnector(name, id_connector);
+exports.addWhitelistUser = (name, userName) => SkillManager.addWhitelistUser(name, userName);
+exports.deleteWhitelistConnector = (name, id_connector) => SkillManager.deleteWhitelistConnector(name, id_connector);
+exports.deleteBlacklistConnector = (name, id_connector) => SkillManager.deleteBlacklistConnector(name, id_connector);
+exports.deleteWhitelistUser = (name, id_connector) => SkillManager.deleteWhitelistUser(name, id_connector);
+exports.getWhitelistConnector = (name) => SkillManager.getWhitelistConnecor(name);
+exports.getBlacklistConnector = (name) => SkillManager.getBlacklistConnecor(name);
+exports.getWhitelistUser = (name) => SkillManager.getWhitelistUser(name);
 
 exports.reloadBrain = reloadBrain;
 

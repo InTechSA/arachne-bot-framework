@@ -48,6 +48,15 @@ module.exports.get = function() {
 }
 
 /**
+ * 
+ * @param {String} name - The name of the skill to get
+ * @returns {Promise<Skill>} A promise to the skill 
+ */
+module.exports.get_Skill = function(name) {
+    return Skill.findOne({name});
+}
+
+/**
  * Delete a skill
  *
  * @param {String} name - The name of the skill to delete.
@@ -165,12 +174,153 @@ module.exports.toggle = function(name, active = true) {
     return Skill.findOneAndUpdate({ name }, { active });
 }
 
+/**
+ * Return true if the skill is active, false otherwise
+ * @param {String} name - The name of the skill
+ */
 module.exports.is_active = function(name) {
     return Skill.findOne({ name }).then(skill => {
         if (skill) {
             return skill.active;
         } else {
             return false; // Skill not found in database, will should not activate it.
+        }
+    });
+}
+
+/**
+ * Add the connector to the whitelist of the skill
+ * @param {String} name - The name of the skill 
+ * @param {ObjectID} connectorName - The id connector
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.add_whitelist_connector = function(name, connectorName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            if(skill.blacklist_connector.length > 0) {
+                return Promise.reject({code: 400, message:"you can't add connector to the white list when the black list isn't empty, please empty your black list first"});
+            } else {
+                if(skill.whitelist_connector.filter(connector => connectorName === connector).length === 0) {
+                    skill.whitelist_connector.push(connectorName);
+                    return Skill.updateOne({name},skill);
+                } else {
+                    return Promise.reject({code: 400, message:"this connector is already white listed"});
+                }
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    })
+}
+
+/**
+ * Add the connector to the blacklist of the skill
+ * @param {String} name - The name of the skill 
+ * @param {ObjectID} connectorName - The id connector
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.add_blacklist_connector = function(name, connectorName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            if(skill.whitelist_connector.length > 0) {
+                return Promise.reject({code: 400, message:"you can't add connector to the black list when the white list isn't empty, please empty your white list first"});
+            } else {
+                if(skill.blacklist_connector.filter(connector => connector === connectorName).length === 0) {
+                    skill.blacklist_connector.push(connectorName);
+                    return Skill.updateOne({name},skill);
+                } else {
+                    return Promise.reject({code: 400, message:"this connector is already black listed"});
+                }
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    })
+}
+
+/**
+ * Add the user to the whitelist user of the skill
+ * @param {String} name - The name of the skill 
+ * @param {String} userName - The name of the user
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.add_whitelist_user = function(name, userName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            if(skill.whitelist_user.filter(user => user === userName).length === 0) {
+                skill.whitelist_user.push(userName);
+                return Skill.updateOne({name},skill);    
+            } else {
+                return Promise.reject({code: 400, message:"this user is already white listed"});
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    });
+}
+
+/**
+ * Delete the connector to the whitelist of the skill
+ * @param {String} name - The name of the skill 
+ * @param {ObjectID} connectorName - The id connector
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.delete_whitelist_connector = function(name, connectorName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            var index = skill.whitelist_connector.findIndex((connector) => connector === connectorName);
+            if(index !== -1) {
+                skill.whitelist_connector.splice(index, 1);
+                return Skill.updateOne({name},skill);
+            } else {
+                return Promise.reject("No connector with this ID in the white list connector of the skill");
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    })
+}
+
+/**
+ * Delete the connector to the blacklist of the skill
+ * @param {String} name - The name of the skill 
+ * @param {ObjectID} connectorName - The id connector
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.delete_blacklist_connector = function(name, connectorName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            var index = skill.blacklist_connector.findIndex((connector) => connector === connectorName);
+            if(index !== -1) {
+                skill.blacklist_connector.splice(index, 1);
+                return Skill.updateOne({name},skill);
+            } else {
+                return Promise.reject("No connector with this ID in the white list connector of the skill");
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    })
+}
+
+/**
+ * Delete the user from the whitelist of the skill
+ * @param {String} name - The name of the skill 
+ * @param {String} userName - The name of the user
+ * @return {Promise<Skill>} - A promise with the Skill updated
+ */
+module.exports.delete_whitelist_user = function(name, userName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            var index = skill.whitelist_user.findIndex((userNameWhitelist) => userNameWhitelist === userName);
+            if(index !== -1) {
+                skill.whitelist_user.splice(index, 1);
+                return Skill.updateOne({name},skill);
+            } else {
+                return Promise.reject("No connector with this ID in the white list connector of the skill");
+            }
+        } else {
+            return Promise.reject("No skill with this name");
         }
     });
 }

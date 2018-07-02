@@ -152,6 +152,48 @@ block supercontent
             p Bla bla bal
           .modal-footer
             button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+    
+    #whitelistConnector-modal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="whitelistConnector-modal" aria-hidden="true")
+      .modal-dialog.modal-lg(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#whitelistConnector-modal-label Whitelist of connector for this skill
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            .modal-alert
+            ul.list-group#whitelistConnectors
+          .modal-footer
+            select.form-control#newWhitelistConnector
+            button.btn.btn-success(onClick="addWhitelistConnector()") Add a connector
+
+    #blacklistConnector-modal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="blacklistConnector-modal" aria-hidden="true")
+      .modal-dialog.modal-lg(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#blacklistConnector-modal-label Blacklist of connector for this skill
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            .modal-alert
+            ul.list-group#blacklistConnectors
+          .modal-footer
+            select.form-control#newBlacklistConnector
+            button.btn.btn-success(onClick="addBlacklistConnector()") Add a connector
+
+    #whitelistUsers-modal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="whitelistUsers-modal" aria-hidden="true")
+      .modal-dialog.modal-lg(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#whiteListUsers-modal-label Whitelist of users for this skill
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            .modal-alert
+            ul.list-group#whiteListUsers
+          .modal-footer
+            input.form-control#newWhitelistUser
+            button.btn.btn-success(onClick="addWhiteListUser()") Add an user
 
   main.container-fluid
     .loader#loader
@@ -184,6 +226,9 @@ block supercontent
                 a.list-group-item.list-group-item-action.action(onClick="configureSecret()") Configure Secret
               else
                 a.list-group-item.list-group-item-action.disabled.text-muted.action(title="You must create the skill before editing its secrets.") Configure Secret
+              a.list-group-item.list-group-item-action.action(onClick="whiteListConnectors()") Whitelist of Connectors
+              a.list-group-item.list-group-item-action.action(onClick="blackListConnectors()") Blacklist of Connectors
+              a.list-group-item.list-group-item-action.action(onClick="whiteListUsers()") Whitelist of Users
         .col-md-6#middle-panel
           .row.justify-content-between
             .col
