@@ -4,7 +4,6 @@
   DATE : 03/04/2018
 */
 
-
 module.exports = (skill) => {
 
     var token_AD = null;

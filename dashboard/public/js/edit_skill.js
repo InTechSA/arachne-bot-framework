@@ -275,7 +275,7 @@ function displayModalAlert(modal, { title = "Error", message = "Couldn't save se
       </button>
     </div>
   `.trim());
-};
+}
 
 // Add a new line to the secrets table in modal.
 $("#new-secret").click((event) => {
@@ -342,6 +342,7 @@ $("#save-skill").click(function () {
             delay: 5
           });
         } else {
+          codeId = json.codeId;
           notifyUser({
             title: `Can't push ${skillName}`,
             message: json.message,
@@ -351,6 +352,10 @@ $("#save-skill").click(function () {
         }
       },
       error: function (err) {
+        console.log(err);
+        if (err.responseJSON && err.responseJSON.codeId) {
+          codeId = err.responseJSON.codeId;
+        }
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",
