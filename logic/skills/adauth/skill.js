@@ -4,7 +4,6 @@
   DATE : 03/04/2018
 */
 
-
 module.exports = (skill) => {
 
     var token_AD = null;
@@ -78,6 +77,6 @@ module.exports = (skill) => {
             }); 
         });
     },{
-        description: "Used to retrieve the ad token"
+        description: "Permet de récupérer le token de l'AD"
     });
 }

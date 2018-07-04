@@ -31,25 +31,76 @@ module.exports.hasPerm = (permission) => {
       error.no_token = true;
       return next(error);
     }
-    Hub.UserManager.userHasPermission(req.decoded.user.id, permission).then(hasPerm => {
-      if (hasPerm) {
-        return hasPerm;
+
+    const permissions = Hub.PermissionManager.permissions;
+    if(!permissions[permission]) {
+      const error = new Error("Permission doesn't exist");
+      error.code = 403;
+      return next(error);
+    }
+    const is_any = permissions[permission].hasAny;
+    Hub.UserManager.getByUsername(req.decoded.user.user_name).then((user) => {
+      const permissionsUser = user.permissions;
+      const userRoles = user.roles;
+      if(userRoles.includes("admin")) {
+        return true;
       }
-      // Search for permission in users's role.
-      return Hub.PermissionManager.getRolesWithPermission(permission).then(roles => {
-        return Hub.UserManager.userRolesByName(req.decoded.user.user_name).then(userRoles => {
-          return userRoles.filter(role => roles.includes(role)).length >= 1;
+      if(is_any) {
+        if(permissionsUser.includes(permission+"_ANY")) {
+          return true;
+        }
+      } else {
+        if(permissionsUser.includes(permission)){
+          return true;
+        }
+      }
+      return Hub.PermissionManager.getRolesInMemory().then((permissionsRoles) => {
+        userRoles.forEach(role => {
+          if(permissionsRoles.has(role)) {
+            permissionsRoles.get(role).forEach(permission => permissionsUser.includes(permission)?null:permissionsUser.push(permission));
+          }
         });
+        if(is_any) {
+          if(permissionsUser.includes(permission+"_ANY")) {
+            return true;
+          }
+          if(permissionsUser.includes(permission)) {
+            if(req.params.skill) {
+              return Hub.hasUsernameInSkillAuthorsList(req.params.skill,req.decoded.user.user_name);
+            } else { // If req.params.skill is not true, it means it's a permission that doesn't use skills but has the is_any attribute
+            // So if it has the permission wihtout the ANY we still autorize it ( because there is no author's list for them )
+              return true;
+            }
+          }
+        } else {
+          if(permissionsUser.includes(permission)){
+            return true;
+          }
+        }
+        return false;
       });
     }).then((hasPerm) => {
-      if (hasPerm) {
+      if(hasPerm) {
         return next();
-      }
+      } 
       const error = new Error("Trying to access an unauthorized action.");
       error.code = 403;
       return next(error);
     }).catch(next);
-  };
+
+
+    // Check if the perm is an any OR if it doesn't exist 
+
+    // Retrieve the roles of the user && ses permissions 
+
+    // Check if he is an admin OR if the perm is in the array retrieved ( IF ANY )
+
+    // Retrieve permissions for his roles
+
+    // Check again if permissions is part of the new array
+
+    // 
+  }
 }
 
 module.exports.isAuthed = () => {

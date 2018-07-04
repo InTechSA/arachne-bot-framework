@@ -263,19 +263,21 @@ module.exports = function (io) {
     }
 
     hub.createSkill(skill).then(() => {
-      hub.loadSkill(skill.name).then(() => {
-        return res.json({ success: true, message: "Skill added and loaded." });
+      return hub.addAuthor(skill.name, req.decoded.user.user_name);
+    }).then(() => {
+        return hub.loadSkill(skill.name).then(() => {
+          return res.json({ success: true, message: "Skill added and loaded." });
+        }).catch((err) => {
+          return res.json({ success: true, message: "Skill added but not loaded (an error occured)." });
+        });
       }).catch((err) => {
-        return res.json({ success: true, message: "Skill added but not loaded (an error occured)." });
+        if (err.message) {
+          return res.json({ success: false, message: err.message });
+        } else {
+          logger.error(err.stack);
+          return res.json({ success: false, message: "An unkown error occured while saving new skill." });
+        }
       });
-    }).catch((err) => {
-      if (err.message) {
-        return res.json({ success: false, message: err.message });
-      } else {
-        logger.error(err.stack);
-        return res.json({ success: false, message: "An unkown error occured while saving new skill." });
-      }
-    });
   });
 
   // Delete a skill
@@ -563,6 +565,15 @@ module.exports = function (io) {
     }).catch(next);
   })
 
+  router.get('/skills/:skill/authors', hasPerm('EDIT_SKILL_AUTHORS'), (req, res, next) => {
+    hub.getAuthors(req.params.skill).then((authors) => {
+      return res.json({
+        success: true,
+        authors
+      });
+    });
+  })
+
   router.post('/skills/:skill/whitelist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
     hub.ConnectorManager.getConnectors().then((connectors) => {
       var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
@@ -610,6 +621,15 @@ module.exports = function (io) {
     }).catch(next);
   });
 
+  router.post('/skills/:skill/authors/:userName', hasPerm('EDIT_SKILL_AUTHORS'), (req, res, next) => {
+    hub.addAuthor(req.params.skill, req.params.userName).then(() => {
+      return res.json({
+        success: true,
+        message: "User added to the authors of " + req.params.skill
+      });
+    }).catch(next);
+  });
+
   router.delete('/skills/:skill/whitelist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
     hub.ConnectorManager.getConnectors().then((connectors) => {
       var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
@@ -652,7 +672,16 @@ module.exports = function (io) {
     hub.deleteWhitelistUser(req.params.skill, req.params.userName).then(() => {
       return res.json({
         success: true,
-        message: "User added to the whitelist users of " + req.params.skill
+        message: "User deleted from the whitelist users of " + req.params.skill
+      });
+    }).catch(next);
+  });
+
+  router.delete('/skills/:skill/authors/:userName', hasPerm('EDIT_SKILL_AUTHORS'), (req, res, next) => {
+    hub.deleteAuthor(req.params.skill, req.params.userName).then(() => {
+      return res.json({
+        success: true,
+        message: "User deleted from the authors of " + req.params.skill
       });
     }).catch(next);
   });

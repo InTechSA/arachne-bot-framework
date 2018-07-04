@@ -13,8 +13,7 @@ module.exports = (skill) => {
             phrase.replace("help","").trim();
             var cmds = phrase.split(" ");
             return axios({
-                url: "http://arachne-bot.intech-lab.com/help/skills",
-                data: {data}
+                url: "http://arachne-bot.intech-lab.com/help/skills"
             }).then((response) => {
                 var helpSkills = response.data.skills;
                 var text = "";
@@ -51,11 +50,11 @@ module.exports = (skill) => {
                             if(!cmds[1] || cmds[1] === "") {
                                 text = "";
                                 for(var helpIntent of helpIntents) {
-                                    text += "- Name : " + helpIntent.name + ", description : " + helpIntent.help.description + "\n";
+                                    text += "- `" + helpIntent.name + "`, description : " + helpIntent.help.description + "\n";
                                 }
                                 return({
                                     message: {
-                                        title: "Liste des intents : ",
+                                        title: "Liste des fonctionnalités en langage naturel : ",
                                         text: text + "\n" + "Pour avoir des examples de phrase pour un intent, tapez `!help nlp [nameIntent]` , example : `!help nlp bus`"
                                     }
                                 });
@@ -112,15 +111,32 @@ module.exports = (skill) => {
                                     }
                                 });
                             } else {
+                                var parameter, example;
                                 var helpCmd = helpCmds.filter((cmd) => cmd.cmd === cmds[0])[0];
                                 var title = "Aide de " + helpCmd.cmd;
                                 text += "Description : " + helpCmd.help.description + "\n";
+                                if(helpCmd.help.parameters) {
+                                    text += "- `!"+helpCmd.cmd;
+                                    for(parameter of helpCmd.help.parameters) {
+                                        text += " [" + parameter.name + (parameter.example ? "]` (exemple : " + parameter.example + ") `":"]");
+                                    }
+                                    text += "`";
+                                }
+                                if(helpCmd.help.examples) {
+                                    j=0;
+                                    text += "\n"+" - - Exemple(s) : ";
+                                    for(example of helpCmd.help.examples) {
+                                        text += "`!" + example.phrase + "` -> " + example.action;
+                                        j++;
+                                        if(j!==helpCmd.help.examples.length) text += " | ";
+                                    }
+                                } else text += "\n";
                                 if(helpCmd.help.subcommands) {
                                     text += "Liste des commandes associées : \n";
                                     for(var subCommand of helpCmd.help.subcommands) {
                                         text += "  - `!" + helpCmd.cmd + " " + subCommand.cmd;
                                         if(subCommand.parameters) {
-                                            for(var parameter of subCommand.parameters) {
+                                            for(parameter of subCommand.parameters) {
                                                 text += " [" + parameter.name + (parameter.example ? "] (exemple : " + parameter.example + ")":"]");
                                             }
                                         }
@@ -131,7 +147,7 @@ module.exports = (skill) => {
                                         if(subCommand.examples) {
                                             j=0;
                                             text += "\n"+" - - Exemple(s) : ";
-                                            for(var example of subCommand.examples) {
+                                            for(example of subCommand.examples) {
                                                 text += "`!" + example.phrase + "` -> " + example.action;
                                                 j++;
                                                 if(j!==subCommand.examples.length) text += " | ";

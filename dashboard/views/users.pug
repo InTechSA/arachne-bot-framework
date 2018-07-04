@@ -78,6 +78,10 @@ block content
                             .form-check.permission
                                 input.form-check-input(type="checkbox" value=permName id=permName)
                                 label.form-check-label(for=perName)= perm.description
+                            if perm.hasAny
+                                .form-check.permission(style="padding-left: 3rem")
+                                    input.form-check-input(type="checkbox" value=permName+"_ANY" id=permName+"_ANY")
+                                    label.form-check-label(for=perName+"_ANY") Allow access to all elements 
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-success(type='submit' form="user-permissions-form") Save
@@ -100,6 +104,10 @@ block content
                                 .form-check.permission
                                     input.form-check-input(type="checkbox" value=permName id=permName)
                                     label.form-check-label(for=perName)= perm.description
+                                if perm.hasAny
+                                    .form-check.permission(style="padding-left: 3rem")
+                                        input.form-check-input(type="checkbox" value=permName+"_ANY" id=permName+"_ANY")
+                                        label.form-check-label(for=perName+"_ANY") Allow access to all elements 
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-success(type='submit' form="new-role-form") Add
@@ -121,6 +129,10 @@ block content
                             .form-check.permission
                                 input.form-check-input(type="checkbox" value=permName id=permName)
                                 label.form-check-label(for=perName)= perm.description
+                            if perm.hasAny
+                                .form-check.permission(style="padding-left: 3rem")
+                                    input.form-check-input(type="checkbox" value=permName+"_ANY" id=permName+"_ANY")
+                                    label.form-check-label(for=perName+"_ANY") Allow access to all elements 
                 .modal-footer
                     button.btn.btn-secondary(type='button' data-dismiss='modal') Cancel
                     button.btn.btn-success(type='submit' form="role-permissions-form") Save

@@ -47,6 +47,7 @@ var whiteListConnectorsTab;
 var blackListConnectorsTab;
 var whiteListUsersTab;
 var connectorsTab;
+var authorsTab;
 $.ajax({
   type: "GET",
   baseUrl: base_url,
@@ -58,6 +59,72 @@ $.ajax({
     console.log(err);
   }
 })
+
+function getAuthors() {
+  $.ajax({
+    type: "GET",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/authors`,
+    dataType: "json",
+    success: (json) => {
+      $('#authors').empty();
+      authorsTab = json.authors;
+      authorsTab.forEach(element => {
+        $('#authors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteAuthor('${element}')"></i></li>`)
+      });
+      $("#authors-modal").modal("show");
+    },
+    error: (err) => {
+      notifyUser({
+        title: "Error",
+        message :"Error getting the authors",
+        type: "error"
+      });
+    }
+  })
+}
+
+function addAuthor() {
+  var newAuthor = $('#newAuthor').val();
+  $('#newAuthor').val('');
+  $.ajax({
+    type: "POST",
+    baseURL: base_url,
+    url: `/skills/${skillName}/authors/${newAuthor}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("authors-modal", { title: "Success", message: "The user was added to the authors, reload or save the skill to save the modifications",type:"success"});
+      authorsTab.push(newAuthor);
+      $('#authors').empty();
+      authorsTab.forEach(element => {
+        $('#authors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteAuthor('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("authors-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update authors." ,type:"danger"});
+    }
+  })
+} 
+
+function deleteAuthor(userName) {
+  $.ajax({
+    type: "DELETE",
+    baseUrl: base_url,
+    url: `/skills/${skillName}/authors/${userName}`,
+    dataType: "json",
+    success: (json) => {
+      displayModalAlert("authors-modal", { title: "Success", message: "The authors was deleted from the author's list, reload or save the skill to save the modifications",type:"success"});
+      authorsTab.splice(authorsTab.findIndex(a => a === userName),1);
+      $('#authors').empty();
+      authorsTab.forEach(element => {
+        $('#authors').append(`<li class="list-group-item d-flex justify-content-between align-items-center">${element} <i class="fas fa-minus text-danger action" title="Remove role" onClick="deleteAuthor('${element}')"></i></li>`)
+      });
+    },
+    error: (err) => {
+      displayModalAlert("authors-modal", { title: "Error", message: err.responseJSON ? err.responseJSON.message : "Could not update authors" ,type:"danger"}); 
+    }
+  })
+}
 
 function whiteListConnectors() {
   $.ajax({
@@ -275,7 +342,7 @@ function displayModalAlert(modal, { title = "Error", message = "Couldn't save se
       </button>
     </div>
   `.trim());
-};
+}
 
 // Add a new line to the secrets table in modal.
 $("#new-secret").click((event) => {
@@ -342,6 +409,7 @@ $("#save-skill").click(function () {
             delay: 5
           });
         } else {
+          codeId = json.codeId;
           notifyUser({
             title: `Can't push ${skillName}`,
             message: json.message,
@@ -351,6 +419,10 @@ $("#save-skill").click(function () {
         }
       },
       error: function (err) {
+        console.log(err);
+        if (err.responseJSON && err.responseJSON.codeId) {
+          codeId = err.responseJSON.codeId;
+        }
         dismissNotification(notificationId);
         notifyUser({
           title: "Error",

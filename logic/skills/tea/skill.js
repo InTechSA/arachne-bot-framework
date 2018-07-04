@@ -35,7 +35,7 @@ module.exports = (skill) => {
                     default:
                         time = 0;
                 }
-                if (time == 0) {
+                if (time === 0) {
                     return resolve({
                         message: {
                             title: "Tea Timer",
@@ -45,8 +45,8 @@ module.exports = (skill) => {
                 } else {
                     // Set timer.
                     skill.createHook().then((hook) => {
-                        schedule.scheduleJob(new Date(new Date().getTime() + time * 60000), () => {
-                            skill.userHook(hook._id, {
+                        let job = schedule.scheduleJob(new Date(new Date().getTime() + time * 60000), () => {
+                            skill.useHook(hook._id, {
                                 message: {
                                     title: "It's Tea Time!",
                                     text: "Your tea is ready! Run, Forest! Run!",
@@ -54,7 +54,8 @@ module.exports = (skill) => {
                                         image_url: image
                                     }]
                                 }
-                            }, { deleteHook: true }).catch((err) => skill.log(err));
+                            }, { deleteHook: true }).catch((err) => skill.log(err));   
+                            job.cancel();
                         });
                         return resolve({
                             message: {
@@ -102,16 +103,5 @@ module.exports = (skill) => {
                 "description":"Timer pour le thé herbs",
             }
         ]
-    });
-
-    skill.addIntent("tea-alarm", "set-tea-alarm", ({ entities, data }) => {
-        return Promise.resolve().then(() => {
-            return {
-                message: {
-                    title: "Not implemented",
-                    text: "Type `!tea green|black|herbs` to set a timer."
-                }
-            };
-        });
     });
 }
