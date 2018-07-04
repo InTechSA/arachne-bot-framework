@@ -2,6 +2,14 @@
 const Role = require('../models/roleModel');
 const User = require('../models/userModel');
 
+var rolesPermissions = null;
+
+Role.find({}).then(roles => {
+    rolesPermissions = new Map(roles.map(role => [role.name, role.permissions]));
+}).catch((err) => {
+    rolesPermissions = new Map();
+});
+
 module.exports.get_roles = function() {
     return Role.find({});
 };
@@ -27,6 +35,7 @@ module.exports.create_role = function(name, permissions) {
             throw error;
         }
         const role = new Role({ name, permissions });
+        rolesPermissions.set(name,permissions);
         return role.save();
     });
 };
@@ -40,6 +49,7 @@ module.exports.update_role_permissions = function(name, permissions) {
         }
 
         role.permissions = permissions;
+        rolesPermissions.set(name, permissions);
         return role.save();
     });
 };
@@ -53,8 +63,16 @@ module.exports.add_permissions = (name, permissions) => {
         }
         if (!role.permissions) {
             role.permissions = permissions;
+            rolesPermissions.set(name,permissions);
           } else {
-            permissions.forEach(permission => role.permissions.includes(permission) ? null : role.permissions.push(permission));
+            var newPermissions = role.permissions;
+            permissions.forEach(permission => {
+                if(!newPermissions.includes(permission)) {
+                    newPermissions.push(permission);
+                } 
+            });
+            role.permissions = newPermissions;
+            rolesPermissions.set(name,newPermissions);
           }
           return role.save();
     }).then(role => role.permissions);
@@ -70,12 +88,15 @@ module.exports.remove_permissions = (name, permissions) => {
         if (!role.permissions) {
             role.permissions = [];
           } else {
+            var newPermissions = role.permissions;
             permissions.forEach(permission => {
-                const index = role.permissions.indexOf(permission);
+                const index = newPermissions.indexOf(permission);
                 if (index > -1) {
-                    role.permissions.splice(index, 1);
+                    newPermissions.splice(index, 1);
                 }
-              });
+            });
+            role.permissions = newPermissions;
+            rolesPermissions.set(name, newPermissions);
           }
           return role.save();
     }).then(role => role.permissions);
@@ -92,6 +113,7 @@ module.exports.delete_role = function(name) {
         // Remove this role from all users.
         return User.update({ roles: name }, { $pull: { roles: name }});
     }).then(() => {
+        rolesPermissions.delete(name);
         return Role.remove({ name });
     });
 };
@@ -120,4 +142,8 @@ module.exports.set_default_role = (name) => {
             return role.save();
         });
     });
+}
+
+module.exports.get_roles_in_memory = () => {
+    return Promise.resolve(rolesPermissions);
 }

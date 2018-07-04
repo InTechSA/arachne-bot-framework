@@ -77,6 +77,6 @@ module.exports = (skill) => {
             }); 
         });
     },{
-        description: "Used to retrieve the ad token"
+        description: "Permet de récupérer le token de l'AD"
     });
 }

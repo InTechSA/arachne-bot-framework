@@ -12,7 +12,7 @@ const pipeController = require('./pipeController');
  * @param {Object} secret = {} - The new skill's secret object..
  * @returns {Promise<Skill>} A promise to the created skill.
  */
-module.exports.create_skill = function(name, code, secret = {}) {
+module.exports.create_skill = function(name, code, secret = {} ) {
     return new Promise((resolve, reject) => {
         if (!name || name.length <= 0) {
             return reject(new Error("Can't create an unamed skill."));
@@ -30,7 +30,7 @@ module.exports.create_skill = function(name, code, secret = {}) {
                 return reject(new Error("There is already a skill with this name."));
             }
 
-            let newSkill = new Skill({ name, code });
+            let newSkill = new Skill({ name, code});
             Object.keys(secret).forEach(key => newSkill.secret.set(key, secret[key]));
             newSkill.code_id = (Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2)).toUpperCase();
             newSkill.save().then(skill => resolve(skill)).catch(err => reject(err));
@@ -317,7 +317,39 @@ module.exports.delete_whitelist_user = function(name, userName) {
                 skill.whitelist_user.splice(index, 1);
                 return Skill.updateOne({name},skill);
             } else {
-                return Promise.reject("No connector with this ID in the white list connector of the skill");
+                return Promise.reject("There is no user in the white list with this userName");
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    });
+}
+
+module.exports.add_authors = function(name, userName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            var index = skill.authors.findIndex((author) => author === userName);
+            if(index === -1) {
+                skill.authors.push(userName);
+                return Skill.updateOne({name},skill);
+            } else {
+                return Promise.reject("Already an author with this userName for this skill");
+            }
+        } else {
+            return Promise.reject("No skill with this name");
+        }
+    });
+}
+
+module.exports.delete_authors = function(name, userName) {
+    return Skill.findOne({name}).then(skill => {
+        if(skill) {
+            var index = skill.authors.findIndex((author) => author === userName);
+            if(index !== -1) {
+                skill.authors.splice(index, 1);
+                return Skill.updateOne({name},skill);
+            } else {
+                return Promise.reject("No author for this skill with this userName");
             }
         } else {
             return Promise.reject("No skill with this name");

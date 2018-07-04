@@ -158,6 +158,10 @@ exports.deleteWhitelistUser = (name, id_connector) => SkillManager.deleteWhiteli
 exports.getWhitelistConnector = (name) => SkillManager.getWhitelistConnecor(name);
 exports.getBlacklistConnector = (name) => SkillManager.getBlacklistConnecor(name);
 exports.getWhitelistUser = (name) => SkillManager.getWhitelistUser(name);
+exports.hasUsernameInSkillAuthorsList = (skillName, userName) => SkillManager.hasUsernameInSkillAuthorsList(skillName, userName);
+exports.getAuthors = (name) => SkillManager.getAuthors(name);
+exports.addAuthor = (name, author) => SkillManager.addAuthor(name, author);
+exports.deleteAuthor = (name, author) => SkillManager.deleteAuthor(name, author);
 
 exports.reloadBrain = reloadBrain;
 

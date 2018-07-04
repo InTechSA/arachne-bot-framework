@@ -91,8 +91,7 @@ exports.PermissionManager = class PermissionManager {
               hasAny: true
             },
             "SEE_SKILLS": {
-              "description": "See list of skills the user has access to.",
-              hasAny: true
+              "description": "See list of skills the user has access to."
             },
             "SEE_SKILL_CODE": {
               "description": "See the code of a skill the user has access to.",
@@ -152,6 +151,10 @@ exports.PermissionManager = class PermissionManager {
             },
             "CONFIGURE_BRAIN": {
               "description": "Access brain configuration"
+            },
+            "EDIT_SKILL_AUTHORS": {
+              "description": "Edit the list of authors of a skill TUHAT",
+              hasAny: true
             }
         }
     }
@@ -186,5 +189,9 @@ exports.PermissionManager = class PermissionManager {
 
     deleteRole(name) {
         return this.roleController.delete_role(name);
+    }
+
+    getRolesInMemory() {
+      return this.roleController.get_roles_in_memory();
     }
 };

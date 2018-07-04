@@ -41,6 +41,10 @@ const SkillSchema = new Schema({
   whitelist_user: {
       type: Array,
       default: []
+  },
+  authors: {
+      type: Array,
+      default: []
   }
 });
 

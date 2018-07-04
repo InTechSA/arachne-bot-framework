@@ -411,4 +411,36 @@ module.exports = (skill) => {
             }); 
         });
     });
+    
+    skill.addIntent("get-vacation","get-vacation",({data}) => {
+       return skill.handleCommand("vacation",{phrase: "vacation", data}); 
+    }, {
+        description: "Récupère les congés par langage naturel",
+        examples: [
+            {
+                action: "Récupère les congés",
+                phrases: [
+                    "Tu peux me donner mes congés",
+                    "Je peux avoir mes congés ?",
+                    "Combien de congés me reste-t-il ?"
+                ]
+            }
+        ]
+    });
+    
+    skill.addIntent("set-vacation","set-vacation",({data}) => {
+        return skill.handleCommand("vacation",{phrase: "vacation request",data});
+    },{
+        description: "Fais une demande de congés par langage naturel",
+        examples: [
+            {
+                action: "Demande des congés",
+                phrases: [
+                    "Tu peux me donner mes congés",
+                    "Je peux avoir mes congés ?",
+                    "Combien de congés me reste-t-il ?"
+                ]
+            }
+        ]
+    });
 }
