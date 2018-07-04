@@ -195,6 +195,20 @@ block supercontent
             input.form-control#newWhitelistUser
             button.btn.btn-success(onClick="addWhiteListUser()") Add an user
 
+    #authors-modal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="authors-modal" aria-hidden="true")
+      .modal-dialog.modal-lg(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title#authors-modal-label Authors of this skill :
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            .modal-alert
+            ul.list-group#authors
+          .modal-footer
+            input.form-control#newAuthor
+            button.btn.btn-success(onClick="addAuthor()") Add an user
+
   main.container-fluid
     .loader#loader
       // By Sam Herbert (@sherb), for everyone. More @ http://goo.gl/7AJzbL
@@ -229,6 +243,7 @@ block supercontent
               a.list-group-item.list-group-item-action.action(onClick="whiteListConnectors()") Whitelist of Connectors
               a.list-group-item.list-group-item-action.action(onClick="blackListConnectors()") Blacklist of Connectors
               a.list-group-item.list-group-item-action.action(onClick="whiteListUsers()") Whitelist of Users
+              a.list-group-item.list-group-item-action.action(onClick="getAuthors()") Authors of this skill
         .col-md-6#middle-panel
           .row.justify-content-between
             .col

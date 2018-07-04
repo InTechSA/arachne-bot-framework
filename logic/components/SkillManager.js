@@ -718,6 +718,7 @@ exports.SkillManager = class SkillManager {
       })
       .catch((err) => {
         logger.error(`\x1b[33m${name}\x1b[0m could not load:\n\t${err.message}`);
+        logger.error(err);
         throw err;
       });
   }
@@ -1213,6 +1214,32 @@ exports.SkillManager = class SkillManager {
     });
   }
 
+  getAuthors(name) {
+    return this.skillController.get_Skill(name).then((skill) => {
+      return Promise.resolve(skill.authors);
+    });
+  }
+
+  addAuthor(name, author) {
+    return this.skillController.add_authors(name, author);
+  }
+
+  deleteAuthor(name, author) {
+    return this.skillController.delete_authors(name, author);
+  }
+
+
+  hasUsernameInSkillAuthorsList(skillName,userName) {
+    return this.skillController.get_Skill(skillName).then((skill) => {
+      if(skill.authors.includes(userName)) {
+        return true;
+      } else {
+        return false;
+      }
+    }).catch((err) => {
+      return false;
+    })
+  }
 }
 
 
