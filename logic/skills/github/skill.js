@@ -129,7 +129,7 @@ module.exports = (skill) => {
                                     text: found.map(hook => `• *${hook.name}* - pipe: _${hook.pipe}_.`).join("\n")
                                 }
                             };
-                        }).catch(() => {
+                        }).catch((err) => {
                             return {
                                 message: {
                                     title: "Git ♦ Could not get hooks.",
@@ -217,13 +217,13 @@ module.exports = (skill) => {
             return skill.handleCommand("git", { phrase: `attach ${repository[0]}`, data });    
         }
     }, {
-        description: "??"
+        description: "A fournir !"
     });
 
     skill.addIntent("list-git-webhook", "list-git-webhook", ({ entities, data }) => {
         return skill.handleCommand("git", { phrase: `list`, data });
     }, {
-        description: "??"
+        description: "A fournir !"
     });
 
     skill.addPipe("hookHandler", (identifier, { hookId, data, headers }) => {
@@ -308,7 +308,7 @@ module.exports = (skill) => {
             return message;
         }).then(message => {
             if (message != {}) {
-                return skill.useHook(hookId, { message });   
+                return skill.useHook(hookId, { message }).catch(err => skill.log(err));
             }
             return;
         });

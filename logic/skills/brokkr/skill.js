@@ -26,7 +26,7 @@ module.exports = (skill) => {
             case "reject":
                 return Promise.resolve({
                     message: {
-                        text: "I can't help you with closing Merge Requests. Maybe you could teach me by contributing to my skills?"
+                        text: "I can't help you closing Merge Requests. Maybe you could teach me by contributing to my skills?"
                     }
                 });
             default:
@@ -167,26 +167,52 @@ module.exports = (skill) => {
 
     skill.addIntent("list-apps", "brokkr-list-apps", ({ entities: { client: client = [] }, data }) => {
         return listApps({ phrase: client[0], data });
+    }, {
+        description: "Liste les applications sur un client.",
+        examples: [{
+            action: "Liste les applications sur le Dokku.",
+            phrases: [
+                "Affiche les applications sur Dokku",
+                "Applis sur Dokku s'il te plaît."
+            ]
+        }]
     });
 
     skill.addIntent("app_logs", "brokkr-app-logs", ({ entities: { client: client = [], application: application = [] }, data }) => {
         return appLogs({ phrase: client[0] + " " + application[0], data });
+    }, {
+        description: "Affiche les logs d'une application sur un client.",
+        examples: [{
+            action: "Affiche les logs d'arachne sur le Dokku.",
+            phrases: [
+                "Montre moi les logs de arachne-bot sur Dokku.",
+                "Logs de arachne-bot sur dokku s'il te plaît."
+            ]
+        }]
     });
 
     skill.addIntent("app-get-config", "brokkr-app-config", ({ entities: { client: client = [], application: application = [] }, data }) => {
         return appConfig({ phrase: client[0] + " " + application[0], data });
+    }, {
+        description: "A fournir !"
     });
 
     skill.addIntent("brokkr-get-projects", "brokkr-get-projects", ({ entities: { client: client = [] }, data }) => {
         return listProjects({ phrase: client[0], data });
+    }, {
+        description: "A fournir !"
     });
 
     skill.addIntent("brokkr-get-mr", "brokkr-get-mr", ({ entities: { client: client = [] }, data }) => {
         return listMR({ phrase: client[0], data });
+    }, {
+        description: "A fournir !"
     });
 
     skill.addIntent("brokkr-accept-mr", "brokkr-accept-mr", ({ entities: { client: client = [], request: request = [] }, data }) => {
         return acceptMR({ phrase: client[0] + " " + request[0], data });
+    }, {
+        description: "A fournir !"
     });
 
     skill.addInteraction("accept-mr-handler", (thread, { phrase, data }) => {
@@ -297,20 +323,36 @@ module.exports = (skill) => {
                         }
                     };
                 }).catch(err => {
-                    if (err.response.status == 401) {
-                        return {
-                            message: {
-                                title: "Brokkr can't access your data.",
-                                text: `Visit <${brokkr_url}/addkey/${phrase}> to authorize the application.`
-                            }
-                        };
+                    switch (err.response.status) {
+                        case 401:
+                            return {
+                                message: {
+                                    title: "Brokkr can't access your data.",
+                                    text: `Visit <${brokkr_url}/addkey/${phrase}> to authorize the application.`
+                                }
+                            };
+                        case 404:
+                            return {
+                                message: {
+                                    title: "No project or branch found..",
+                                    text: `The client, the project name or one of the branch does not exist.`
+                                }
+                            };
+                        case 418:
+                            return {
+                                message: {
+                                    title: "Well...",
+                                    text: `...Gitlab server is a teapot.`
+                                }
+                            };
+                        default:
+                            return {
+                                message: {
+                                    title: 'Could not create merge requests.',
+                                    text: 'The Brokkr service is not accessible or an error occured.'
+                                }
+                            };
                     }
-                    return {
-                        message: {
-                            title: 'Could not create merge requests.',
-                            text: 'The Brokkr service is not accessible or an error occured.'
-                        }
-                    };
                 });
             } else {
                 // This is a title.

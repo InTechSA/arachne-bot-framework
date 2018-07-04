@@ -196,4 +196,19 @@ module.exports = (skill) => {
             }
         ]
     });
+    
+    skill.addIntent("get-croissant","get-croissant",({data}) => {
+       return skill.handleCommand("croissant",({phrase: "duo"}));
+    }, {
+        description: "Intent qui retourne le prochain duo de passage pour les croissants",
+        examples: [
+            {
+                action: "Va chercher le prochain duo pour les croissants",
+                phrases: [
+                    "A qui le tour pour les croissants ?",
+                    "Qui sont les prochains pour les croissants ?",
+                    "C'est à qui mercredi pour les croissants ?"
+                ]
+            }]
+    });
 };

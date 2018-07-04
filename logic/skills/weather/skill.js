@@ -64,29 +64,22 @@ module.exports = (skill) => {
         });
     }, {
         description: "Récupère le temps actuel à un lieux donné",
-        "subcommands":[
+        "parameters":[
             {
-                "name":"get-weather",
-                "cmd":"",
-                "description":"Renvoie les events en fonction du paramètre entrée",
-                "parameters":[
-                    {
-                        "position":0,
-                        "name":"lieux",
-                        "description":"lieux où le temps doit être cherché",
-                        "example":"luxembourg ville"
-                    }
-                ],
-                "examples":[
-                    {
-                        "phrase":"weather Paris",
-                        "action":"renvoie le temps à paris"
-                    },
-                    {
-                        "phrase":"weather Metz",
-                        "action":"renvoie le temps à Metz"
-                    }
-                ]
+                "position":0,
+                "name":"lieux",
+                "description":"lieux où le temps doit être cherché",
+                "example":"luxembourg ville"
+            }
+        ],
+        "examples":[
+            {
+                "phrase":"weather Paris",
+                "action":"renvoie le temps à paris"
+            },
+            {
+                "phrase":"weather Metz",
+                "action":"renvoie le temps à Metz"
             }
         ]
     });
@@ -109,4 +102,4 @@ module.exports = (skill) => {
                 ]
             }]
     });
-};
+}

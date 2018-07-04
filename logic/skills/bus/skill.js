@@ -44,6 +44,7 @@ module.exports = (skill) => {
     });
     
     skill.addIntent("bus", "bus", ({ data }) => {
+        skill.log("Nlp");
         return skill.handleCommand("bus",{phrase: "bus", data});
     }, {
             description: "Intent pour avoir les bus partant d'Intech",

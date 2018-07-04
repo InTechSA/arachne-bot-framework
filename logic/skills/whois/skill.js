@@ -55,7 +55,9 @@ module.exports = (skill) => {
     }
 
     function parserSuggestions(queryWhois, suggestions) {
-        var messages = "* Didn't find any person with this trigram/username, did you mean : *\n";
+        var messages;
+        if( suggestions.length === 0) messages = " *Didn't find anyone with this query*";
+        else messages = "* Didn't find any person with this trigram/username, did you mean : *\n";
         for (var i = 0; i < suggestions.length; i++) {
             messages += "> _ Username : " + suggestions[i].userName + " , Trigram : " + suggestions[i].trigram + " _ \n";
         }
@@ -72,13 +74,22 @@ module.exports = (skill) => {
                 var users = response.data;
                 var obj = 'trigram';
                 if (byUsername) {
-                    obj = 'userName';
+                    if(userQuery.indexOf(".") !== -1) {
+                        obj = 'userName';
+                    } else {
+                        obj = 'firstName';
+                    }
                 }
                 users.map(val => {
                     val.sim = levenshteinDistance(val[obj], userQuery);
                 });
+                
+                users = users.filter(el => el.sim < 3);
                 users.sort((a, b) => { return a.sim - b.sim });
-                users.splice(5, users.length - 4);
+                if(users.length > 5){
+                    users.splice(5, users.length - 4);
+                }
+                skill.log(users);
                 return resolve(users);
             }).catch((error) => {
                 return reject(error);
@@ -119,7 +130,7 @@ module.exports = (skill) => {
             endPoint = ActiveDirectoryEndpoint + '/users/' + user;
         }
         if (allUsers) {
-            endPoint = ActiveDirectoryEndpoint + '/users?cache=false&groups=collaborators&fields=';
+            endPoint = ActiveDirectoryEndpoint + '/users?cache=false&groups=collaborators&fields=firstname,lastname';
         }
         skill.log('getUserInfos :: url : ' + endPoint);
         var options = {
@@ -134,8 +145,16 @@ module.exports = (skill) => {
 
     skill.addCommand("whois","whois",({ phrase, data }) => {
         return Promise.resolve().then(() => {
-            var query = phrase.replace('whois', '').trim();
+            var query = phrase.trim();
             query = query.split(" ");
+            skill.log(query);
+            if (query[0].length === 0) {
+                return {
+                    message: {
+                        text: "I am expecting a trigram or a username to search for: `!whois BBN`."
+                    }
+                }
+            }
             switch(query[0]) {
                 case "help":
                     return({
@@ -191,40 +210,37 @@ module.exports = (skill) => {
             }); 
         });
     }, {
-        description: "To know who is someone with his trigram or username",
-        subcommands: [
+        description: "Cherche un collaborateur avec son trigram ou son username, si il n'est pas trouvé, renvoie une suggestion",
+        "parameters":[
             {
-                "name":"tigram or username",
-                "cmd":"",
-                "description":"Cherche un collaborateur avec son trigram ou son username, si il n'est pas trouvé, renvoie une suggestion",
-                "parameters":[
-                    {
-                        "position":0,
-                        "name":"query",
-                        "description":"trigram ou username ou query",
-                        "example":"BBN|benjamin.bertin|benjamin"
-                    }
-                ],
-                "examples":[
-                    {
-                        "phrase":"whois BBN",
-                        "action":"Cherche un user avec le trigramme BBN"
-                    },
-                    {
-                        "phrase":"whois benjamin.bertin",
-                        "action":"Cherche un user avec le username benjamin.bertin"
-                    },
-                    {
-                        "phrase":"whois benjamin",
-                        "action":"renvoie des suggestions de collaborateurs qui contiennent benjamin dans leur username"
-                    }
-                ]
+                "position":0,
+                "name":"query",
+                "description":"trigram ou username ou query",
+                "example":"BBN|benjamin.bertin|benjamin"
+            }
+        ],
+        "examples":[
+            {
+                "phrase":"whois BBN",
+                "action":"Cherche un user avec le trigramme BBN"
+            },
+            {
+                "phrase":"whois benjamin.bertin",
+                "action":"Cherche un user avec le username benjamin.bertin"
+            },
+            {
+                "phrase":"whois benjamin",
+                "action":"renvoie des suggestions de collaborateurs qui contiennent benjamin dans leur username"
             }
         ]
     });
 
-    skill.addIntent("whois", "whois", ({ entities: { 'trigram': trigram = {} }, data }) => {
-        return skill.handleCommand("whois",{phrase: "whois "+trigram, data});
+    skill.addIntent("whois", "whois", ({ entities: { trigram: trigram = [""] }, data }) => {
+        return Promise.resolve().then(() => {
+            skill.log(trigram[0]);
+            skill.log("Nlp Whois");
+            return skill.handleCommand("whois",{phrase: trigram[0], data});
+        });
     },{
         description: "Donne des informations sur une personne",
         examples: [
@@ -240,4 +256,4 @@ module.exports = (skill) => {
             }]
     });
 
-};
+}

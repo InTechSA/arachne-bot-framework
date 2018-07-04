@@ -31,6 +31,7 @@ module.exports = (skill) => {
                     scheduleRule.hour = schedule.hour + 24;
                 }
                 scheduleRule.minute = alarmDate.split(':')[1];
+                scheduleRule.dayOfWeek = new schedule.Range(1, 5);
                 alarmDate = scheduleRule;
                 deleteHook = false;
             } else {
@@ -188,7 +189,8 @@ module.exports = (skill) => {
                                         ["text", textString],
                                         ["oneOrRepeat", oneOrRepeat]
                                     ],
-                                    handler: "confirmation"
+                                    handler: "confirmation",
+                                    timeout: 10
                                 },
                                 title: "Set a alarm.",
                                 text
