@@ -267,6 +267,14 @@ module.exports = function(io) {
   // User account settings
 
   router.get('/settings', (req, res, next) => {
+    if (process.env.USE_AUTH_SERVIce) {
+      return res.render('settings', {
+        title: "Dashboard Settings - Bot",
+        nav_link: 'settings',
+        botname: hub.ConfigurationManager.loadedConfiguration.botname,
+        managed_by_AD: true
+      });
+    }
     users.get_user(req.decoded.user.id).then((user) => {
       return res.render('settings', {
         title: "Dashboard Settings - Bot",
@@ -286,6 +294,12 @@ module.exports = function(io) {
   // Modify username
 
   router.put('/settings/username', (req, res) => {
+    if (process.env.USE_AUTH_SERVICE) {
+      return res.status(403).json({
+        success: false,
+        message: "Accounts are managed by an external authentication service."
+      });
+    }
     let usernameRegex = /^[0-9a-zA-Z\u00E0-\u00FC -_]{3,30}$/;
     if (req.body.username && usernameRegex.test(req.body.username)) {
       users.update_username(req.decoded.user.id, req.body.username).then(() => {
@@ -309,6 +323,13 @@ module.exports = function(io) {
   // Modify password
 
   router.put('/settings/password', (req, res) => {
+    if (process.env.USE_AUTH_SERVICE) {
+      return res.status(403).json({
+        success: false,
+        message: "Accounts are managed by an external authentication service."
+      });
+    }
+    
     if (!req.body.current_password) {
       return res.status(400).json({ sucess: false, message: "No current password to confirm security operation." });
     }
