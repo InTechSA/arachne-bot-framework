@@ -23,6 +23,9 @@ module.exports.set_config = (config) => {
 module.exports.reload = () => {
     return Configuration.findOneAndRemove({})
     .then(config => {
+        if (!config) {
+            return this.get_config();
+        }
         var object = config.toObject();
         delete object._id;
         delete object.__v;
