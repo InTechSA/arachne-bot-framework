@@ -101,6 +101,18 @@ exports.PermissionManager = class PermissionManager {
               "description": "See the logs of a skill the user has access to.",
               hasAny: true
             },
+            "DELETE_SKILL_LOGS": {
+              "description": "Delete the logs of a skill the user has access to.",
+              hasAny: true
+            },
+            "SEE_SKILL_HOOKS": {
+              "description": "See the logs of a skill the user has access to.",
+              hasAny: true
+            },
+            "SEE_SKILL_STORAGE": {
+              "description": "See the logs of a skill the user has access to.",
+              hasAny: true
+            },
             "SEE_SKILL_PIPES": {
               "description": "Get the list of pipes active for a skill TUHAT.",
               hasAny: true

@@ -229,65 +229,65 @@ block supercontent
           animate(attributename='height' begin='0.5s' dur='1s' values='120;110;100;90;80;70;60;50;40;140;120' calcmode='linear' repeatcount='indefinite')
           animate(attributename='y' begin='0.5s' dur='1s' values='10;15;20;25;30;35;40;45;50;0;10' calcmode='linear' repeatcount='indefinite')
 
-    #skill-editor(style="display: none;")
-      h1= skill_edited.name
-      .row
-        .col-md-4#left-panel
-          h4 Script configuration
-          #skill-toolbox(style="display: none;")
-            .list-group.list-group-flush
-              if skill_edited
-                a.list-group-item.list-group-item-action.action(onClick="configureSecret()") Configure Secret
-              else
-                a.list-group-item.list-group-item-action.disabled.text-muted.action(title="You must create the skill before editing its secrets.") Configure Secret
-              a.list-group-item.list-group-item-action.action(onClick="whiteListConnectors()") Whitelist of Connectors
-              a.list-group-item.list-group-item-action.action(onClick="blackListConnectors()") Blacklist of Connectors
-              a.list-group-item.list-group-item-action.action(onClick="whiteListUsers()") Whitelist of Users
-              a.list-group-item.list-group-item-action.action(onClick="getAuthors()") Authors of this skill
-        .col-md-6#middle-panel
-          .row.justify-content-between
-            .col
-              h4 Script code
-            .col.text-right
-              a.action.text-success#save-skill(role="button" title="Save Code" aria-label="Save Code" style="font-size: 2em; margin-right: 50px;")
-                i.far.fa-save
-          p.lead#code-alert Use the left pane to generate a new skill.
-          #editor(style="display: none")
-        .col-md-2#right-panel
-          .row.h-25
-            .col.h-100
-              h4 Tools
-              button.btn.btn-info.m-1(type='button' onClick="loadLogs()") See Logs
-          hr
-          .row
-            .col.h-100
-              // Display help box on large screens only
-              h5.d-none.d-lg-block How to...
-              .list-group.list-group-flush#help-list
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('commands')")
-                  small add a command?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('help')")
-                  small make a good manual?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('intents')")
-                  small add an intent?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('threads')")
-                  small create a conversation?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('secrets')")
-                  small store secret variables?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('skills')")
-                  small use another skill?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('modules')")
-                  small require a module?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('requests')")
-                  small call an external API?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('pipes')")
-                  small listen for external events?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('hooks')")
-                  small contact a channel?
-                a.list-group-item.list-group-item-action.action(onClick="displayHelp('storage')")
-                  small store persistent data?
-              // Display modal otherwise
-              h5.d-lg-none-block.action(onClick="displayHelp()", style="margin-top:20px") Display help
+    #skill-editor(style="display: none;") 
+      h1= skill_edited.name 
+      .row 
+        .col-md-4#left-panel 
+          h4 Script configuration 
+          #skill-toolbox(style="display: none;") 
+            .list-group.list-group-flush 
+              if skill_edited 
+                a.list-group-item.list-group-item-action.action(onClick="configureSecret()") Configure Secret 
+              else 
+                a.list-group-item.list-group-item-action.disabled.text-muted.action(title="You must create the skill before editing its secrets.") Configure Secret 
+              a.list-group-item.list-group-item-action.action(onClick="whiteListConnectors()") Whitelist of Connectors 
+              a.list-group-item.list-group-item-action.action(onClick="blackListConnectors()") Blacklist of Connectors 
+              a.list-group-item.list-group-item-action.action(onClick="whiteListUsers()") Whitelist of Users 
+              a.list-group-item.list-group-item-action.action(onClick="getAuthors()") Authors of this skill 
+        .col-md-6#middle-panel 
+          .row.justify-content-between 
+            .col 
+              h4 Script code 
+            .col.text-right 
+              a.action.text-success#save-skill(role="button" title="Save Code" aria-label="Save Code" style="font-size: 2em; margin-right: 50px;") 
+                i.far.fa-save 
+          p.lead#code-alert Use the left pane to generate a new skill. 
+          #editor(style="display: none") 
+        .col-md-2#right-panel 
+          .row.h-25 
+            .col.h-100 
+              h4 Tools 
+              button.btn.btn-info.m-1(type='button' onClick="loadLogs()") See Logs 
+          hr 
+          .row 
+            .col.h-100 
+              // Display help box on large screens only 
+              h5.d-none.d-lg-block How to... 
+              .list-group.list-group-flush#help-list 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('commands')") 
+                  small add a command? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('help')") 
+                  small make a good manual? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('intents')") 
+                  small add an intent? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('threads')") 
+                  small create a conversation? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('secrets')") 
+                  small store secret variables? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('skills')") 
+                  small use another skill? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('modules')") 
+                  small require a module? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('requests')") 
+                  small call an external API? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('pipes')") 
+                  small listen for external events? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('hooks')") 
+                  small contact a channel? 
+                a.list-group-item.list-group-item-action.action(onClick="displayHelp('storage')") 
+                  small store persistent data? 
+              // Display modal otherwise 
+              h5.d-lg-none-block.action(onClick="displayHelp()", style="margin-top:20px") Display help 
 
 
     #edited-skill-data(style="display: none;" aria-hidden="true" data-edit-skill="true" data-skill-name=skill_edited.name data-skill-code=skill_edited.code data-skill-codeid=skill_edited.codeid)

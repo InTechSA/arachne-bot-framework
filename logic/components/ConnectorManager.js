@@ -44,7 +44,6 @@ exports.ConnectorManager = class ConnectorManager {
             socket[0].disconnect();
           }
         }
-        console.log('Done!')
         return connector;
     });
   }
@@ -56,7 +55,6 @@ exports.ConnectorManager = class ConnectorManager {
   toggleConnector(id, status) {
     return new Promise((resolve, reject) => {
       this.connectorController.toggleConnector(id, status).then((connector) => {
-        console.log(status);
         console.log(`> [INFO] Setting connector ${connector.name} to ${status ? "active" : "inactive"}...`);
         if (this.io && this.io.sockets) {
           // Reject current socket to force connector to retry connection and handshake.
@@ -66,7 +64,6 @@ exports.ConnectorManager = class ConnectorManager {
             socket[0].disconnect();
           }
         }
-        console.log('Done!')
         return resolve(connector)
       }).catch((err) => {
         return reject(err);
