@@ -254,7 +254,7 @@ module.exports = function(io) {
         title: 'Configure brain',
         nav_link: 'nav-configuration',
         botname: hub.ConfigurationManager.loadedConfiguration.botname,
-        configuration,
+        configuration: configuration.confList,
         loaded_configuration: hub.ConfigurationManager.loadedConfiguration
       });
     }).catch(next);
