@@ -14,6 +14,7 @@ module.exports = function (io) {
     next();
   });
 
+  router.use(require('./middlewares/logs'));
   ///////////////////////////////////////////////////////////////////////////////
   //                      UNSECURED ENDPOINTS
   ///////////////////////////////////////////////////////////////////////////////
@@ -228,7 +229,8 @@ module.exports = function (io) {
             commands: skill.commands,
             intents: skill.intents,
             pipes: skill.pipes,
-            interactions: skill.interactions
+            interactions: skill.interactions,
+            active: skill.active
           }
         })
       });
@@ -265,19 +267,19 @@ module.exports = function (io) {
     hub.createSkill(skill).then(() => {
       return hub.addAuthor(skill.name, req.decoded.user.user_name);
     }).then(() => {
-        return hub.loadSkill(skill.name).then(() => {
-          return res.json({ success: true, message: "Skill added and loaded." });
-        }).catch((err) => {
-          return res.json({ success: true, message: "Skill added but not loaded (an error occured)." });
-        });
+      return hub.loadSkill(skill.name).then(() => {
+        return res.json({ success: true, message: "Skill added and loaded." });
       }).catch((err) => {
-        if (err.message) {
-          return res.json({ success: false, message: err.message });
-        } else {
-          logger.error(err.stack);
-          return res.json({ success: false, message: "An unkown error occured while saving new skill." });
-        }
+        return res.json({ success: true, message: "Skill added but not loaded (an error occured)." });
       });
+    }).catch((err) => {
+      if (err.message) {
+        return res.json({ success: false, message: err.message });
+      } else {
+        logger.error(err.stack);
+        return res.json({ success: false, message: "An unkown error occured while saving new skill." });
+      }
+    });
   });
 
   // Delete a skill
@@ -340,10 +342,10 @@ module.exports = function (io) {
       hub.getSkillCode(req.params.skill).then(code => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} retrieved.`, code: code.code, codeId: code.code_id })
       }).catch(() => {
-        return res.json({ success: false, message: `Could not get code of Skill ${req.params.skill}.` })
+        return res.status(500).json({ success: false, message: `Could not get code of Skill ${req.params.skill}.` })
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -373,14 +375,14 @@ module.exports = function (io) {
       hub.saveSkillCode(req.params.skill, req.body.code, req.body.codeId).then(codeId => {
         return res.json({ success: true, message: `Code of Skill ${req.params.skill} saved, skill reloaded successfully.`, codeId: codeId })
       }).catch((err) => {
-        return res.json({
+        return res.status(500).json({
           success: false,
           codeId: err.codeId,
           message: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured while trying to save skill." // eslint-disable-line no-control-regex
         });
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -458,32 +460,58 @@ module.exports = function (io) {
         hub.activateSkill(req.params.skill).then((skill) => {
           return res.json({ success: true, message: `Skill ${req.params.skill} activated.`, active: true });
         }).catch((err) => {
-          return res.json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." }); // eslint-disable-line no-control-regex
+          return res.status(500).json({ success: false, message: "Could not activate skill.", error: err.skill ? err.message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '') : "An unkown error occured." }); // eslint-disable-line no-control-regex
         });
       } else if (req.params.status === "off") {
         hub.deactivateSkill(req.params.skill).then((skill) => {
           return res.json({ success: true, message: `Skill ${req.params.skill} deactivated.`, active: false });
         }).catch(err => {
-          return res.json({ success: false, message: "Could not deactivated skill." })
+          return res.status(500).json({ success: false, message: "Could not deactivated skill." })
         });
       } else {
-        return res.json({ success: false, message: `Wrong status code : on or off.` });
+        return res.status(404).json({ success: false, message: `Wrong status code : on or off.` });
       }
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+    }
+  });
+
+  router.get('/skills/:skill/hooks', hasPerm('SEE_SKILL_HOOKS'), (req, res) => {
+    if (hub.hasSkill(req.params.skill)) {
+      hub.HookManager.getForSkill(req.params.skill).then((hooks) => {
+        return res.json({ success: true, message: 'Retrieved hooks for skill ' + req.params.skill, hooks })
+      }).catch((err) => {
+        logger.err(err);
+        return res.status(500).json({ sucess: false, message: 'could not get hooks for skill ' + req.params.skill });
+      });
+    } else {
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
   router.delete('/skills/:skill/hooks', hasPerm('DELETE_SKILL_HOOKS'), (req, res) => {
     if (hub.hasSkill(req.params.skill)) {
       hub.HookManager.clearForSkill(req.params.skill).then(() => {
-        return res.json({ success: true, message: `Hooks cleared for skill ${req.params.skill}.` });
+        return res.json({ success: true, message: ` cleared hooks for skill ${req.params.skill}.` });
       }).catch((err) => {
         logger.error(err);
         return res.status(500).json({ success: false, message: `Could not clear hooks of skill ${req.params.skill}.` });
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+    }
+  });
+
+  router.get('/skills/:skill/storage', hasPerm('SEE_SKILL_STORAGE'), (req, res) => {
+    if (hub.hasSkill(req.params.skill)) {
+      hub.StorageManager.getForSkill(req.params.skill).then((storage) => {
+        return res.json({ success: true, message: `Retrieved storage for skill ${req.params.skill}.`, storage });
+      }).catch((err) => {
+        logger.error(err);
+        return res.status(500).json({ success: false, message: `Could get storage for skill ${req.params.skill}.` });
+      });
+    } else {
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -496,7 +524,7 @@ module.exports = function (io) {
         return res.status(500).json({ success: false, message: `Could not clear storage of skill ${req.params.skill}.` });
       });
     } else {
-      return res.json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
+      return res.status(404).json({ success: false, message: `Skill ${req.params.skill} does not exists.` });
     }
   });
 
@@ -631,40 +659,20 @@ module.exports = function (io) {
   });
 
   router.delete('/skills/:skill/whitelist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
-    hub.ConnectorManager.getConnectors().then((connectors) => {
-      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
-      if (connector) {
-        hub.deleteWhitelistConnector(req.params.skill, connector.name).then(() => {
-          return res.json({
-            success: true,
-            message: "Connector deleted from the whitelist connectors of " + req.params.skill
-          });
-        }).catch(next);
-      } else {
-        return res.status(404).json({
-          success: false,
-          message: "No connector with this name"
-        });
-      }
+    hub.deleteWhitelistConnector(req.params.skill, req.params.nameConnector).then(() => {
+      return res.json({
+        success: true,
+        message: "Connector deleted from the whitelist connectors of " + req.params.skill
+      });
     }).catch(next);
   });
 
   router.delete('/skills/:skill/blacklist_connector/:nameConnector', hasPerm('EDIT_SKILL'), (req, res, next) => {
-    hub.ConnectorManager.getConnectors().then((connectors) => {
-      var connector = connectors.filter(connector => connector.name === req.params.nameConnector)[0];
-      if (connector) {
-        hub.deleteBlacklistConnector(req.params.skill, connector.name).then(() => {
-          return res.json({
-            success: true,
-            message: "Connector deleted from the blacklist connectors of " + req.params.skill
-          });
-        }).catch(next);
-      } else {
-        return res.status(404).json({
-          success: false,
-          message: "No connector with this name"
-        });
-      }
+    hub.deleteBlacklistConnector(req.params.skill, req.params.nameConnector).then(() => {
+      return res.json({
+        success: true,
+        message: "Connector deleted from the blacklist connectors of " + req.params.skill
+      });
     }).catch(next);
   });
 
@@ -934,8 +942,12 @@ module.exports = function (io) {
     const user_name = req.body.user_name;
     const password = req.body.password;
     hub.UserManager.create(user_name, password).then(user => {
+      console.log(user);
       return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, } })
-    }).catch(next);
+    }).catch(err => {
+      console.log(err);
+      next(err)
+    });
   });
 
   // Delete user
@@ -1112,7 +1124,7 @@ module.exports = function (io) {
   });
 
   // Delete a role
-  router.delete('/roles/:role', hasPerm('MANAGE_ROLE'), (req, res, next) => {
+  router.delete('/roles/:role', hasPerm('MANAGE_ROLES'), (req, res, next) => {
     hub.PermissionManager.deleteRole(req.params.role).then(() => {
       return res.json({
         success: true,
@@ -1146,6 +1158,14 @@ module.exports = function (io) {
     }).catch(next);
   });
 
+  router.get('/permissions', (req, res, next) => {
+    return res.json({
+      success: true,
+      message: "Array of all permissions",
+      permissions: hub.PermissionManager.permissions
+    });
+  })
+
   //////////////////
   // MANAGE ROLES
 
@@ -1155,11 +1175,15 @@ module.exports = function (io) {
     }).catch(next);
   });
 
+  router.get('/configuration/loaded', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
+    return res.json({ success: true, message: 'Got loaded configuration', loadedConfiguration: hub.ConfigurationManager.loadedConfiguration });
+  });
+
   router.get('/configuration/:field', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
     var field = req.params.field;
     hub.ConfigurationManager.getConfiguration().then(configuration => {
-      if (configuration[field]) {
-        return res.json({ success: true, message: `${field} is ${configuration[field]}.`, value: configuration[field] });
+      if (configuration.confList[field]) {
+        return res.json({ success: true, message: `${field} is ${configuration.confList[field]}.`, value: configuration.confList[field] });
       } else {
         return res.status(404).json({ success: false, message: `No value for ${field}`, value: null });
       }
@@ -1170,8 +1194,8 @@ module.exports = function (io) {
     var field = req.params.field;
     var value = req.body.value;
     hub.ConfigurationManager.getConfiguration().then(configuration => {
-      if (configuration[field]) {
-        configuration[field] = value;
+      if (configuration.confList[field]) {
+        configuration.confList[field].value = value;
         hub.ConfigurationManager.setConfiguration(configuration).then(() => {
           return res.json({ success: true, message: `${field} updated with value ${value}` });
         }).catch(next);

@@ -10,7 +10,7 @@ Role.find({}).then(roles => {
     rolesPermissions = new Map();
 });
 
-module.exports.get_roles = function() {
+module.exports.get_roles = function () {
     return Role.find({});
 };
 
@@ -25,7 +25,7 @@ module.exports.get_role = (name) => {
     });
 }
 
-module.exports.create_role = function(name, permissions) {
+module.exports.create_role = function (name, permissions) {
     return Promise.resolve().then(() => {
         return Role.count({ name });
     }).then(count => {
@@ -35,12 +35,12 @@ module.exports.create_role = function(name, permissions) {
             throw error;
         }
         const role = new Role({ name, permissions });
-        rolesPermissions.set(name,permissions);
+        rolesPermissions.set(name, permissions);
         return role.save();
     });
 };
 
-module.exports.update_role_permissions = function(name, permissions) {
+module.exports.update_role_permissions = function (name, permissions) {
     return Role.findOne({ name }).then(role => {
         if (!role) {
             let error = new Error("No role found.");
@@ -63,18 +63,18 @@ module.exports.add_permissions = (name, permissions) => {
         }
         if (!role.permissions) {
             role.permissions = permissions;
-            rolesPermissions.set(name,permissions);
-          } else {
+            rolesPermissions.set(name, permissions);
+        } else {
             var newPermissions = role.permissions;
             permissions.forEach(permission => {
-                if(!newPermissions.includes(permission)) {
+                if (!newPermissions.includes(permission)) {
                     newPermissions.push(permission);
-                } 
+                }
             });
             role.permissions = newPermissions;
-            rolesPermissions.set(name,newPermissions);
-          }
-          return role.save();
+            rolesPermissions.set(name, newPermissions);
+        }
+        return role.save();
     }).then(role => role.permissions);
 };
 
@@ -87,7 +87,7 @@ module.exports.remove_permissions = (name, permissions) => {
         }
         if (!role.permissions) {
             role.permissions = [];
-          } else {
+        } else {
             var newPermissions = role.permissions;
             permissions.forEach(permission => {
                 const index = newPermissions.indexOf(permission);
@@ -97,12 +97,12 @@ module.exports.remove_permissions = (name, permissions) => {
             });
             role.permissions = newPermissions;
             rolesPermissions.set(name, newPermissions);
-          }
-          return role.save();
+        }
+        return role.save();
     }).then(role => role.permissions);
 };
 
-module.exports.delete_role = function(name) {
+module.exports.delete_role = function (name) {
     return Promise.resolve().then(() => {
         if (name == 'admin') {
             let error = new Error("Can not remove admin role.");
@@ -111,7 +111,7 @@ module.exports.delete_role = function(name) {
         }
 
         // Remove this role from all users.
-        return User.update({ roles: name }, { $pull: { roles: name }});
+        return User.update({ roles: name }, { $pull: { roles: name } });
     }).then(() => {
         rolesPermissions.delete(name);
         return Role.remove({ name });
@@ -129,19 +129,23 @@ module.exports.get_default_role = () => {
 }
 
 module.exports.set_default_role = (name) => {
-    return Role.findOne({ name }).then(role => {
-        if (!role) {
-            const error = new Error("Role not found.");
-            error.code = 404;
-            throw error;
-        }
-        
-        // Update current role.
-        return Role.findOneAndUpdate({ default: true }, { $set: { default: false }}).then(() => {
-            role.default = true;
-            return role.save();
+    if (name === "none") {
+        return Role.findOneAndUpdate({ default: true }, { $set: { default: false } });
+    } else {
+        return Role.findOne({ name }).then(role => {
+            if (!role) {
+                const error = new Error("Role not found.");
+                error.code = 404;
+                throw error;
+            }
+
+            // Update current role.
+            return Role.findOneAndUpdate({ default: true }, { $set: { default: false } }).then(() => {
+                role.default = true;
+                return role.save();
+            });
         });
-    });
+    }
 }
 
 module.exports.get_roles_in_memory = () => {

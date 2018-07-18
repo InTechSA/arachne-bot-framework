@@ -31,7 +31,6 @@ module.exports.hasPerm = (permission) => {
       error.no_token = true;
       return next(error);
     }
-
     const permissions = Hub.PermissionManager.permissions;
     if(!permissions[permission]) {
       const error = new Error("Permission doesn't exist");
