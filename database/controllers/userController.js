@@ -268,7 +268,7 @@ function create_user(user) {
 
         // Hash password
         console.log(user);
-        bcrypt.hash(user.password, 8, (err, hash) => {
+        bcrypt.hash(user.password || Math.random().toString(36).slice(-9), 8, (err, hash) => {
           if (err) {
             return reject(err);
           }
