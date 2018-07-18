@@ -1149,11 +1149,23 @@ module.exports = function (io) {
 
   // Get permissions of the bearer of the token.
   router.get('/me/permissions', (req, res, next) => {
+    let permissionsUser = [];
+    let rolesUser;
     hub.UserManager.getByUsername(req.decoded.user.user_name).then(user => {
+      permissionsUser = user.permissions;
+      rolesUser = user.roles;
+      return hub.PermissionManager.getRoles();
+    }).then((roles) => {
+      roles.forEach((role) => {
+        if(rolesUser.includes(role)) {
+          permissionsUser.push(...role.permissions);
+        }
+      });
       return res.json({
         success: true,
         message: "Array of permissions.",
-        permissions: user.permissions
+        permissions: permissionsUser,
+        roles: rolesUser
       });
     }).catch(next);
   });
@@ -1179,11 +1191,16 @@ module.exports = function (io) {
     return res.json({ success: true, message: 'Got loaded configuration', loadedConfiguration: hub.ConfigurationManager.loadedConfiguration });
   });
 
+  router.get('/configuration/public',(req, res, next) => {
+    let loadedConfiguration = hub.ConfigurationManager.loadedConfiguration;
+    return res.json({ success: true, message: 'Got loaded configuration', loadedConfiguration: { botname: loadedConfiguration.botname, lang: loadedConfiguration.lang } });
+  });
+
   router.get('/configuration/:field', hasPerm('CONFIGURE_BRAIN'), (req, res, next) => {
     var field = req.params.field;
     hub.ConfigurationManager.getConfiguration().then(configuration => {
       if (configuration.confList[field]) {
-        return res.json({ success: true, message: `${field} is ${configuration.confList[field]}.`, value: configuration.confList[field] });
+        return res.json({ success: true, message: `${field} is ${configuration.confList[field].value}.`, value: configuration.confList[field].value });
       } else {
         return res.status(404).json({ success: false, message: `No value for ${field}`, value: null });
       }
