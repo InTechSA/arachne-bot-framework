@@ -1060,8 +1060,8 @@ exports.SkillManager = class SkillManager {
     }
 
     if (objectWhitelist.blacklist_connector.length > 0) {
-      if(!data.connector) return true;
-      if(!data.connector.name) return true;
+      if(!data.connector) return false;
+      if(!data.connector.name) return false;
       if (objectWhitelist.blacklist_connector.includes(data.connector.name)) {
         return false;
       }
