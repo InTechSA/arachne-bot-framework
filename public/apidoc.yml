@@ -625,12 +625,61 @@ paths:
 
   /me:
     get:
+      summary: Get info about user connected
+      operationId: getInformationMe
+      description: get Informaion about the user connected ie with the token given in header
       tags:
         - me
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                user:
+                  $ref: '#components/schemas/User'
+      
   /me/permissions:
     get:
+      summary: Get permissions about user connected
+      operationId: getPermissionsMe
+      description: get permissions of the connected user ie with the token given in header
       tags:
         - me
+      response:
+        '200':
+          content:
+            application/json:
+              schema:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                permissions:
+                  type: array
+                  items: string
+  /permissions:
+    get:
+      summary: Get all existing permissions
+      operationId: getPermissions
+      description: get all permissions
+      tags:
+        - me
+      response:
+        '200':
+          content:
+            application/json:
+              schema:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                permissions: 
+                  type: array
+                  items: string
 
   /help/skills:
     get:
@@ -976,6 +1025,30 @@ paths:
                   active:
                     type: boolean
   /skills/{name}/hooks:
+    get:
+      summary: get hooks for skill.
+      operationId: geHooksForSkill
+      description: Requires SEE_SKILL_HOOKS (cf SEE_SKILL_HOOKS_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hooks for skill.
+          content:
+            application/json:
+              success: boolean
+              message: string
+              hooks:
+                type: array
+                items:
+                  $ref: '#components/schemas/Hook'
     delete:
       summary: Clear hooks for skill.
       operationId: clearHooksForSkill
@@ -996,6 +1069,30 @@ paths:
             application/json:
               $ref: '#/components/schemas/ApiResponse'
   /skills/{name}/storage:
+    get:
+      summary: get storage for skill.
+      operationId: geStorageForSkill
+      description: Requires SEE_SKILL_STORAGE (cf SEE_SKILL_STORAGE_ANY).
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hooks for skill.
+          content:
+            application/json:
+              success: boolean
+              message: string
+              storage:
+                type: array
+                items:
+                  $ref: '#components/schemas/Storage'
     delete:
       summary: Clear storage for skill.
       operationId: clearStorageForSkill
@@ -1112,7 +1209,314 @@ paths:
       responses:
         '200':
           description: Delete of logs.
-  
+          content:
+            application/json:
+              $ref: '#/components/schemas/ApiResponse'
+
+  /skills/{name}/whitelist_connector:
+    get: 
+      summary: get the whitelist connetor for the skill given
+      operationId: getWhitelistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get an array of name of whitelist connector
+          content:
+            application/json:
+              sucess: boolean
+            whitelist_connector:
+              type: array
+              items: string
+    
+  /skills/{name}/blacklist_connector:
+    get: 
+      summary: get the blacklist connetor for the skill given
+      operationId: getBlacklistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get an array of name of blacklist connectors
+          content:
+            application/json:
+              sucess: boolean
+            blacklist_connector:
+              type: array
+              items: string
+
+  /skills/{name}/whitelist_user:
+    get: 
+      summary: get the whitelist users for the skill given
+      operationId: getWhitelistUserSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get of array of user's username whitelisted
+          content:
+            application/json:
+              sucess: boolean
+            whitelist_user:
+              type: array
+              items: string
+
+  /skills/{name}/authors:
+    get: 
+      summary: get the authors for the skill given
+      operationId: getAuthorsSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get of array of author's username
+          content:
+            application/json:
+              sucess: boolean
+            authors:
+              type: array
+              items: string
+
+  /skills/{name}/whitelist_connector/{nameConnector}:
+    post: 
+      summary: add a whitelist connetor for the skill given
+      operationId: postWhitelistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameConnector
+          in: path
+          description: Connector unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: add a whitelist connector
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    delete:
+      summary: delete a whitelist connector for the skill given
+      operationId: deleteWhitelistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameConnector
+          in: path
+          description: Connector unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete a whitelist connector
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    
+  /skills/{name}/blacklist_connector/{nameConnector}:
+    post: 
+      summary: add a blacklist connetor for the skill given
+      operationId: postblacklistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameConnector
+          in: path
+          description: Connector unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: add a blacklist connector
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    delete:
+      summary: delete a blacklist connector for the skill given
+      operationId: deleteblacklistConnectorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameConnector
+          in: path
+          description: Connector unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete a blacklist connector
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+
+  /skills/{name}/whitelist_user/{nameUser}:
+    post: 
+      summary: add a whitelist user for the skill given
+      operationId: postWhitelistUserSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameUser
+          in: path
+          description: User unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: add a whitelist User
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    delete:
+      summary: delete a whitelist User for the skill given
+      operationId: deleteWhitelistUserSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameUser
+          in: path
+          description: User unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete a whitelist User
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+
+  /skills/{name}/authors/{nameUser}:
+    post: 
+      summary: add an authors for the skill given
+      operationId: postAuthorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameUser
+          in: path
+          description: User unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: add an author
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+    delete:
+      summary: delete an Author for the skill given
+      operationId: deleteAuthorSkill
+      description: Requires EDIT_SKILL
+      tags:
+        - skills
+      parameters:
+        - name: name
+          in: path
+          description: Skill unique name.
+          required: true
+          schema:
+            type: string
+        - name: nameUser
+          in: path
+          description: User unique name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete an author
+          content:
+            application/json:
+              $ref: '#components/schemas/ApiResponse'
+
   /connectors:
     get:
       summary: Get list of connectors.
@@ -1353,14 +1757,16 @@ paths:
                     type: boolean
                   message:
                     type: string
-                    example: "Lang is FR"
+                    example: "Got configuration"
                   configuration:
-                    type: object
-  /configuration/lang:
+                    confList: 
+                      type: Object
+  
+  /configuration/loaded:
     get:
-      summary: Get field "lang" of configuration.
-      operationId: getLang
-      description: Requires CONFIGURE_BRAIN.
+      summary: Get loaded configuration for brain
+      operationId: getLoadedConfiguration
+      description: Requires CONFIGURE_BRAIN
       tags:
         - configuration
       responses:
@@ -1370,49 +1776,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
+                  success: 
                     type: boolean
                   message:
                     type: string
-                    example: "Lang is FR"
-                  lang:
-                    type: string
-                    example: FR
-  /configuration/lang/{lang}:
-    put:
-      summary: Set field "lang" of brain.
-      operationId: setLang
+                    example: "Got loaded configuration"
+                  loadedConfiguration:
+                    type: object
+                    
+  /configuration/{field}:
+    get:
+      summary: Get field "field" of configuration.
+      operationId: getField
       description: Requires CONFIGURE_BRAIN.
       tags:
         - configuration
       parameters:
-        - name: lang
+        - name: field
           in: path
           required: true
           schema:
             type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  message:
-                    type: string
-                    example: "Lang set to FR"
-                  lang:
-                    type: string
-                    example: FR
-  /configuration/botname:
-    get:
-      summary: Get field "botname" of configuration.
-      operationId: getBotname
-      description: Requires CONFIGURE_BRAIN.
-      tags:
-        - configuration
+            example: botName
       responses:
         '200':
           content:
@@ -1425,23 +1810,28 @@ paths:
                   message:
                     type: string
                     example: "Our Greatest Bot bears the name Arachne"
-                  botname:
+                  value:
                     type: string
                     example: Arachne
-  /configuration/botname/{botname}:
     put:
-      summary: Set field "botname" of brain.
-      operationId: setBotname
+      summary: Set field "field" of brain.
+      operationId: setField
       description: Requires CONFIGURE_BRAIN.
       tags:
         - configuration
       parameters:
-        - name: botname
+        - name: field
           in: path
           required: true
           schema:
             type: string
-            example: My Super Bot
+            example: botName
+        - name: value
+          in: body
+          required: true
+          schema:
+            type: string
+            example: R2D2
       responses:
         '200':
           content:
@@ -1454,9 +1844,6 @@ paths:
                   message:
                     type: string
                     example: "Bot name set to My Super Bot"
-                  botname:
-                    type: string
-                    example: My Super Bot
 
 components:
   securitySchemes:
@@ -1625,6 +2012,29 @@ components:
           example: Git
         Log:
           type: string
-
+    Hook:
+      type: object
+      properties:
+        skill:
+          type: string
+          example: Git
+        messageOnDelete:
+          type: string
+          example: hooks closed
+        connector:
+          type: string
+          example: 5andiosd78ans56
+    Storage:
+      type: object
+      properties:
+        value:
+          type: mixed
+        skill: 
+          type: string
+          example: git
+        key:
+          type: string
+          example: git
+        
 security:
   - bearerAuth: []

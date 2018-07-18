@@ -13,11 +13,11 @@ module.exports.get_config = () => {
 };
 
 module.exports.set_config = (config) => {
-    return this.get_config().then(() => {
+    return this.get_config().then(() => { 
         return Configuration.findOneAndUpdate({}, config);
-    }).then(() => {
-        return config;
-    })
+    }).then(() => { 
+        return config; 
+    });
 }
 
 module.exports.reload = () => {

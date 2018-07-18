@@ -107,10 +107,12 @@ module.exports.getConnectorByName = function(name) {
 
 module.exports.regenerateConnectorToken = function(id) {
   return new Promise((resolve, reject) => {
-    Connector.findByIdAndUpdate(id, { $set: { token: Math.random().toString(16).substring(2) + Date.now().toString(16) + Math.random().toString(16).substring(2) }}, (err, connector) => {
+    let token = Math.random().toString(16).substring(2) + Date.now().toString(16) + Math.random().toString(16).substring(2);
+    Connector.findByIdAndUpdate(id, { $set: { token }}, (err, connector) => {
       if (err) {
         return reject(err);
       } else if (connector) {
+        connector.token = token;
         return resolve(connector);
       } else {
         return reject({

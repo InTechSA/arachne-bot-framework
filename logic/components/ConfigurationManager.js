@@ -12,7 +12,9 @@ exports.ConfigurationManager = class ConfigurationManager {
 
     reload() {
         return this.configurationController.reload().then((config) => {
-            this.loadedConfiguration = config;
+            Object.entries(config.confList).forEach(([key, val]) => {
+                this.loadedConfiguration[key] = val.value;
+            });
             return config;
         });
     }

@@ -267,7 +267,8 @@ function create_user(user) {
         // New user can be added.
 
         // Hash password
-        bcrypt.hash(user.password || Math.random().toString(36).slice(-9), 8, (err, hash) => {
+        console.log(user);
+        bcrypt.hash(user.password, 8, (err, hash) => {
           if (err) {
             return reject(err);
           }
