@@ -942,7 +942,6 @@ module.exports = function (io) {
     const user_name = req.body.user_name;
     const password = req.body.password;
     hub.UserManager.create(user_name, password).then(user => {
-      console.log(user);
       return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, } })
     }).catch(err => {
       console.log(err);
@@ -1139,6 +1138,7 @@ module.exports = function (io) {
   // Get some informations about the bearer of the token.
   router.get('/me', (req, res, next) => {
     hub.UserManager.getByUsername(req.decoded.user.user_name).then(user => {
+      if(user.password) delete user.password;
       return res.json({
         success: true,
         message: "Informations about the bearer of the token.",
@@ -1157,7 +1157,7 @@ module.exports = function (io) {
       return hub.PermissionManager.getRoles();
     }).then((roles) => {
       roles.forEach((role) => {
-        if(rolesUser.includes(role)) {
+        if(rolesUser.includes(role.name)) {
           permissionsUser.push(...role.permissions);
         }
       });
