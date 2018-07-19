@@ -8,7 +8,7 @@ module.exports = (skill) => {
     
     const axios = skill.loadModule('axios');
 
-    skill.addCommand("quizz", "quizz", ({ phrase, data }) => {
+    skill.addCommand("quizz", "quizz", ({ phrase = "", data }) => {
         return Promise.resolve().then(() => {
             phrase = phrase.split(" ");
             switch(phrase[0]) {
@@ -23,7 +23,7 @@ module.exports = (skill) => {
                             });
                         } else {
                             if(phrase[1] && phrase[1] === 'me') {
-                                index = scores.findIndex((score) => score.username === data.userName);
+                                let index = scores.findIndex((score) => score.username === data.userName);
                                 if(scores.length === -1 ) {
                                     return({
                                         message: {
@@ -107,7 +107,7 @@ module.exports = (skill) => {
     });
 
     skill.addIntent("quizz", "quizz", ({ entities, data }) => {
-        return skill.handleCommand("quizz", { data });
+        return skill.handleCommand("quizz", { phrase: "", data });
     },{
         description: "Intent pour lancer un skill",
         examples: [

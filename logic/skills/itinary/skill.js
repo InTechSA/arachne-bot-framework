@@ -60,7 +60,6 @@ module.exports = (skill) => {
                             throw "Erreur d'appel à l'API google maps";
                         });
                     }
-                    break;
                 case "getHome":
                     return skill.getItem("homes").then((homes) => {
                         homes = homes.filter((home) => home.user === data.userName); 

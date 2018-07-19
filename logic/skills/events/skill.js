@@ -135,7 +135,7 @@ module.exports = (skill) => {
         }
         skill.log("Retreiving token ... ");
         // retrieve the ad token 
-        return skill.execute('getToken').then((response) => {
+        return skill.execute('getToken', {phrase, data}).then((response) => {
             const token = response.response.token;
             switch (query) {
                 case '':

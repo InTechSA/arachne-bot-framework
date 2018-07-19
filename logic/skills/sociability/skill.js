@@ -159,4 +159,34 @@ module.exports = (skill) => {
     },{
         description: "Répond à un compliment"
     });
+    
+    skill.addCommand('joke','joke',({phrase}) => {
+        return Promise.resolve().then(() => {
+            var jokes_offline = ["Vous connaissez l'histoire de l'armoire ?\nElle est pas commode...", "Un jour Dieu dit à Casto de ramer.\nEt depuis, castorama...","C'est l'histoire d'un type qui rentre dans un café, et plouf!"];
+            return axios({
+                url: "https://08ad1pao69.execute-api.us-east-1.amazonaws.com/dev/random_joke",
+                timeout: 3000
+            }).then((response) => {
+                return({
+                    message: {
+                        attachments: [{
+                            title: "En voici une bonne : ",
+                            text: response.data.setup + "\n"+ response.data.punchline
+                        }]
+                    }
+                });
+            }).catch((err) => {
+               return({
+                   message: {
+                        attachments: [{
+                            title: "En voici une bonne : ",
+                            text: jokes_offline[Math.floor(Math.random()*3)]
+                        }]
+                    }
+               }); 
+            });
+        }); 
+    }, {
+        description: "Fais une blague",
+    });
 };
