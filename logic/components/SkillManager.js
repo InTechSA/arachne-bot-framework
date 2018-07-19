@@ -83,7 +83,7 @@ exports.SkillManager = class SkillManager {
         return this.hub.PipeManager.remove(skillName, identifier);
       },
       handleCommand: (cmd, { phrase, data }) => {
-        return this.hub.handleCommand(cmd, { phrase, data });
+        return this.hub.handleCommand(cmd, phrase, data);
       },
       log: (log) => {
         return this.hub.LogManager.log(skillName, log);
