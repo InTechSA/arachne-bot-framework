@@ -109,7 +109,7 @@ module.exports = class Skill {
      * @param {Object} params.data Data object given by the connector and populated by the brain.
      * @return {Promise} Promise to the response object: { message: { title, text }, response: {}}.
      */
-    handleCommand(cmd, { phrase = {}, data = {} } = {}) {
+    handleCommand(cmd, { phrase = "", data = {} } = {}) {
         return Promise.resolve().then(() => {
             // Command might be activated, but not the skill. Check the skill first.
             if (!this.active) {
