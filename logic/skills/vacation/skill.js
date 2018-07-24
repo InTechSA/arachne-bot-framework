@@ -42,6 +42,11 @@ module.exports = (skill) => {
         // Depend on the action entered by the user
         switch (action) {
             case 'request':
+                return {
+                    message: {
+                        text: "La requête de congé est désactivée pour l'instant."
+                    }
+                }
                 // If it's a request, test first if the person sent the message in a public channel
                 if (!data.privateChannel) {
                     return({
@@ -73,6 +78,11 @@ module.exports = (skill) => {
                     }
                   });
             case 'status':
+                return {
+                    message: {
+                        text: "La requête de congé est désactivée pour l'instant."
+                    }
+                }
                 // It's the code to retrieve the status associated to the vacation request of the user.
                 skill.log("Retreiving token ... ");
                 // First retrieve the ad-token using the get-ad-token method

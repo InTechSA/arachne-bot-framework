@@ -83,7 +83,7 @@ exports.SkillManager = class SkillManager {
         return this.hub.PipeManager.remove(skillName, identifier);
       },
       handleCommand: (cmd, { phrase, data }) => {
-        return this.hub.handleCommand(cmd, { phrase, data });
+        return this.hub.handleCommand(cmd, phrase, data);
       },
       log: (log) => {
         return this.hub.LogManager.log(skillName, log);
@@ -1051,6 +1051,7 @@ exports.SkillManager = class SkillManager {
 
   checkWhiteListForSkill(skillName, data = {}) {
     const objectWhitelist = this.whitelists.get(skillName);
+
     if (objectWhitelist.whitelist_connector.length > 0) {
       if(!data.connector) return false;
       if(!data.connector.name) return false;

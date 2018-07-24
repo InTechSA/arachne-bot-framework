@@ -30,7 +30,7 @@ module.exports = (skill) => {
             url,
             data: {
                 description: "Création de webhook automatisé",
-                callbackURL: "https://arachne-bot.intech-lab.com/pipes/trello/" + pipe.identifier,
+                callbackURL: "http://arachne-api.intech-dev.com/pipes/trello/" + pipe.identifier,
                 idModel,
                 active: true
             }
@@ -231,7 +231,7 @@ module.exports = (skill) => {
                                 }
                         });
                     default:
-                        return send("Je n'ai pas compris votre demande ! type `!trello help` to get the help for trello");
+                        return send("Je n'ai pas compris votre demande ! type `!help trello` to get the help for trello");
                 }
             }
         }).catch((err) => {

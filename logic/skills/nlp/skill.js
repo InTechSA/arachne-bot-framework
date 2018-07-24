@@ -12,7 +12,7 @@ module.exports = (skill) => {
         return new Promise((resolve, reject) => {
             skill.log(`> [INFO] {nlp} - Analyze "${phrase}".`);
             request({
-                url: "https://nlu-api.intech-lab.com/projects/"+secret.nlu_id+"/parse",
+                url: "http://nlu-service.intech-dev.com:3013/projects/"+secret.nlu_id+"/parse",
                 method: "POST",
                 headers: { 'App-Token': secret.nlu_token },
                 body: {
@@ -39,6 +39,9 @@ module.exports = (skill) => {
                       analyzed.message = {
                         text: analyzed.intent ? `I think your intent is *${analyzed.intent}*.` : `I did'nt found any intent in this sentence.`
                       };
+                      
+                      skill.log(analyzed)
+                      
                       return resolve(analyzed);
                 } catch(e) {
                     return reject(e);

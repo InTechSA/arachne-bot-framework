@@ -31,7 +31,7 @@ module.exports = (skill) => {
                 } else {
                     var index = -1;
                     var color = "black";
-                    for(var tech of response.data.feed.entry) {
+                    for(let tech of response.data.feed.entry) {
                         if(tech.gs$cell.$t === phrase) {
                             index = tech.gs$cell.row;
                         }

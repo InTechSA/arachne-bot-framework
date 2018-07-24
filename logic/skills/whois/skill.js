@@ -14,8 +14,7 @@ module.exports = (skill) => {
         if (result.photo) {
             photo = "data:image/png;base64," + result.photo;
         }
-        messages = '*Informations disponibles sur ' + result.trigram + '* \n';
-        messages += '> *Trigramme:* ' + result.trigram + '\n';
+        messages = '> *Trigramme:* ' + result.trigram + '\n';
         messages += '> *Nom:* ' + result.lastName + '\n';
         messages += '> *Prénom:* ' + result.firstName + '\n';
         if (result.email) {
@@ -43,9 +42,9 @@ module.exports = (skill) => {
             messages += '> *Pôle:* ' + result.division + '\n';
         }
         return ({
-            title: "Whois " + result.displayName,
             attachments: [
                 {
+                    title: "Informations disponibles sur " + result.displayName + " (" + result.trigram + ")",
                     color: "black",
                     image_url: photo,
                     text: messages
@@ -166,7 +165,7 @@ module.exports = (skill) => {
                         }
                     });
                 default:
-                return skill.execute('getToken', {phrase, data}).then((response) => {
+                return skill.execute('getToken', { phrase }).then((response) => {
                     const token = response.response.token;
                     skill.log("Retrieved Token");
                     if (query[0].length === 3) {

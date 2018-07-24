@@ -13,7 +13,7 @@ module.exports = (skill) => {
             phrase.replace("help","").trim();
             var cmds = phrase.split(" ");
             return axios({
-                url: "http://arachne-bot.intech-lab.com/help/skills"
+                url: "http://arachne-api.intech-dev.com/help/skills"
             }).then((response) => {
                 var helpSkills = response.data.skills;
                 var text = "";
@@ -27,12 +27,12 @@ module.exports = (skill) => {
                                 }
                             }
                         }
-                        text += "Pour consultez l'help de chaque commande, tapez `!help [cmd]`, example : `!help git`\nExplorez l'aide en ligne: https://arachne-bot.intech-lab.com/manual\n"
-                        + "Vous pouvez également voir des exemples de fonctions en langage naturel en tapant `!help nlp`";
+                        text += "Pour consultez l'help de chaque commande, tapez `!help [cmd]`, example : `!help git`\nExplorez l'aide en ligne: http://arachne-api.intech-dev.com/manual\n"
+                        + "Vous pouvez également voir des exemples de fonctions en langage naturel en tapant `!help nlp`\n\n> Pour utiliser le mode langage naturel, préfixez vos message de 'bot', '@ bot' ou '@ R2D2' dans les canaux public.";
                         return({
                             message: {
                                 title: "Help of R2D2",
-                                title_url: "https://arachne-bot.intech-lab.com/manual",
+                                title_url: "http://arachne-api.intech-dev.com/manual",
                                 text,
                                 noLinkParsing: true
                             }
@@ -59,7 +59,7 @@ module.exports = (skill) => {
                                     }
                                 });
                             } else {
-                                var helpIntent = helpIntents.filter((helpIntent) => helpIntent.name === cmds[1]);
+                                let helpIntent = helpIntents.filter((helpIntent) => helpIntent.name === cmds[1]);
                                 if(helpIntent.length === 0) {
                                     return({
                                         message: {
@@ -111,8 +111,8 @@ module.exports = (skill) => {
                                     }
                                 });
                             } else {
-                                var parameter, example;
-                                var helpCmd = helpCmds.filter((cmd) => cmd.cmd === cmds[0])[0];
+                                let parameter, example;
+                                let helpCmd = helpCmds.filter((cmd) => cmd.cmd === cmds[0])[0];
                                 var title = "Aide de " + helpCmd.cmd;
                                 text += "Description : " + helpCmd.help.description + "\n";
                                 if(helpCmd.help.parameters) {
@@ -169,7 +169,6 @@ module.exports = (skill) => {
                 }
             }).catch((err) => {
                 skill.log(err.message);
-                console.log(err);
                 throw "Une erreur est survenue durant l'appel des helps des skills du bot :("; 
             });
         }).catch((err) => {

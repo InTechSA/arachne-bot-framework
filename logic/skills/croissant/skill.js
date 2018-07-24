@@ -157,7 +157,7 @@ module.exports = (skill) => {
                         });
                     });
                 default:
-                    throw "Je n'ai pas compris votre demande :(, tapez `!croissant help` pour consulter la liste des commandes !";
+                    throw "Je n'ai pas compris votre demande :(, tapez `!help croissant` pour consulter la liste des commandes !";
             }
         }).catch((err) => {
             if(typeof(err) !== String) err = err.toString();

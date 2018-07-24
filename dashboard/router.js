@@ -267,7 +267,7 @@ module.exports = function(io) {
   // User account settings
 
   router.get('/settings', (req, res, next) => {
-    if (process.env.USE_AUTH_SERVIce) {
+    if (process.env.USE_AUTH_SERVICE) {
       return res.render('settings', {
         title: "Dashboard Settings - Bot",
         nav_link: 'settings',

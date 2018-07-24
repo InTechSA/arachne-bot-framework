@@ -49,25 +49,38 @@ module.exports = function(io) {
    * @apiSuccess {String} source Source given to the NLP.
    */
   router.post('/nlp', checkConnectorToken, (req, res) => {
-    let phrase = req.body.phrase || req.query.phrase;
+    let data = req.body.data || {};
+    let phrase = req.body.phrase;
     if (!phrase) {
-      return res.status(400).json({ success: false, message: { text: 'No phrase string to analyze in body.' }})
+      return res({ status: 400, message: 'No phrase string to analyze in body.' }, {
+        success: false,
+        message: { text: 'No phrase string to analyze in body.' },
+        source: phrase
+      });
     }
 
-    hub.handleCommand('analyze', phrase, req.body.data || {}).then((response) => {
+    data.connector = { id: req.connector_id }; // Automatically add the connector id to the data object.
+    hub.handleCommand('analyze', phrase, data).then((response) => {
       if (!response.response.intent) {
-        return res.json({ success: response.success, message: { text: `It seems I have no skill that could fit your request, maybe it was disabled, I'm sorry :/` }, source: req.body.phrase });
+
+        return res.json({
+          success: response.success,
+          message: {
+            text: hub.ConfigurationManager.loadedConfiguration.errorintent
+          },
+          source: phrase
+        });
       }
 
-      hub.handleIntent(response.response.intent, response.response.entities, req.body.data || {}).then((response) => {
-        return res.json({ success: response.success, message: response.message, source: req.body.phrase });
+      hub.handleIntent(response.response.intent, response.response.entities, data).then((response) => {
+        return res.json({ success: response.success, message: response.message, source: phrase });
       }).catch((error) => {
         logger.error(error)
-        return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errorintent }, source: req.body.phrase });
+        return res.status(500).json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: phrase });
       })
     }).catch((error) => {
       logger.error(error);
-      return res.json({ success: false, message: { text: ConfigurationManager.loadedConfiguration.errornlp }, source: req.body.phrase });
+      return res.status(500).json({ success: false, message: { text: 'Unkown error with nlp endpoint.' }, source: phrase });
     });
   })
 
