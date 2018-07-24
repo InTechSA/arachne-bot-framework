@@ -1069,8 +1069,6 @@ exports.SkillManager = class SkillManager {
 
     if (objectWhitelist.whitelist_user.length > 0) {
       if(!data.userName) return false;
-      console.log(data.userName);
-      console.log(objectWhitelist.whitelist_user);
       if (!objectWhitelist.whitelist_user.includes(data.userName)) {
         return false;
       }

@@ -944,7 +944,6 @@ module.exports = function (io) {
     hub.UserManager.create(user_name, password).then(user => {
       return res.json({ success: true, message: "User created.", user: { id: user._id, user_name: user.user_name, roles: user.roles, permissions: user.permissions, } })
     }).catch(err => {
-      console.log(err);
       next(err)
     });
   });

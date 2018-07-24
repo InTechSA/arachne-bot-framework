@@ -61,7 +61,6 @@ module.exports = function(io) {
 
     data.connector = { id: req.connector_id }; // Automatically add the connector id to the data object.
     hub.handleCommand('analyze', phrase, data).then((response) => {
-      console.log(response.response);
       if (!response.response.intent) {
 
         return res.json({
