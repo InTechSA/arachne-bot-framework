@@ -1,5 +1,5 @@
 'use strict';
-const logger = new (require("./../components/Logger"))();
+const logger = new(require("./../components/Logger"))();
 
 class HookManager {
 
@@ -28,7 +28,7 @@ class HookManager {
    * @return {Promise} Promise to the created hook : { _id, skill }
    */
   create(skill, messageOnDelete = "") {
-   return this.hookController.create_hook(skill, messageOnDelete);
+    return this.hookController.create_hook(skill, messageOnDelete);
   }
 
   /**
@@ -38,7 +38,7 @@ class HookManager {
    * @return {Promise} Promise that resolves if the hook is validated, false otherwise.
    */
   finalize(hookId, connectorId) {
-   return this.hookController.add_connector(hookId, connectorId);
+    return this.hookController.add_connector(hookId, connectorId);
   }
 
   /**
@@ -47,8 +47,10 @@ class HookManager {
    * @param {Object} message - Valid message object to send to the connector.
    * @return {Promise} Promise that resolves if the message was sent, false otherwise.
    */
-  execute(hookId, message, {deleteHook = false} = {}) {
-    logger.info("Delete Hook "+deleteHook);
+  execute(hookId, message, {
+    deleteHook = false
+  } = {}) {
+    logger.info("Delete Hook " + deleteHook);
     return new Promise((resolve, reject) => {
       this.get(hookId).then((hook) => {
         if (!hook) {
@@ -61,11 +63,11 @@ class HookManager {
           });
           if (socket.length > 0) {
             message.deleteHook = deleteHook;
-            
-            socket[0].emit('hook',hookId, {
+
+            socket[0].emit('hook', hookId, {
               message
             }, (err) => {
-              if(err === 'NO_HOOK'){
+              if (err === 'NO_HOOK') {
                 this.remove(hookId);
               }
             });
@@ -90,7 +92,7 @@ class HookManager {
    * @return {Promise} Promise that resolves if success, false otherwise.
    */
   remove(hookId) {
-   return this.hookController.delete_hook(hookId);
+    return this.hookController.delete_hook(hookId);
   }
 
   /**
@@ -115,15 +117,15 @@ class HookManager {
    * @return {Promise} Promise to the hook : { _id, skill, connector }
    */
   get(hookId) {
-   return this.hookController.get_hook(hookId);
+    return this.hookController.get_hook(hookId);
   }
-  
+
   /**
    * Get hooks of connector by id.
    * @param {String} connectorId - Id of connector to get hooks of.
    */
   getForConnector(connectorId) {
-   return this.hookController.get_by_connector(connectorId);
+    return this.hookController.get_by_connector(connectorId);
   }
 }
 

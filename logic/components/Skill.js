@@ -199,6 +199,15 @@ module.exports = class Skill {
      * @param {Object} params.data Data object given by the connector and populated by the brain.
      */
     execute(cmd, { phrase = {}, data = {} } = {}) {
+        // Modify given data to reflect that a skill is calling another one.
+        data.userName = `skill-${this.name}`;
+        delete data.channel;
+        delete data.privateChannel;
+        delete data.connector;
+
+        data.from_skill = true;
+        data.skill = this.name;
+
         return this.manager.handleCommand(cmd, { phrase, data });
     }
 
